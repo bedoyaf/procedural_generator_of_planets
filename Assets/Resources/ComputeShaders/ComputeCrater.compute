@@ -1,0 +1,72 @@
+#pragma kernel ComputeCrater
+
+// Structured Buffer to hold vertex positions
+StructuredBuffer<float3> vertices;
+
+RWStructuredBuffer<float> heights;
+
+// Crater definition
+struct Crater
+{
+    float3 center;
+    float radius;
+    float depth;
+};
+
+// Buffer for craters
+StructuredBuffer<Crater> craters;
+
+uint numVertices;
+uint numCraters;
+float floorHeight;
+float smoothness;
+float rimSteepness;
+float rimWidth;
+
+
+float smoothMin(float a, float b, float k)
+{
+    float h = max(k - abs(a - b), 0) / k;
+    return min(a, b) - h * h * k * 0.25;
+}
+
+float smoothMax(float a, float b, float k)
+{
+    return -smoothMin(-a, -b, k);
+}
+
+
+
+[numthreads(512, 1, 1)] // Define the number of threads per group
+void ComputeCrater(uint id : SV_DispatchThreadID)
+{
+    if (id >= numVertices) // Prevent out-of-bounds access
+        return;
+   
+    
+    float3 vertexPos = vertices[id];
+    float craterHeight = 0;
+    
+    for (int i = 0; i < numCraters; i++)
+    {
+        float x = length(vertexPos - craters[i].center) / craters[i].radius;
+        
+        float cavity = x * x - 1;
+        float rimX = min(x - 1 - rimWidth, 0);
+        float rim = rimSteepness * rimX * rimX;
+        
+        float craterShape = smoothMax(cavity, floorHeight, smoothness);
+        craterShape = smoothMin(craterShape, rim, smoothness);
+        craterHeight += craterShape * craters[i].radius;
+
+    }
+    
+    heights[id] = 1 + craterHeight;
+   /* if(id ==0)
+    {
+        heights[id] = -1;
+    }*/
+}
+
+
+
