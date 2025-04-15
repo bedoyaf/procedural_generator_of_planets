@@ -12,7 +12,7 @@ public class NoiseShaderControllerMoreShaders : ShaderControllerAbstract
 
 
 
-    public void SetupTerrainGenerator(MeshFilter meshFilter, Vector3[] originalVertices)
+    public override void SetupTerrainGenerator(MeshFilter meshFilter, Vector3[] originalVertices, float sphereRadius)
     {
         _filter = meshFilter;
         this.originalVertices = originalVertices;
@@ -22,6 +22,8 @@ public class NoiseShaderControllerMoreShaders : ShaderControllerAbstract
         heightsBuffer = new ComputeBuffer(numVertices, sizeof(float));
         deformedVertices = originalVertices;
         heights = new float[numVertices];
+
+        this.sphereRadius = sphereRadius;
     }
 
 

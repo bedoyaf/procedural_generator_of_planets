@@ -9,27 +9,36 @@ using static UnityEditor.Searcher.SearcherWindow.Alignment;
 
 public class PlanetGenerator : MonoBehaviour
 {
+    [Header("Setup")]
+    [SerializeField] int seed = 0;
+    private int currentlyUsingSeed = 0;
+    [SerializeField]
+    SphereAlgorithm sphereAlgorithm;
+    [SerializeField]
+    TerrainGeneration terrainGeneration;
+
+    [Header("Sphere Mesh")]
     [Range(0, 300)] // Controls the level of subdivision
     [SerializeField] int resolution = 2;
     [Range(0, 100)] // Controls the level of subdivision
     public int radius = 1;
 
+    [SerializeField] bool renderTriangles = true;
+
     private MeshFilter meshFilter;
 
     private Vector3[] originalVertices;
-    private Vector3[] deformedVertices;
-    Vector3[] vertices, normals;
 
-    Vector4[] tangents;
+    private Vector3[] originalVerticesTerrain;
+
+    //  private Vector3[] deformedVertices;
+    private Vector3[] vertices, normals;
+
+    private Vector4[] tangents;
 
     public enum SphereAlgorithm { Nothing = 0, SebastianLeague = 1, Recursive = 2, Optimal }
-    public enum TerrainGeneration { Non = 0, Sin, Crater, Noise, Noise2 }
+    public enum TerrainGeneration { Non = 0, Sin, Crater, Noise, Noise2, Noise3 }
 
-
-    [SerializeField]
-    SphereAlgorithm sphereAlgorithm;
-    [SerializeField]
-    TerrainGeneration terrainGeneration;
 
     Mesh currentmesh;
 
@@ -40,16 +49,12 @@ public class PlanetGenerator : MonoBehaviour
     private int numVertices;
 
 
-
-    [SerializeField] int numCraters = 0;
-
-    [SerializeField] bool renderTriangles = true;
-
-
+    [Header("Shaders")]
     public ShaderControllerAbstract currentShader;
     [SerializeField] public CraterGenerator craterGenerator;
     [SerializeField] public NoiseShaderController noiseShaderController;
     [SerializeField] public NoiseShaderControllerMoreShaders noiseShaderController2;
+    [SerializeField] public NoiseShaderController2 noiseShaderController3;
 
 
     void Start()
@@ -60,7 +65,10 @@ public class PlanetGenerator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (currentlyUsingSeed != seed) { 
+            UnityEngine.Random.InitState(seed);
+            currentlyUsingSeed = seed;
+        }
     }
 
     public void GeneratePlanet()
@@ -140,31 +148,28 @@ public class PlanetGenerator : MonoBehaviour
 
     public void RunComputeShader()
     {
-        if(terrainGeneration == TerrainGeneration.Crater)
+        if(!meshGenerated) GeneratePlanet();
+        Debug.Log("about to generate teerain");
+        if (terrainGeneration == TerrainGeneration.Crater)
         {
-            Debug.Log("about to generate teerain"+craterGenerator.settedUp);
             currentShader = craterGenerator;
-            /*if(!craterGenerator.settedUp)*/
-            craterGenerator.SetupTerrainGenerator(meshFilter,originalVertices, numCraters);
-            craterGenerator.RunComputeShader();
         }
         else if (terrainGeneration == TerrainGeneration.Noise)
         {
-            Debug.Log("about to generate teerain");
             currentShader = noiseShaderController;
-            /*if(!craterGenerator.settedUp)*/
-            noiseShaderController.SetupTerrainGenerator(meshFilter, originalVertices);
-            noiseShaderController.RunComputeShader();
         }
         else if (terrainGeneration == TerrainGeneration.Noise2)
         {
-            Debug.Log("about to generate teerain");
             currentShader = noiseShaderController2;
-            /*if(!craterGenerator.settedUp)*/
-            noiseShaderController2.SetupTerrainGenerator(meshFilter, originalVertices);
-            noiseShaderController2.RunComputeShader();
         }
+        else if (terrainGeneration == TerrainGeneration.Noise3)
+        {
+            currentShader = noiseShaderController3;
+        }
+        currentShader.SetupTerrainGenerator(meshFilter, originalVertices, radius);
+        currentShader.RunComputeShader();
 
+      //  originalVerticesTerrain = 
     }
 
 

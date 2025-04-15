@@ -645,6 +645,7 @@ MonoBehaviour:
   craterGenerator: {fileID: 644010796012135465, guid: d12da1787c18a8141a9764feff723e0b, type: 3}
   noiseShaderController: {fileID: -6826590707995356946, guid: 7f38d05b974e1e147be3c73d2a713085, type: 3}
   noiseShaderController2: {fileID: 8024127786678625567, guid: d499b7db573a3e643b177660347a1f50, type: 3}
+  noiseShaderController3: {fileID: 8084045453186273635, guid: 54acbd1efac1f1845af679045e8cb1b5, type: 3}
   computeShaderMoonHeight: {fileID: 7200000, guid: b663ed9473e09d742a7cc3cddc19d2ff, type: 3}
 --- !u!4 &1759935701
 Transform:

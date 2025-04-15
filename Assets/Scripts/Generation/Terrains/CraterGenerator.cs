@@ -6,46 +6,50 @@ using static PlanetGenerator;
 
 public class CraterGenerator : ShaderControllerAbstract
 {
-    public bool settedUp = false;
-    public bool running = false;
+  //  public bool settedUp = false;
+ //   public bool running = false;
 
-
-    [SerializeField] ComputeShader computeShaderCrater;
 
     List<Crater> craterList = new List<Crater>();
 
     List<int> randomSpotsForCraters = new List<int>();
 
-    int numCraters=1;
+    [SerializeField] private int numCraters=1;
 
 
-    public void SetupTerrainGenerator(MeshFilter meshFilter, Vector3[] originalVertices, int numCraters)
+    [SerializeField] float smoothness = 0f;
+
+  //  [SerializeField] float rimSteepness = 0.5f;
+    [SerializeField] Vector2 rimSteepness = new Vector2(1f, 3f);
+    //  [SerializeField] float floorHeight = -1f;
+    [SerializeField] Vector2 floorHeight = new Vector2(-0.5f, -0.2f);
+    //[SerializeField] float craterDepth = 1f;
+    //[SerializeField] float rimWidth = 0.7f;
+    [SerializeField] Vector2 rimWidth = new Vector2(0.2f, 0.4f);
+
+    //   [SerializeField] float depthCrater = -0.2f;
+    [SerializeField] Vector2 craterRadius = new Vector2(0.05f,0.2f);//0.17f;
+
+
+
+
+    public override void SetupTerrainGenerator(MeshFilter meshFilter, Vector3[] originalVertices, float sphereRadius)
     {
         _filter = meshFilter;
         this.originalVertices = originalVertices;
         numVertices = originalVertices.Length;
 
         Debug.Log("num craters" + numCraters);
-        this.numCraters = numCraters;
-
-        Debug.Log("num craters" + numCraters);
         verticesBuffer = new ComputeBuffer(numVertices, sizeof(float) * 3);
         heightsBuffer = new ComputeBuffer(numVertices, sizeof(float));
         deformedVertices = originalVertices;
         heights = new float[numVertices];
-        settedUp = true;
+        this.sphereRadius = sphereRadius;
+      //  settedUp = true;
         Debug.Log("kraterovac inicializovan");
-      //  RunComputeShader();
+        //  RunComputeShader();
     }
 
-    [SerializeField] float smoothness = 0f;
-    [SerializeField] float rimSteepness = 0.5f;
-    [SerializeField] float floorHeight = -1f;
-    //[SerializeField] float craterDepth = 1f;
-    [SerializeField] float rimWidth = 0.7f;
-
-    //   [SerializeField] float depthCrater = -0.2f;
-    [SerializeField] float radiusCrater = 0.5f;//0.17f;
 
     [ContextMenu("Run Compute Shader")]
     public override void RunComputeShader()
@@ -53,13 +57,11 @@ public class CraterGenerator : ShaderControllerAbstract
         //  if (originalVertices == null || _filter.mesh == null) GeneratePlanet();
         Debug.Log("Generating Craters");
 
-        running = true;
+     //   running = true;
 
         int kernel = 0;
-        ComputeShader computeShader;
 
-        kernel = computeShaderCrater.FindKernel("ComputeCrater");
-        computeShader = computeShaderCrater;
+        kernel = computeShader.FindKernel("ComputeCrater");
         SetupCraters();
 
         if (craterBuffer == null)
@@ -75,10 +77,10 @@ public class CraterGenerator : ShaderControllerAbstract
         computeShader.SetBuffer(kernel, "craters", craterBuffer);
         computeShader.SetInt("numCraters", craterList.Count);
         computeShader.SetFloat("smoothness", smoothness);
-        computeShader.SetFloat("rimSteepness", rimSteepness);
-        computeShader.SetFloat("floorHeight", floorHeight);
+        computeShader.SetFloat("rimSteepness", UnityEngine.Random.Range(rimSteepness.x, rimSteepness.y));
+        computeShader.SetFloat("floorHeight", UnityEngine.Random.Range(floorHeight.x, floorHeight.y));
       //  computeShader.SetFloat("craterDepth", craterDepth);
-        computeShader.SetFloat("rimWidth", rimWidth);
+        computeShader.SetFloat("rimWidth", UnityEngine.Random.Range(rimWidth.x, rimWidth.y));
         computeShader.SetInt("numVertices", numVertices);
 
 
@@ -104,6 +106,8 @@ public class CraterGenerator : ShaderControllerAbstract
         computeShader.SetBuffer(kernel, "vertices", verticesBuffer);
         computeShader.SetBuffer(kernel, "heights", heightsBuffer);
         computeShader.SetInt("numVertices", numVertices);
+        computeShader.SetFloat("sphereRadius", sphereRadius);
+
 
         int threadGroups = Mathf.Max(1, Mathf.CeilToInt(numVertices / 512.0f));
         computeShader.Dispatch(kernel, threadGroups, 1, 1);
@@ -137,7 +141,7 @@ public class CraterGenerator : ShaderControllerAbstract
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
         Debug.Log("Done generating");
-        running = false;
+    //    running = false;
     }
 
 
@@ -175,7 +179,7 @@ public class CraterGenerator : ShaderControllerAbstract
                 randomCenter = originalVertices[randomSpotsForCraters[i]];
             }
 
-            float randomRadius = radiusCrater;//UnityEngine.Random.Range(minCraterRadius, maxCraterRadius);
+            float randomRadius = UnityEngine.Random.Range(craterRadius.x, craterRadius.y);
                                               //     float randomDepth = depthCrater;// UnityEngine.Random.Range(minCraterDepth, maxCraterDepth);
                                               //   float randomRimWidth =// UnityEngine.Random.Range(0.05f, 0.2f);
                                               //    float randomRimSteepness =// UnityEngine.Random.Range(0.5f, 2.0f);

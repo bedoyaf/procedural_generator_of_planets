@@ -22,6 +22,7 @@ float floorHeight;
 float smoothness;
 float rimSteepness;
 float rimWidth;
+float sphereRadius;
 
 
 float smoothMin(float a, float b, float k)
@@ -47,6 +48,9 @@ void ComputeCrater(uint id : SV_DispatchThreadID)
     float3 vertexPos = vertices[id];
     float craterHeight = 0;
     
+    float maxCraterHeight = 0;
+    bool hasEffect = false;
+    
     for (int i = 0; i < numCraters; i++)
     {
         float x = length(vertexPos - craters[i].center) / craters[i].radius;
@@ -58,14 +62,16 @@ void ComputeCrater(uint id : SV_DispatchThreadID)
         float craterShape = smoothMax(cavity, floorHeight, smoothness);
         craterShape = smoothMin(craterShape, rim, smoothness);
         craterHeight += craterShape * craters[i].radius;
+        
+        if (!hasEffect || craterHeight < maxCraterHeight) 
+        {
+            maxCraterHeight = craterHeight;
+            hasEffect = true;
+        }
 
     }
     
-    heights[id] = 1 + craterHeight;
-   /* if(id ==0)
-    {
-        heights[id] = -1;
-    }*/
+    heights[id] = sphereRadius + maxCraterHeight;
 }
 
 

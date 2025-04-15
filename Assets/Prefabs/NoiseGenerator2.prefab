@@ -45,5 +45,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   computeShader: {fileID: 7200000, guid: 1a8ae5d737071374f84c377176dcc7fc, type: 3}
-  noiseScale: 0.76
+  noiseScale: 0.02
   heightMultiplier: 2

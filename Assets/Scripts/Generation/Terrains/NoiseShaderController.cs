@@ -11,7 +11,7 @@ public class NoiseShaderController : ShaderControllerAbstract
     public float baseHeight = 1.0f;
 
 
-    public void SetupTerrainGenerator(MeshFilter meshFilter, Vector3[] originalVertices)
+    public override void SetupTerrainGenerator(MeshFilter meshFilter, Vector3[] originalVertices, float sphereRadius)
     {
         _filter = meshFilter;
         this.originalVertices = originalVertices;
@@ -21,6 +21,7 @@ public class NoiseShaderController : ShaderControllerAbstract
         heightsBuffer = new ComputeBuffer(numVertices, sizeof(float));
         deformedVertices = originalVertices;
         heights = new float[numVertices];
+        this.sphereRadius = sphereRadius;
         Debug.Log("kraterovac inicializovan");
         //  RunComputeShader();
     }

@@ -12,6 +12,7 @@ public abstract class ShaderControllerAbstract : MonoBehaviour
     protected ComputeBuffer craterBuffer;
     protected ComputeBuffer verticesBuffer;
     protected ComputeBuffer heightsBuffer;
+    protected float sphereRadius = 1f;
 
     protected int numVertices;
 
@@ -20,4 +21,5 @@ public abstract class ShaderControllerAbstract : MonoBehaviour
 
     [ContextMenu("Run Compute Shader")]
     public abstract void RunComputeShader();
+    public abstract void SetupTerrainGenerator(MeshFilter meshFilter, Vector3[] originalVertices, float sphereRadius);
 }
