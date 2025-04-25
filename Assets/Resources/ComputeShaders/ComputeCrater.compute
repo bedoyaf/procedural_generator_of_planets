@@ -1,9 +1,6 @@
 #pragma kernel ComputeCrater
 
 // Structured Buffer to hold vertex positions
-StructuredBuffer<float3> vertices;
-
-RWStructuredBuffer<float> heights;
 
 // Crater definition
 struct Crater
@@ -14,6 +11,10 @@ struct Crater
 };
 
 // Buffer for craters
+StructuredBuffer<float3> vertices;
+
+RWStructuredBuffer<float> heights;
+
 StructuredBuffer<Crater> craters;
 
 uint numVertices;
@@ -71,7 +72,7 @@ void ComputeCrater(uint id : SV_DispatchThreadID)
 
     }
     
-    heights[id] = sphereRadius + maxCraterHeight;
+    heights[id] += /*sphereRadius +*/ craterHeight;
 }
 
 

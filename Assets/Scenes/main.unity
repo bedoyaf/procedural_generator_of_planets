@@ -302,7 +302,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &183669382
 Transform:
   m_ObjectHideFlags: 0
@@ -560,9 +560,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1759935701}
-  - component: {fileID: 1759935700}
   - component: {fileID: 1759935699}
   - component: {fileID: 1759935698}
+  - component: {fileID: 1759935700}
   m_Layer: 0
   m_Name: Generator
   m_TagString: Untagged
@@ -593,7 +593,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10302, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 115bdf3b60f237540adeae55ff59f6fd, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -635,18 +635,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97d4522ff5b29ac4b893c9e70c55145e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  seed: 0
+  sphereAlgorithm: 2
   resolution: 300
   radius: 1
-  sphereAlgorithm: 1
-  terrainGeneration: 2
-  numCraters: 1
-  renderTriangles: 1
-  currentShader: {fileID: 644010796012135465, guid: d12da1787c18a8141a9764feff723e0b, type: 3}
-  craterGenerator: {fileID: 644010796012135465, guid: d12da1787c18a8141a9764feff723e0b, type: 3}
-  noiseShaderController: {fileID: -6826590707995356946, guid: 7f38d05b974e1e147be3c73d2a713085, type: 3}
-  noiseShaderController2: {fileID: 8024127786678625567, guid: d499b7db573a3e643b177660347a1f50, type: 3}
-  noiseShaderController3: {fileID: 8084045453186273635, guid: 54acbd1efac1f1845af679045e8cb1b5, type: 3}
-  computeShaderMoonHeight: {fileID: 7200000, guid: b663ed9473e09d742a7cc3cddc19d2ff, type: 3}
+  renderWireframe: 0
+  terrainLayers:
+  - {fileID: 11400000, guid: a6bc6a5413fc28e44a0b28c6f5475245, type: 2}
+  showBiomeSettings: 1
+  biomPipeline: {fileID: 270325597915402934, guid: 641c5321217c58743ba303ed7046888d, type: 3}
 --- !u!4 &1759935701
 Transform:
   m_ObjectHideFlags: 0

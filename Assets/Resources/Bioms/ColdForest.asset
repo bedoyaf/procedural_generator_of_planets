@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23897497f1b897b408153c98892f58eb, type: 3}
+  m_Name: ColdForest
+  m_EditorClassIdentifier: 
+  biomeName: ColdForest
+  biomeTexture: {fileID: 2800000, guid: 5f1b99e934debeb4aa9e6e75caa2320d, type: 3}
+  supportedHeights: 01000000
+  supportedTemperatures: 00000000
+  heightAffinity: 1
+  temperatureAffinity: 1
+  priority: 1

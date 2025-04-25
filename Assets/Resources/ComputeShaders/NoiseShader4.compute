@@ -1,0 +1,211 @@
+// SphereNoise_Mountainous.compute
+#pragma kernel GenerateSphereNoiseMountainous
+
+// Input: Pre-calculated sphere vertices (normalized directions usually)
+StructuredBuffer<float3> vertices;
+// Output: Height value for each vertex (can be offset or final radius)
+RWStructuredBuffer<float> heights;
+
+// Basic Parameters
+uint numVertices;
+float baseRadius;
+
+// Noise Parameters
+float noiseScale; // Base frequency/scale of the noise domain
+float heightMultiplier; // How much the final noise affects the height
+float3 noiseOffset; // Allows shifting the noise pattern in 3D space
+
+// --- Domain Warping Parameters ---
+// Distorts the input coordinates before sampling the main noise
+float warpAmplitude; // How much displacement the warping applies
+float warpFrequency; // Frequency of the noise used for warping
+
+// --- Ridged Multifractal FBM Parameters ---
+int octaves; // Number of noise layers
+float persistence; // Amplitude reduction per octave (usually < 1)
+float lacunarity; // Frequency increase per octave (usually > 1)
+float ridgeOffset; // Controls the sharpness/offset of ridges (often 1.0)
+float weightMultiplier; // Musgrave's improvement for spectral weighting
+
+// --- Feature Control Parameters ---
+float powerExponent; // Apply pow(noise, exponent) to shape terrain
+
+
+// --- Simplex Noise Implementation (Unchanged) ---
+float3 mod289(float3 x)
+{
+    return x - floor(x * (1.0 / 289.0)) * 289.0;
+}
+float4 mod289(float4 x)
+{
+    return x - floor(x * (1.0 / 289.0)) * 289.0;
+}
+float4 permute(float4 x)
+{
+    return mod289(((x * 34.0) + 10.0) * x);
+}
+float4 taylorInvSqrt(float4 r)
+{
+    return 1.79284291400159 - 0.85373472095314 * r;
+}
+
+float snoise(float3 v)
+{
+    const float2 C = float2(1.0 / 6.0, 1.0 / 3.0);
+    const float4 D = float4(0.0, 0.5, 1.0, 2.0);
+    float3 i = floor(v + dot(v, C.yyy));
+    float3 x0 = v - i + dot(i, C.xxx);
+    float3 g = step(x0.yzx, x0.xyz);
+    float3 l = 1.0 - g;
+    float3 i1 = min(g.xyz, l.zxy);
+    float3 i2 = max(g.xyz, l.zxy);
+    float3 x1 = x0 - i1 + C.xxx;
+    float3 x2 = x0 - i2 + C.yyy;
+    float3 x3 = x0 - D.yyy;
+    i = mod289(i);
+    float4 p = permute(permute(permute(
+                 i.z + float4(0.0, i1.z, i2.z, 1.0))
+               + i.y + float4(0.0, i1.y, i2.y, 1.0))
+               + i.x + float4(0.0, i1.x, i2.x, 1.0));
+    float n_ = 0.142857142857; // 1.0/7.0
+    float3 ns = n_ * D.wyz - D.xzx;
+    float4 j = p - 49.0 * floor(p * ns.z * ns.z);
+    float4 x_ = floor(j * ns.z);
+    float4 y_ = floor(j - 7.0 * x_);
+    float4 x = x_ * ns.x + ns.yyyy;
+    float4 y = y_ * ns.x + ns.yyyy;
+    float4 h = 1.0 - abs(x) - abs(y);
+    float4 b0 = float4(x.xy, y.xy);
+    float4 b1 = float4(x.zw, y.zw);
+    float4 s0 = floor(b0) * 2.0 + 1.0;
+    float4 s1 = floor(b1) * 2.0 + 1.0;
+    float4 sh = -step(h, float4(0.0, 0.0, 0.0, 0.0));
+    float4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;
+    float4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
+    float3 p0 = float3(a0.xy, h.x);
+    float3 p1 = float3(a0.zw, h.y);
+    float3 p2 = float3(a1.xy, h.z);
+    float3 p3 = float3(a1.zw, h.w);
+    float4 norm = taylorInvSqrt(float4(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));
+    p0 *= norm.x;
+    p1 *= norm.y;
+    p2 *= norm.z;
+    p3 *= norm.w;
+    float4 m = max(0.5 - float4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3)), 0.0);
+    m = m * m;
+    // Note: Using 42.0 for approx [-1, 1] range
+    return 42.0 * dot(m * m, float4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
+}
+// --- End Simplex Noise ---
+
+
+// --- Ridged Multifractal FBM Function ---
+// Creates sharper, more mountainous features compared to standard FBM.
+// Based on Musgrave's algorithms.
+float ridgedFBM(float3 pos)
+{
+    float total = 0.0;
+    float frequency = 1.0; // Base frequency applied outside
+    float amplitude = 1.0; // Start with base amplitude
+    float weight = 1.0; // Weight for spectral adjustment
+
+    for (int i = 0; i < octaves; i++)
+    {
+        // 1. Get noise value
+        float noiseVal = snoise(pos * frequency);
+
+        // 2. Make ridges (invert absolute value)
+        // ridgeOffset controls the sharpness/base level (e.g., 1.0)
+        noiseVal = ridgeOffset - abs(noiseVal);
+
+        // 3. Square to sharpen ridges
+        noiseVal = noiseVal * noiseVal;
+
+        // 4. Apply spectral weight (Musgrave's improvement)
+        // This prevents lower frequencies from dominating too much
+        noiseVal *= weight;
+
+        // 5. Accumulate weighted noise
+        total += noiseVal * amplitude;
+
+        // 6. Update weight for next octave
+        // Weight is based on the current noise value, clamped to avoid issues
+        // weightMultiplier controls how much weights are adjusted (e.g., 0.5 - 0.7)
+        weight = saturate(noiseVal * weightMultiplier); // saturate clamps to [0, 1]
+
+        // 7. Update frequency and amplitude for next octave
+        frequency *= lacunarity;
+        amplitude *= persistence;
+    }
+
+    // Note: The raw output range of Ridged FBM can vary.
+    // It's often mostly positive. Normalization might be needed depending on usage.
+    // For this shader, we'll normalize roughly to [0, 1] later.
+    return total;
+}
+
+
+[numthreads(512, 1, 1)]
+void GenerateSphereNoiseMountainous(uint id : SV_DispatchThreadID)
+{
+    // Exit if thread ID is out of bounds
+    if (id >= numVertices)
+        return;
+
+    // Get the original vertex position (normalized direction on sphere)
+    float3 basePos = vertices[id];
+
+    // --- 1. Domain Warping ---
+    // Define positions to sample warp noise from (using large offsets for independence)
+    float3 warpSamplePos = basePos * warpFrequency + noiseOffset; // Use separate freq/offset for warp
+    float3 warpOffsetVec = float3(
+        snoise(warpSamplePos + float3(13.7, 5.9, 2.1)), // Sample noise for X offset
+        snoise(warpSamplePos + float3(1.3, 28.5, 11.7)), // Sample noise for Y offset
+        snoise(warpSamplePos + float3(9.1, 17.3, 31.9)) // Sample noise for Z offset
+    );
+
+    // Apply the warp: Offset the base position by the warp vector
+    // The snoise results are [-1, 1], scaled by warpAmplitude
+    float3 warpedPos = basePos + warpOffsetVec * warpAmplitude;
+
+    // --- 2. Calculate Noise Value using Ridged FBM ---
+    // Define the position to sample the main noise from
+    // Use the *warped* position and the main noise scale/offset
+    float3 finalSamplePos = warpedPos * noiseScale + noiseOffset;
+
+    // Calculate raw ridged noise value
+    float rawNoiseValue = ridgedFBM(finalSamplePos);
+
+    // --- 3. Normalize and Shape ---
+    // The raw output of ridgedFBM isn't strictly bounded. We need to estimate
+    // a reasonable range or normalize it. A simple approach is to assume a max
+    // value based on initial amplitude and persistence, but this isn't perfect.
+    // Let's try a simpler remap assuming the interesting features are mostly in the lower positive range.
+    // A better approach might involve calculating min/max across the whole mesh in a separate pass
+    // or using a statistically determined divisor.
+
+    // Simple normalization attempt: Assume most values fall below a certain threshold.
+    // This value (e.g., 1.5) might need significant tweaking based on octave count and persistence!
+    float estimatedMaxValue = 1.5; // *** TWEAK THIS VALUE *** based on visual results
+    float noise01 = saturate(rawNoiseValue / estimatedMaxValue); // Map roughly to [0, 1]
+
+    // Alternative normalization (less robust): Use sum of amplitudes
+    // float fbmMaxValue = 0.0; float amp = 1.0;
+    // for(int i=0; i<octaves; ++i) { fbmMaxValue += amp; amp *= persistence; }
+    // if (fbmMaxValue > 0.0) noise01 = saturate(rawNoiseValue / fbmMaxValue); else noise01 = 0.0;
+
+
+    // Apply Power Adjustment (shaping)
+    // Operates on the [0, 1] range
+    float shapedNoise01 = pow(noise01, powerExponent);
+
+    // Remap shaped noise back to [-1, 1] range for consistent application with heightMultiplier
+    float finalNoiseValue = shapedNoise01 * 2.0 - 1.0;
+
+    // --- 4. Calculate Final Height ---
+    // Additive: Base radius + scaled noise contribution
+    heights[id] +=baseRadius +finalNoiseValue * heightMultiplier;
+
+    // Optional: Multiplicative Height (terrain features scale with base radius)
+    // heights[id] = baseRadius * (1.0 + finalNoiseValue * heightMultiplier * (1.0/baseRadius) ); // Adjust multiplier scale if needed
+}

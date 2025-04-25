@@ -199,7 +199,7 @@ void GenerateSphereNoiseTrippy(uint id : SV_DispatchThreadID)
     // --- Calculate Final Height ---
     // Start with the base radius and add the scaled noise contribution
     // The final noiseValue is in [-1, 1] range after modifications
-    heights[id] = baseRadius + noiseValue * heightMultiplier;
+    heights[id] +=/* baseRadius +*/ noiseValue * heightMultiplier;
 
     // Alternative: Multiplicative Height (terrain features scale with base radius)
     // heights[id] = baseRadius * (1.0 + noiseValue * heightMultiplier);
