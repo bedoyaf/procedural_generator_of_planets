@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public enum HeightType { Low, Medium, High, Mountain }
+public enum HeightType { Ocean, Low, Medium, High, Mountain }
 public enum TemperatureType { Cold, Temperate, Hot }
 
 
@@ -10,6 +10,10 @@ public enum TemperatureType { Cold, Temperate, Hot }
 public class BiomeSO : ScriptableObject
 {
     public string biomeName;
+    //public Texture2D biomeTexture;
+    [ColorUsage(true, true)]
+    public Color biomeColor;
+
     public Texture2D biomeTexture;
 
 

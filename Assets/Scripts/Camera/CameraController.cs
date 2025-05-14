@@ -1,3 +1,4 @@
+using UnityEditor;
 using UnityEngine;
 
 public class OrbitCamera : MonoBehaviour
@@ -26,6 +27,11 @@ public class OrbitCamera : MonoBehaviour
     {
         if (target == null) return;
 
+#if UNITY_EDITOR
+        // Only zoom if Game view is focused
+        if (EditorWindow.focusedWindow != null && EditorWindow.focusedWindow.titleContent.text != "Game")
+            return;
+#endif
         // Rotate on right mouse button drag
         if (Input.GetMouseButton(1))
         {
@@ -44,5 +50,9 @@ public class OrbitCamera : MonoBehaviour
         Vector3 offset = rotation * new Vector3(0, 0, -distance);
         transform.position = target.position + offset;
         transform.LookAt(target.position);
+
+
+        Camera.main.depthTextureMode |= DepthTextureMode.Depth;
+
     }
 }

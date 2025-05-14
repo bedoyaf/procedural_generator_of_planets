@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1581d5017ce7d72438bbbe3a39d975de, type: 3}
+  m_Name: FractalNoiseLayer4
+  m_EditorClassIdentifier: 
+  enabled: 1
+  computeShader: {fileID: 7200000, guid: 1105b15d652c75c4e965343e01598507, type: 3}
+  kernelName: GenerateSphereNoise
+  kernelHandle: 0
+  baseScale: 0.96
+  baseOctaves: 3
+  baseLacunarity: 2.06
+  basePersistence: 0.346
+  baseMultiplier: 1
+  ridgeScale: 0.91
+  ridgeOctaves: 4
+  ridgeLacunarity: 2
+  ridgePersistence: 0.5
+  ridgeMultiplier: 0.6
+  ridgeMinBase: 0.4
+  ridgeStartPower: 2.5
+  oceanFloorDepth: 0.338
+  oceanFloorSmoothing: 0.5
+  oceanDepthMultiplier: 0.28
+  heightMultiplier: 0.19

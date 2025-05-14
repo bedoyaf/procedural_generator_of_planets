@@ -3,6 +3,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "BiomeClassifier", menuName = "Planet Generation/Biome Classifier")]
 public class BiomeClassifierSO : ScriptableObject
 {
+    public FloatRange ocean;
     public FloatRange lowHeight;
     public FloatRange mediumHeight;
     public FloatRange highHeight;
@@ -14,10 +15,16 @@ public class BiomeClassifierSO : ScriptableObject
 
     public HeightType GetHeightType(float height)
     {
-        if (mountainHeight.Contains(height)) return HeightType.Mountain;
-        if (highHeight.Contains(height)) return HeightType.High;
+        if (mountainHeight.Contains(height))
+        {
+            return HeightType.Mountain;
+        }
+        if (highHeight.Contains(height)) { 
+            return HeightType.High;
+        }
         if (mediumHeight.Contains(height)) return HeightType.Medium;
-        return HeightType.Low;
+        if (lowHeight.Contains(height)) return HeightType.Low;
+        return HeightType.Mountain;
     }
 
     public TemperatureType GetTemperatureType(float temp)

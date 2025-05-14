@@ -13,10 +13,9 @@ MonoBehaviour:
   m_Name: Savana
   m_EditorClassIdentifier: 
   biomeName: SandLand
-  biomeTexture: {fileID: 2800000, guid: 05448ffa7a9293a48841da77c5d9d61d, type: 3}
-  minTemperature: 0
-  centerTemperature: 0.25
-  maxTemperature: 0.5
-  minHeight: -100
-  centerHeight: 0
-  maxHeight: 0.06
+  biomeColor: {r: 0.3451606, g: 0.3584906, b: 0, a: 0}
+  supportedHeights: 
+  supportedTemperatures: 
+  heightAffinity: 1
+  temperatureAffinity: 1
+  priority: 1

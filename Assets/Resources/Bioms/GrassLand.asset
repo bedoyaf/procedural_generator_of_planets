@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: GrassLand
   m_EditorClassIdentifier: 
   biomeName: GrassLand
+  biomeColor: {r: 0.02322368, g: 0.4056604, b: 0, a: 0}
   biomeTexture: {fileID: 2800000, guid: d40b3fa289e5c0f4382bd6b25230e306, type: 3}
-  supportedHeights: 
-  supportedTemperatures: 
+  supportedHeights: 02000000
+  supportedTemperatures: 000000000100000002000000
   heightAffinity: 1
   temperatureAffinity: 1
   priority: 0

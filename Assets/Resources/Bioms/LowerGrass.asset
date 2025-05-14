@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: LowerGrass
   m_EditorClassIdentifier: 
   biomeName: Lower Grass
-  biomeTexture: {fileID: 2800000, guid: 9550a8bb8b2a1754c9f316fbafcee2c7, type: 3}
+  biomeColor: {r: 0.14020711, g: 0.6698113, b: 0, a: 0}
   supportedHeights: 00000000
   supportedTemperatures: 01000000
   heightAffinity: 1

@@ -12,11 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99662d98b7b5a6f4fa8418ecf48c8b94, type: 3}
   m_Name: BiomeClassifier
   m_EditorClassIdentifier: 
-  lowHeight:
+  ocean:
     min: 0
-    max: 0.03
+    max: 0
+  lowHeight:
+    min: -7
+    max: 0
   mediumHeight:
-    min: 0.05
+    min: 0
     max: 0.1
   highHeight:
     min: 0.1

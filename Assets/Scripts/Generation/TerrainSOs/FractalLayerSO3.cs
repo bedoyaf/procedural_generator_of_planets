@@ -25,10 +25,26 @@ public class FractalNoiseLayerSO3 : TerrainLayerSO
 
     [Header("Ridge")]
     [Range(0.01f, 10f)][SerializeField] private float ridgeScale = 1.5f;
-    [Range(0f, 2f)][SerializeField] private float ridgeMultiplier = 0.6f;
+    [Range(0f, 10f)][SerializeField] private float ridgeMultiplier = 0.6f;
     [Range(1, 8)][SerializeField] private int ridgeOctaves = 4;
     [Range(1f, 4f)][SerializeField] private float ridgeLacunarity = 2f;
     [Range(0f, 1f)][SerializeField] private float ridgePersistence = 0.5f;
+    [Header("Ridge Attenuation")]
+    [SerializeField, Range(-10f, 10f)] private float ridgeMinBase = 0.4f; // Ridges start appearing above this base noise value
+
+    [SerializeField, Range(0.1f, 5f)] private float ridgeStartPower = 2.5f; // Controls how sharply ridges fade in
+
+    [SerializeField, Range(0f, 10f)]
+    private float ridgeAttenuationScale = 1f;
+
+    [SerializeField, Range(0f, 10f)]
+    private float ridgeAttenuationFrequency = 1f;
+
+    [SerializeField, Range(1, 10)]
+    private int ridgeAttenuationOctaves = 3;
+
+    [SerializeField, Range(0f, 1f)]
+    private float ridgeAttenuationPersistence = 0.5f;
 
 
     // Seeded offset (or randomized)
@@ -74,6 +90,14 @@ public class FractalNoiseLayerSO3 : TerrainLayerSO
         shader.SetInt("ridgeOctaves", ridgeOctaves);
         shader.SetFloat("ridgeLacunarity", ridgeLacunarity);
         shader.SetFloat("ridgePersistence", ridgePersistence);
+
+        shader.SetFloat("ridgeStartPower", ridgeStartPower);
+        shader.SetFloat("ridgeMinBase", ridgeMinBase);
+        shader.SetFloat("ridgeAttenuationScale", ridgeAttenuationScale);
+        shader.SetFloat("ridgeAttenuationFrequency", ridgeAttenuationFrequency);
+        shader.SetFloat("ridgeAttenuationOctaves", ridgeAttenuationOctaves);
+        shader.SetFloat("ridgeAttenuationPersistence", ridgeAttenuationPersistence);
+
 
         // Noise offset (random or seeded)
         Vector3 randomOffset = new Vector3(

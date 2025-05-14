@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Forest
   m_EditorClassIdentifier: 
   biomeName: Forest
-  biomeTexture: {fileID: 2800000, guid: bcaf78fe10720344799e95258e69b59e, type: 3}
+  biomeColor: {r: 0.0033048652, g: 0.103773594, b: 0, a: 0}
   supportedHeights: 01000000
   supportedTemperatures: 01000000
   heightAffinity: 1

@@ -28,6 +28,12 @@ float ridgeMultiplier;
 int ridgeOctaves;
 float ridgeLacunarity;
 float ridgePersistence;
+float ridgeMinBase; // Base minimum value for ridge mask
+float ridgeStartPower; // Exponent to control sharpness of the ridge mask
+float ridgeAttenuationScale; // Controls the scaling of ridge attenuation noise
+float ridgeAttenuationFrequency; // Controls the frequency of ridge attenuation noise
+float ridgeAttenuationOctaves; // Controls the number of octaves for ridge attenuation noise
+float ridgeAttenuationPersistence; // Controls the persistence for ridge attenuation noise
 
 // Simplex noise helper functions
 float3 mod289(float3 x)
@@ -190,7 +196,29 @@ void GenerateSphereNoise(uint id : SV_DispatchThreadID)
     float ridges = ridgeNoise(noisePos * ridgeScale, ridgeOctaves, ridgeLacunarity, ridgePersistence);
 
     // Combine them
-    float n = base * baseMultiplier + detail * detailMultiplier + ridges * ridgeMultiplier;
+  //  float n = base * baseMultiplier + detail * detailMultiplier + ridges * ridgeMultiplier;
+    
+    
+    
+    
+    float ridgeMask = saturate((base - ridgeMinBase) / (1.0 - ridgeMinBase));
+    ridgeMask = pow(ridgeMask, ridgeStartPower);
+
+    // Random attenuation noise for ridges (to randomly reduce ridge height)
+    float ridgeAttenuation = fbm(noisePos * ridgeAttenuationFrequency, ridgeAttenuationOctaves, 2.0, ridgeAttenuationPersistence); // Applying secondary noise for random attenuation
+    ridgeAttenuation = saturate(ridgeAttenuation); // Ensure the value stays between 0 and 1
+
+    // Apply the attenuation to the ridges (randomly lower the ridge heights)
+    float maskedRidges = ridges * ridgeMask * ridgeAttenuation * ridgeAttenuationScale;
+
+    
+    
+    
+    
+    
+//    float n = maskedRidges * ridgeMultiplier;
+
+    float n = base * baseMultiplier + detail * detailMultiplier + maskedRidges * ridgeMultiplier;
 
     heights[id] += n * heightMultiplier;
 }

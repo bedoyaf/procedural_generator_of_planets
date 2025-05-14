@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 23897497f1b897b408153c98892f58eb, type: 3}
-  m_Name: HotHill
+  m_Name: Ocean
   m_EditorClassIdentifier: 
-  biomeName: HotHll
-  biomeColor: {r: 0.2924528, g: 0.11325129, b: 0, a: 0}
-  supportedHeights: 02000000
-  supportedTemperatures: 02000000
+  biomeName: 
+  biomeColor: {r: 0, g: 0.055284023, b: 1, a: 0}
+  supportedHeights: 00000000
+  supportedTemperatures: 000000000100000002000000
   heightAffinity: 1
   temperatureAffinity: 1
   priority: 1

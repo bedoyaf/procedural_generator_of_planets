@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ColdForest
   m_EditorClassIdentifier: 
   biomeName: ColdForest
-  biomeTexture: {fileID: 2800000, guid: 5f1b99e934debeb4aa9e6e75caa2320d, type: 3}
+  biomeColor: {r: 0.23616669, g: 0.4339623, b: 0.21493414, a: 0}
   supportedHeights: 01000000
   supportedTemperatures: 00000000
   heightAffinity: 1

@@ -26,6 +26,7 @@ public class PlanetGenerator : MonoBehaviour
     private TerrainPipelineProcessor terrainPipelineProcessor;
 
     [Header("BiomStuff")]
+    public bool generateBioms = true;
     public bool showBiomeSettings = true;
 
 
@@ -123,6 +124,7 @@ public class PlanetGenerator : MonoBehaviour
             biomPipeline.UpdateBiomPipeline(radius, processedHeights);
 
             // Initialize the terrain pipeline processor with the correct vertex count
+            if (terrainPipelineProcessor == null) terrainPipelineProcessor = new TerrainPipelineProcessor();
             pipelineInitialized = terrainPipelineProcessor.Initialize(numVertices);
             if (!pipelineInitialized)
             {
@@ -168,65 +170,6 @@ public class PlanetGenerator : MonoBehaviour
             return false;
         }
     }
-    /*
-    private Texture2DArray GenerateBiomeTextureArray(BiomeCollectionSO biomeCollection)
-    {
-        int textureSize = 512; // adjust based on your source textures
-        Texture2DArray texArray = new Texture2DArray(textureSize, textureSize, biomeCollection.biomes.Length, TextureFormat.RGBA32, true);
-
-        for (int i = 0; i < biomeCollection.biomes.Length; i++)
-        {
-            Texture2D tex = biomeCollection.biomes[i].biomeTexture;
-            Graphics.CopyTexture(tex, 0, 0, texArray, i, 0);
-        }
-
-        texArray.Apply();
-        return texArray;
-    }
-
-
-    void ApplyTexturesToMesh()
-    {
-        int numVertices = baseVertices.Length;
-        int[] biomeIndices = new int[numVertices];
-
-        for (int i = 0; i < numVertices; i++)
-        {
-            float height = currentHeights[i];
-            float temp = CalculateTemperature(baseVertices[i]);
-            biomeIndices[i] = FindBiomeIndex(height, temp);
-        }
-
-        biomeIndexBuffer = new ComputeBuffer(numVertices, sizeof(int));
-        biomeIndexBuffer.SetData(biomeIndices);
-
-        material.SetBuffer("_BiomeIndices", biomeIndexBuffer);
-        material.SetTexture("_BiomeTextures", GenerateBiomeTextureArray(biomeCollection));
-    }
-
-
-
-    [SerializeField] private float equatorTemperature = 1.0f;
-    [SerializeField] private float poleTemperature = 0.0f;
-    [SerializeField] private float temperatureNoiseScale = 1.0f;
-    [SerializeField] private float temperatureNoiseStrength = 0.2f;
-
-    float CalculateTemperature(Vector3 worldPosition)
-    {
-        // Normalize to get latitude: -1 (south pole) to 1 (north pole)
-        float latitude = worldPosition.normalized.y;
-
-        // Map to 0..1 (poles cold, equator hot)
-        float temp = Mathf.Lerp(poleTemperature, equatorTemperature, (latitude + 1) / 2f);
-
-        // Add noise variation (optional)
-        float noise = Mathf.PerlinNoise(worldPosition.x * temperatureNoiseScale, worldPosition.z * temperatureNoiseScale);
-        temp += (noise - 0.5f) * 2f * temperatureNoiseStrength;
-
-        return Mathf.Clamp01(temp);
-    }
-
-    */
 
     [ContextMenu("Generate Terrain Only")]
     public void GenerateTerrain()
@@ -299,7 +242,7 @@ public class PlanetGenerator : MonoBehaviour
             {
                 // Ensure base vertex is normalized before scaling by height and radius
 
-                processedVertices[i] = baseVertices[i].normalized *(processedHeights[i]+radius);//* radius;
+                processedVertices[i] = baseVertices[i].normalized *(processedHeights[i]*radius+radius);//* radius;
             //    normals[i] = processedVertices[i].normalized;
 
                 // Sanity check
@@ -340,7 +283,7 @@ public class PlanetGenerator : MonoBehaviour
 
         biomPipeline.UpdateBiomPipelineMesh(generatedMesh);
 
-        biomPipeline.ApplyTexturesToMesh(baseVertices, generatedMesh.normals);
+        if(generateBioms) biomPipeline.ApplyTexturesToMesh(baseVertices, generatedMesh.normals);
     }
 
     private void ReleaseResources()

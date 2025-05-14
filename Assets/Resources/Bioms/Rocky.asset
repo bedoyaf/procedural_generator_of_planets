@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: Rocky
   m_EditorClassIdentifier: 
   biomeName: RockyLand
+  biomeColor: {r: 0.2735849, g: 0.2735849, b: 0.2735849, a: 0}
   biomeTexture: {fileID: 2800000, guid: 3956174747e96b54a98553b3fbcbb31d, type: 3}
-  supportedHeights: 02000000
-  supportedTemperatures: 01000000
+  supportedHeights: 03000000
+  supportedTemperatures: 010000000200000000000000
   heightAffinity: 1
   temperatureAffinity: 1
   priority: 1
