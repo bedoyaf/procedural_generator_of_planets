@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee275ba2712cdcc469c327f05d1013c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slopeThreshold: 52.6
+  slopeThreshold: 28.7
   equatorTemperature: 1
   poleTemperature: 0
   temperatureNoiseScale: 2.31
@@ -52,7 +52,7 @@ MonoBehaviour:
   falloff: 1
   smoothnessExponent: 1
   blenddistance: 1.2
-  material: {fileID: 2100000, guid: d9e1dea6fd205844abb493d34b889ca9, type: 2}
+  material: {fileID: 2100000, guid: 6fb40c8171344bd4eb1bfa9e68fe9c3e, type: 2}
   biomeCollection: {fileID: 11400000, guid: e11f9117bbe0653438d643f1543e86a7, type: 2}
   biomeClassifier: {fileID: 11400000, guid: 9def40f43272a2044982306e0ea6d3c9, type: 2}
   delta: 0.05

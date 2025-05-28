@@ -17,6 +17,8 @@ MonoBehaviour:
   biomeTexture: {fileID: 2800000, guid: d40b3fa289e5c0f4382bd6b25230e306, type: 3}
   supportedHeights: 02000000
   supportedTemperatures: 000000000100000002000000
-  heightAffinity: 1
+  supportedSlopes: 02000000
+  heightAffinity: 0.546
+  slopeAffinity: 0
   temperatureAffinity: 1
   priority: 0

@@ -36,3 +36,12 @@ MonoBehaviour:
   hotTemp:
     min: 0.8
     max: 1
+  steepSlope:
+    min: 10
+    max: 90
+  flatSlope:
+    min: 0
+    max: 30
+  mildlySteepSlope:
+    min: 0
+    max: 30

@@ -123,7 +123,7 @@ float fbm(float3 pos, int octaves, float lacunarity, float persistence)
     return total / maxValue;
 }
 
-float ridgeNoise(float3 pos, int octaves, float lacunarity, float persistence)
+float smoothRidgeNoise(float3 pos, int octaves, float lacunarity, float persistence)
 {
     float total = 0.0;
     float amplitude = 0.5;
@@ -133,17 +133,22 @@ float ridgeNoise(float3 pos, int octaves, float lacunarity, float persistence)
     for (int i = 0; i < octaves; i++)
     {
         float n = snoise(pos * frequency);
-        n = 1.0 - abs(n);
-        n *= n;
+
+        // Instead of harsh abs() ridging, use a smooth bump
+        n = (1.0 - abs(n)) * 2.0 - 1.0; // Bring into range [-1, 1]
+        n = saturate(n); // Clamp to [0, 1] for ridges
+        n = n * n * (3.0 - 2.0 * n); // Smoothstep falloff for organic feel
 
         total += n * amplitude;
         maxValue += amplitude;
+
         amplitude *= persistence;
         frequency *= lacunarity;
     }
 
     return total / maxValue;
 }
+
 
 [numthreads(512, 1, 1)]
 void GenerateSphereNoise(uint id : SV_DispatchThreadID)
@@ -158,16 +163,16 @@ void GenerateSphereNoise(uint id : SV_DispatchThreadID)
     float continent = fbm(noisePos * continentScale, continentOctaves, continentLacunarity, continentPersistence);
 
     // Flatten ocean floors
-    float oceanMask = -oceanFloorDepth + continent * 0.15;
+    float oceanMask = -oceanFloorDepth + continent * 1.0;//bylo 0.15
     continent = smoothMax(continent, oceanMask, oceanFloorSmoothing);
     continent *= (continent<0)? 1 + oceanDepthMultiplier: 1;
 
     // Mountains masked by continent height
-    float ridge = ridgeNoise(noisePos * mountainScale, mountainOctaves, mountainLacunarity, mountainPersistence);
+    float ridge = smoothRidgeNoise(noisePos * mountainScale, mountainOctaves, mountainLacunarity, mountainPersistence);
     float ridgeMask = pow(saturate((continent - mountainMaskMin) / (1.0 - mountainMaskMin)), mountainMaskPower);
     float maskedRidges = ridge * ridgeMask * mountainStrength;
 
     float height = continent * continentStrength + maskedRidges;
 
-    heights[id] += height * heightMultiplier;
+    heights[id] += height * heightMultiplier*0.1;
 }

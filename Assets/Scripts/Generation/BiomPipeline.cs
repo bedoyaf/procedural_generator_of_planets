@@ -8,6 +8,8 @@ using System.Linq;
 using UnityEngine.UIElements;
 using System.Drawing;
 using Unity.Mathematics.Geometry;
+using ProceduralMeshes;
+using Color = UnityEngine.Color;
 
 public class BiomPipeline : MonoBehaviour
 {
@@ -300,63 +302,150 @@ public class BiomPipeline : MonoBehaviour
 
            */
 
-        var biomeIndices = new List<Vector4>(vertices.Length);
-        var biomeWeights = new List<Vector4>(vertices.Length);
+        /*  var biomeIndices = new List<Vector4>(vertices.Length);
+          var biomeWeights = new List<Vector4>(vertices.Length);
 
-        for (int i = 0; i < vertices.Length; i++)
+          for (int i = 0; i < vertices.Length; i++)
+          {
+              float height = heights[i];
+            //  float temp = temperatures[i];
+
+              HeightType heightType = biomeClassifier.GetHeightType(height);
+              //   TemperatureType tempType = biomeClassifier.GetTemperatureType(temp);
+
+              float slope = CalculateSlopeFromNormal(normals[i], vertices[i]);
+
+              var scores = new List<(int biomeIndex, float score)>();
+
+                  for (int j = 0; j < biomeCollection.biomes.Count; j++)
+                  {
+                      var biome = biomeCollection.biomes[j];
+
+
+
+
+                  var supportedHeight = biome.supportedHeights[0];
+                  float heightCenter = GetTypeCenter(supportedHeight);
+                  float heightRange = GetTypeRange(supportedHeight);
+                  float heightScore = Mathf.Clamp01(1f - Mathf.Abs(height - heightCenter) / (heightRange * blenddistance + 1e-5f));
+
+                  // SLOPE SCORING
+                  (float slopeMin, float slopeMax) = biomeClassifier.GetSlopeValues(biome.supportedSlopes[0]);
+                  float slopeCenter = (slopeMin + slopeMax) / 2f;
+                  float slopeRange = (slopeMax - slopeMin) / 2f;
+                  float slopeScore = Mathf.Clamp01(1f - Mathf.Abs(slope - slopeCenter) / (slopeRange * blenddistance + 1e-5f));
+
+
+                  float score = heightScore * biome.heightAffinity + slopeScore * biome.slopeAffinity;
+                  scores.Add((j, score));
+
+              }
+
+              scores.Sort((a, b) => b.score.CompareTo(a.score));
+
+              int indexA = scores.Count > 0 ? scores[0].biomeIndex : 0;
+              int indexB = scores.Count > 1 ? scores[1].biomeIndex : indexA;
+
+              float weightA = scores.Count > 0 ? scores[0].score : 1f;
+              float weightB = scores.Count > 1 ? scores[1].score : 0f;
+
+              float total = weightA + weightB + 1e-5f;
+              //    if (i % 1000 == 0) Debug.Log("skibidi: "+weightA);
+
+              if (i % 1000 == 1) Debug.Log("index: " + indexA + " weight " + weightA + " indexB: " + indexB + "weight " + weightB);
+
+              biomeIndices.Add(new Vector4(indexA, indexB, 0, 0));
+              biomeWeights.Add(new Vector4(weightA / total, weightB / total, 0, 0));
+          }
+          Texture2DArray biomTexArray = GenerateBiomeTextureArray(biomeCollection);
+          material.SetTexture("_Biomes", biomTexArray);
+          mesh.SetUVs(2, biomeIndices);
+          mesh.SetUVs(3, biomeWeights);*/
+
+
+        int[] biomIndicies = new int[vertices.Length];
+        for(int i = 0; i< vertices.Length; i++)
         {
             float height = heights[i];
-          //  float temp = temperatures[i];
+            float temp = CalculateTemperature(baseVertices[i]);
+            Vector3 normal = normals[i];
+            Vector3 vertex = vertices[i];
 
-            HeightType heightType = biomeClassifier.GetHeightType(height);
-         //   TemperatureType tempType = biomeClassifier.GetTemperatureType(temp);
-
-            var scores = new List<(int biomeIndex, float score)>();
-
-            for (int j = 0; j < biomeCollection.biomes.Count; j++)
-            {
-                var biome = biomeCollection.biomes[j];
-
-                bool supportsHeight = biome.supportedHeights.Contains(heightType);
-                //   bool supportsTemp = biome.supportedTemperatures.Contains(tempType);
-
-                //      if (!supportsHeight /*|| !supportsTemp*/)
-                //       continue;
-
-                float center = GetTypeCenter(biome.supportedHeights[0]);
-                float range = GetTypeRange(biome.supportedHeights[0]);
-                float dist = Mathf.Abs(height - center);
-
-                // Falloff edge sharpness (controls blend zone smoothness)
-                float t = Mathf.Clamp01(dist / (range * blenddistance));
-                float score = 1f - t * t * (3f - 2f * t);
-
-                scores.Add((j, score));
-            }
-
-            scores.Sort((a, b) => b.score.CompareTo(a.score));
-
-            int indexA = scores.Count > 0 ? scores[0].biomeIndex : 0;
-            int indexB = scores.Count > 1 ? scores[1].biomeIndex : indexA;
-
-            float weightA = scores.Count > 0 ? scores[0].score : 1f;
-            float weightB = scores.Count > 1 ? scores[1].score : 0f;
-
-            float total = weightA + weightB + 1e-5f;
-            //    if (i % 1000 == 0) Debug.Log("skibidi: "+weightA);
-
-            if (i % 1000 == 1) Debug.Log("index: " + indexA + " weight " + weightA + " indexB: " + indexB + "weight " + weightB);
-
-            biomeIndices.Add(new Vector4(indexA, indexB, 0, 0));
-            biomeWeights.Add(new Vector4(weightA / total, weightB / total, 0, 0));
+            biomIndicies[i] = FindBiomeIndex(height, temp, normal, vertex);
         }
-        Texture2DArray biomTexArray = GenerateBiomeTextureArray(biomeCollection);
-        material.SetTexture("_Biomes", biomTexArray);
-        mesh.SetUVs(2, biomeIndices);
-        mesh.SetUVs(3, biomeWeights);
+
+        int[] triangles = mesh.triangles;
+        Vector3[] originalVerts = mesh.vertices;
+        Color[] originalColors = mesh.colors;
+
+        int triCount = triangles.Length / 3;
+        Vector3[] newVerts = new Vector3[triangles.Length];
+
+        Vector4[] uv1 = new Vector4[triangles.Length]; // color0
+        Vector4[] uv2 = new Vector4[triangles.Length]; // color1
+        Vector4[] uv3 = new Vector4[triangles.Length]; // color2
+        Vector3[] barycentrics = new Vector3[triangles.Length]; // TEXCOORD0
+
+        int[] newTris = new int[triangles.Length];
+
+        for (int tri = 0; tri < triCount; tri++)
+        {
+            int i0 = triangles[tri * 3 + 0];
+            int i1 = triangles[tri * 3 + 1];
+            int i2 = triangles[tri * 3 + 2];
+
+            Color c0 = biomeCollection.biomes[biomIndicies[i0]].biomeColor;
+            Color c1 = biomeCollection.biomes[biomIndicies[i1]].biomeColor;
+            Color c2 = biomeCollection.biomes[biomIndicies[i2]].biomeColor;
+
+            // For each vertex of the triangle, duplicate and assign
+            int baseIndex = tri * 3;
+
+            newVerts[baseIndex + 0] = originalVerts[i0];
+            newVerts[baseIndex + 1] = originalVerts[i1];
+            newVerts[baseIndex + 2] = originalVerts[i2];
+
+            barycentrics[baseIndex + 0] = new Vector3(1, 0, 0); // A
+            barycentrics[baseIndex + 1] = new Vector3(0, 1, 0); // B
+            barycentrics[baseIndex + 2] = new Vector3(0, 0, 1); // C
+
+            uv1[baseIndex + 0] = c0;
+            uv2[baseIndex + 0] = c1;
+            uv3[baseIndex + 0] = c2;
+
+            uv1[baseIndex + 1] = c0;
+            uv2[baseIndex + 1] = c1;
+            uv3[baseIndex + 1] = c2;
+
+            uv1[baseIndex + 2] = c0;
+            uv2[baseIndex + 2] = c1;
+            uv3[baseIndex + 2] = c2;
+
+            newTris[baseIndex + 0] = baseIndex + 0;
+            newTris[baseIndex + 1] = baseIndex + 1;
+            newTris[baseIndex + 2] = baseIndex + 2;
+        }
+
+        Mesh triMesh = new Mesh();
+        triMesh.indexFormat = numVertices > 65535 ?
+               UnityEngine.Rendering.IndexFormat.UInt32 :
+               UnityEngine.Rendering.IndexFormat.UInt16;
+
+        triMesh.vertices = newVerts;
+        triMesh.triangles = newTris;
+        triMesh.SetUVs(0, barycentrics);
+        triMesh.SetUVs(1, uv1);
+        triMesh.SetUVs(2, uv2);
+        triMesh.SetUVs(3, uv3);
+        triMesh.RecalculateNormals();
+        triMesh.RecalculateBounds();
 
 
-        meshRenderer.sharedMaterial = material;
+        meshFilter.mesh = triMesh;
+
+
+
+        //     meshRenderer.sharedMaterial = material;
     }
 
     public float delta = 0.005f;

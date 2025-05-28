@@ -18,6 +18,7 @@ Shader "Custom/MyBiomeBlendShader"
             #pragma fragment frag
             #pragma target 3.5
             #include "UnityCG.cginc"
+            #include "Lighting.cginc"
 
             // Correct HLSL declaration
             float _Scale;
@@ -96,7 +97,14 @@ Shader "Custom/MyBiomeBlendShader"
                 float4 colB = SampleBiome(uvw, i.worldNormal, biomeB, weightB); // Pass weightB
 
 
-                return lerp(colB, colA, weightA / (weightA + weightB + 1e-5));
+                float4 color = lerp(colB, colA, weightA / (weightA + weightB + 1e-5));
+
+                float3 lightDir = normalize(_WorldSpaceLightPos0.xyz);
+                float3 lightColor = _LightColor0.rgb;
+                float NdotL = saturate(dot(normalize(i.worldNormal), lightDir));
+                float3 litColor = color * lightColor * NdotL;
+
+                return float4(litColor, 1.0);
             }
 
             ENDHLSL

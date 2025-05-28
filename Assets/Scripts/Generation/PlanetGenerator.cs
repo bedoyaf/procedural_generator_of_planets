@@ -283,7 +283,10 @@ public class PlanetGenerator : MonoBehaviour
 
         biomPipeline.UpdateBiomPipelineMesh(generatedMesh);
 
-        if(generateBioms) biomPipeline.ApplyTexturesToMesh(baseVertices, generatedMesh.normals);
+        if(generateBioms)
+        {
+            biomPipeline.ApplyTexturesToMesh(baseVertices, generatedMesh.normals);
+        }
     }
 
     private void ReleaseResources()

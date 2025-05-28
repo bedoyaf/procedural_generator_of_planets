@@ -21,14 +21,14 @@ MonoBehaviour:
   baseLacunarity: 2.06
   basePersistence: 0.346
   baseMultiplier: 1
-  ridgeScale: 0.91
+  ridgeScale: 2.32
   ridgeOctaves: 4
   ridgeLacunarity: 2
   ridgePersistence: 0.5
-  ridgeMultiplier: 0.6
-  ridgeMinBase: 0.4
-  ridgeStartPower: 2.5
+  ridgeMultiplier: 1.63
+  ridgeMinBase: 0.075
+  ridgeStartPower: 1.16
   oceanFloorDepth: 0.338
   oceanFloorSmoothing: 0.5
   oceanDepthMultiplier: 0.28
-  heightMultiplier: 0.19
+  heightMultiplier: 1
