@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: BiomCollection
   m_EditorClassIdentifier: 
   biomes:
+  - {fileID: 11400000, guid: 903e9065dafa59144a69e4f3883f741f, type: 2}
   - {fileID: 11400000, guid: e5abec128011ecf45a62aaf0e4c8c755, type: 2}
   - {fileID: 11400000, guid: e56b4189cc08dd547945a7e52d21e480, type: 2}
   - {fileID: 11400000, guid: 75b2068b17d5cc74fa7ba2ce3c30fc36, type: 2}

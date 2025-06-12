@@ -16,28 +16,28 @@ public class PlanetGeneratorEditor : Editor
         EditorGUILayout.LabelField("Terrain Layers", EditorStyles.boldLabel);
 
         // Make sure the foldout list is the correct size
-        while (foldouts.Count < generator.terrainLayers.Count)
+        while (foldouts.Count < generator.planetSettings.terrainLayers.Count)
             foldouts.Add(false);
 
-        for (int i = 0; i < generator.terrainLayers.Count; i++)
+        for (int i = 0; i < generator.planetSettings.terrainLayers.Count; i++)
         {
             EditorGUILayout.BeginVertical("box");
 
             // Draw editable object field
-            generator.terrainLayers[i] = (TerrainLayerSO)EditorGUILayout.ObjectField(
+            generator.planetSettings.terrainLayers[i] = (TerrainLayerSO)EditorGUILayout.ObjectField(
                 $"Layer {i}",
-                generator.terrainLayers[i],
+                generator.planetSettings.terrainLayers[i],
                 typeof(TerrainLayerSO),
                 false
             );
 
-            if (generator.terrainLayers[i] != null)
+            if (generator.planetSettings.terrainLayers[i] != null)
             {
                 foldouts[i] = EditorGUILayout.Foldout(foldouts[i], "Details", true);
                 if (foldouts[i])
                 {
                     EditorGUI.indentLevel++;
-                    CreateEditor(generator.terrainLayers[i])?.OnInspectorGUI();
+                    CreateEditor(generator.planetSettings.terrainLayers[i])?.OnInspectorGUI();
                     EditorGUI.indentLevel--;
                 }
             }
@@ -45,33 +45,14 @@ public class PlanetGeneratorEditor : Editor
             EditorGUILayout.EndVertical();
         }
         EditorGUILayout.Space();
-        EditorGUILayout.LabelField("Biome Pipeline", EditorStyles.boldLabel);
-
-        if (generator.biomPipeline != null)
-        {
-            generator.showBiomeSettings = EditorGUILayout.Foldout(generator.showBiomeSettings, "Biome Settings", true);
-            if (generator.showBiomeSettings)
-            {
-                EditorGUI.indentLevel++;
-                Editor editor = CreateEditor(generator.biomPipeline);
-                if (editor != null)
-                {
-                    editor.OnInspectorGUI();
-                }
-                EditorGUI.indentLevel--;
-            }
-        }
-        else
-        {
-            EditorGUILayout.HelpBox("No BiomePipeline assigned.", MessageType.Warning);
-        }
 
         EditorGUILayout.Space();
 
         // Buttons
         if (GUILayout.Button("Generate Sphere")) generator.GenerateSphereMesh();
-        if (GUILayout.Button("Apply Terrain")) generator.GenerateTerrain();
+        if (GUILayout.Button("Apply Terrain")) generator.GenerateTerrain(generator.planetSettings,generator.planetData);
         if (GUILayout.Button("Generate Sphere and Terrain")) generator.GeneratePlanetAndTerrain();
+        if (GUILayout.Button("Generate Sphere and Terrain and Water")) generator.GeneratePlanetAndTerrainWater();
 
         if (GUI.changed)
         {

@@ -59,6 +59,7 @@ Shader "Custom/TriBiomeBlendFragment"
                 float NdotL = saturate(dot(normalize(i.worldNormal), lightDir));
                 float3 litColor = blended * lightColor * NdotL;
 
+
                 return float4(litColor, 1.0);
 
 

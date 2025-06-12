@@ -9,12 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 88e272d1ae44d064d8ba564420fafbb8, type: 3}
-  m_Name: SimpleNoiseLayer
+  m_Script: {fileID: 11500000, guid: 5a6a7eb2522c85041b46eb0ee919062e, type: 3}
+  m_Name: SimpleNoiseLayer2
   m_EditorClassIdentifier: 
   enabled: 1
   computeShader: {fileID: 7200000, guid: 0b9960ce179ba5e4783ec5430caf6ca3, type: 3}
   kernelName: GenerateSphereNoise
   kernelHandle: 0
-  noiseScale: 1
-  heightMultiplier: 1
+  noiseScale: 31.19
+  heightMultiplier: 0.01

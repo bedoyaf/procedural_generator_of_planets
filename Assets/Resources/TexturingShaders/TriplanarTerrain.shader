@@ -147,7 +147,7 @@ Shader "Custom/TriplanarBiome"
                 float4 pos : SV_POSITION;
                 float3 worldPos : TEXCOORD0;
                 float3 worldNormal : TEXCOORD1;
-                nointerpolation float4 biomeData : TEXCOORD2;
+                nointerpolation float biomeIndex : TEXCOORD2;
             };
 
             float _Scale;
@@ -167,7 +167,6 @@ Shader "Custom/TriplanarBiome"
             fixed4 frag(v2f i) : SV_Target
             {
                 int biomeA = clamp((int)round(i.biomeData.x), 0, 15);
-                int biomeB = clamp((int)round(i.biomeData.y), 0, 15);
                 float blend = saturate(i.biomeData.z);
 
                 // Triplanar UVs
@@ -179,19 +178,12 @@ Shader "Custom/TriplanarBiome"
                 weights /= max(weights.x + weights.y + weights.z, 1e-5);
 
                 // Sample biome A
-                float3 colorA =
+                float3 color =
                     UNITY_SAMPLE_TEX2DARRAY(_BiomeTexArray, float3(uvX, biomeA)) * weights.x +
                     UNITY_SAMPLE_TEX2DARRAY(_BiomeTexArray, float3(uvY, biomeA)) * weights.y +
                     UNITY_SAMPLE_TEX2DARRAY(_BiomeTexArray, float3(uvZ, biomeA)) * weights.z;
 
-                // Sample biome B
-                float3 colorB =
-                    UNITY_SAMPLE_TEX2DARRAY(_BiomeTexArray, float3(uvX, biomeB)) * weights.x +
-                    UNITY_SAMPLE_TEX2DARRAY(_BiomeTexArray, float3(uvY, biomeB)) * weights.y +
-                    UNITY_SAMPLE_TEX2DARRAY(_BiomeTexArray, float3(uvZ, biomeB)) * weights.z;
 
-                // Final blended color
-                float3 color = lerp(colorA, colorB, blend);
 
 
                 float3 lightDir = normalize(_WorldSpaceLightPos0.xyz);

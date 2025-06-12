@@ -28,5 +28,7 @@ public class BiomeSO : ScriptableObject
     [Range(0f, 1f)] public float slopeAffinity = 1f;
     [Range(0f, 1f)] public float temperatureAffinity = 1f;
 
+    [Range(1f, 2f)] public float blenddistance = 1f;
+
     public int priority = 1;
 }

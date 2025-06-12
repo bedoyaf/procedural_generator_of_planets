@@ -395,6 +395,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1319176987}
+  - component: {fileID: 1319176988}
+  - component: {fileID: 1319176989}
   m_Layer: 0
   m_Name: Oceanzmrd
   m_TagString: Untagged
@@ -417,6 +419,59 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1759935701}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &1319176988
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1319176986}
+  m_Mesh: {fileID: 0}
+--- !u!23 &1319176989
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1319176986}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: a7db9a4c08d8ef54484911b8305efd11, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!43 &1511869798
 Mesh:
   m_ObjectHideFlags: 0
@@ -624,7 +679,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 6fb40c8171344bd4eb1bfa9e68fe9c3e, type: 2}
+  - {fileID: 2100000, guid: c0318d38d2475f24b81d04f7721a2e68, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -668,14 +723,38 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   seed: 0
   sphereAlgorithm: 2
-  resolution: 300
-  radius: 1
   renderWireframe: 0
-  terrainLayers:
-  - {fileID: 11400000, guid: e722fb34daa24e845b5d09457dcec2dd, type: 2}
   generateBioms: 1
-  showBiomeSettings: 1
-  biomPipeline: {fileID: 270325597915402934, guid: 641c5321217c58743ba303ed7046888d, type: 3}
+  slopeThreshold: 30
+  equatorTemperature: 1
+  poleTemperature: 0
+  temperatureNoiseScale: 1
+  temperatureNoiseStrength: 0.2
+  heightBlendmin: 1.5
+  heightBlendmax: 0.5
+  heightBlendCurve: 2.5
+  falloff: 1
+  smoothnessExponent: 1
+  blenddistance: 1.1
+  biomeCollection: {fileID: 11400000, guid: e11f9117bbe0653438d643f1543e86a7, type: 2}
+  biomeClassifier: {fileID: 11400000, guid: 9def40f43272a2044982306e0ea6d3c9, type: 2}
+  planetSettings:
+    name: Planet
+    material: {fileID: 2100000, guid: c0318d38d2475f24b81d04f7721a2e68, type: 2}
+    resolution: 300
+    radius: 1
+    terrainLayers:
+    - {fileID: 11400000, guid: e722fb34daa24e845b5d09457dcec2dd, type: 2}
+    hasBioms: 1
+  waterSettings:
+    name: Planet
+    material: {fileID: 2100000, guid: a7db9a4c08d8ef54484911b8305efd11, type: 2}
+    resolution: 300
+    radius: 1
+    terrainLayers:
+    - {fileID: 11400000, guid: 95359e0ee35653243a69e01886a8e280, type: 2}
+    hasBioms: 0
+  waterGameObject: {fileID: 1319176986}
 --- !u!4 &1759935701
 Transform:
   m_ObjectHideFlags: 0
