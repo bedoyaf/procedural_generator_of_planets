@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: BiomeClassifier
   m_EditorClassIdentifier: 
   ocean:
-    min: -0.2
-    max: -0.02
+    min: -1
+    max: -0.2
   lowHeight:
     min: -0.2
     max: 0.01

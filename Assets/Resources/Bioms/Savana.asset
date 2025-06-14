@@ -14,8 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   biomeName: SandLand
   biomeColor: {r: 0.3451606, g: 0.3584906, b: 0, a: 0}
-  supportedHeights: 
-  supportedTemperatures: 
+  biomeTexture: {fileID: 2800000, guid: 05448ffa7a9293a48841da77c5d9d61d, type: 3}
+  supportedHeights: 01000000
+  supportedTemperatures: 02000000
+  supportedSlopes: 00000000
   heightAffinity: 1
+  slopeAffinity: 0
   temperatureAffinity: 1
+  blenddistance: 1.1
   priority: 1

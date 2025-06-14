@@ -48,7 +48,9 @@ Shader "Custom/MyBiomeBlendShader4Biomes"
                 v2f o;
                 o.pos = UnityObjectToClipPos(v.vertex);
                 o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
-                o.worldNormal = UnityObjectToWorldNormal(v.normal);
+              //  o.worldNormal = UnityObjectToWorldNormal(v.normal);
+              o.worldNormal = normalize(mul((float3x3)unity_ObjectToWorld, v.normal));
+
                 o.biomeIndices = v.biomeIndices;
                 o.biomeWeights = v.biomeWeights;
                 o.objectPos = v.vertex.xyz;

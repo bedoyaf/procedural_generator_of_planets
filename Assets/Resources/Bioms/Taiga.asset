@@ -14,8 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   biomeName: Taiga
   biomeColor: {r: 0.5377358, g: 0.5377358, b: 0.5377358, a: 0}
-  supportedHeights: 00000000
+  biomeTexture: {fileID: 2800000, guid: 000ac211203bbbf4bb31f9c2289900c2, type: 3}
+  supportedHeights: 01000000
   supportedTemperatures: 00000000
+  supportedSlopes: 00000000
   heightAffinity: 1
+  slopeAffinity: 0
   temperatureAffinity: 1
+  blenddistance: 1.1
   priority: 1

@@ -413,7 +413,7 @@ public class PlanetGenerator : MonoBehaviour
     [System.Serializable]
     public class PlanetMeshSettings
     {
-        public string name = "Planet";
+     //   public string name = "Planet";
      //   public bool generateCollider = false;
         public Material material;
         [Header("Sphere Mesh Settings")]

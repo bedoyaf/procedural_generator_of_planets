@@ -14,8 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   biomeName: Lower Grass
   biomeColor: {r: 0.14020711, g: 0.6698113, b: 0, a: 0}
-  supportedHeights: 00000000
+  biomeTexture: {fileID: 0}
+  supportedHeights: 01000000
   supportedTemperatures: 01000000
+  supportedSlopes: 
   heightAffinity: 1
+  slopeAffinity: 1
   temperatureAffinity: 1
+  blenddistance: 1.1
   priority: 1

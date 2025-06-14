@@ -14,8 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   biomeName: HotHll
   biomeColor: {r: 0.2924528, g: 0.11325129, b: 0, a: 0}
-  supportedHeights: 02000000
+  biomeTexture: {fileID: 2800000, guid: 0c73d782d3c3d604287136e19db8f9c0, type: 3}
+  supportedHeights: 03000000
   supportedTemperatures: 02000000
+  supportedSlopes: 00000000
   heightAffinity: 1
+  slopeAffinity: 0
   temperatureAffinity: 1
+  blenddistance: 1.1
   priority: 1
