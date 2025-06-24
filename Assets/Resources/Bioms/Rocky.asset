@@ -19,7 +19,7 @@ MonoBehaviour:
   supportedTemperatures: 01000000
   supportedSlopes: 01000000
   heightAffinity: 1
-  slopeAffinity: 0
+  slopeAffinity: 1
   temperatureAffinity: 1
   blenddistance: 1.1
   priority: 1

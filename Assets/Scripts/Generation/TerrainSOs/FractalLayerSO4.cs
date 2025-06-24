@@ -19,8 +19,15 @@ public class FractalNoiseLayerSO4 : TerrainLayerSO
     [Range(0f, 2f)][SerializeField] private float ridgeMultiplier = 0.6f;
 
     [Header("Ridge Masking from Base")]
-    [Range(0f, 1f)][SerializeField] private float ridgeMinBase = 0.4f;
-    [Range(0.1f, 5f)][SerializeField] private float ridgeStartPower = 2.5f;
+    //  [Range(0f, 1f)][SerializeField] private float ridgeMinBase = 0.4f;
+    //  [Range(0.1f, 5f)][SerializeField] private float ridgeStartPower = 2.5f;
+
+    [Range(0.01f, 3f)][SerializeField] float ridgeMaskScale = 0.3f;
+    [Range(1, 6)][SerializeField] int ridgeMaskOctaves = 4;
+    [Range(1.5f, 3f)][SerializeField] float ridgeMaskLacunarity = 2.0f;
+    [Range(0.3f, 0.8f)][SerializeField] float ridgeMaskPersistence = 0.5f;
+    [Range(0.2f, 0.8f)][SerializeField] float ridgeMaskThreshold = 0.4f;     // e.g. 0.4
+    [Range(0.01f, 0.2f)][SerializeField] float ridgeMaskFalloff = 0.1f;
 
     [Header("Oceans")]
     [SerializeField, Range(0f, 1f)]
@@ -38,39 +45,39 @@ public class FractalNoiseLayerSO4 : TerrainLayerSO
     [Range(0f, 10f)][SerializeField] private float heightMultiplier = 1f;
 
 
-    public override void SetShaderParameters(ComputeShader shader, int kernel, ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices, float radius)
+    public override void SetShaderParameters( ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices)
     {
-        if (!enabled || shader == null || kernel < 0 || positionBuffer == null || heightBuffer == null)
+        if (!layerEnabled || computeShader == null || kernelHandle < 0 || positionBuffer == null || heightBuffer == null)
         {
             Debug.LogWarning($"Skipping layer '{this.name}' due to missing requirements.", this);
             return;
         }
 
-        shader.SetBuffer(kernel, "vertices", positionBuffer);
-        shader.SetBuffer(kernel, "heights", heightBuffer);
-        shader.SetInt("numVertices", numVertices);
+        computeShader.SetBuffer(kernelHandle, "vertices", positionBuffer);
+        computeShader.SetBuffer(kernelHandle, "heights", heightBuffer);
+        computeShader.SetInt("numVertices", numVertices);
 
-        shader.SetFloat("continentScale", baseScale);
-        shader.SetInt("continentOctaves", baseOctaves);
-        shader.SetFloat("continentLacunarity", baseLacunarity);
-        shader.SetFloat("continentPersistence", basePersistence);
-        shader.SetFloat("continentStrength", baseMultiplier);
+        computeShader.SetFloat("continentScale", baseScale);
+        computeShader.SetInt("continentOctaves", baseOctaves);
+        computeShader.SetFloat("continentLacunarity", baseLacunarity);
+        computeShader.SetFloat("continentPersistence", basePersistence);
+        computeShader.SetFloat("continentStrength", baseMultiplier);
 
-        shader.SetFloat("mountainScale", ridgeScale);
-        shader.SetInt("mountainOctaves", ridgeOctaves);
-        shader.SetFloat("mountainLacunarity", ridgeLacunarity);
-        shader.SetFloat("mountainPersistence", ridgePersistence);
-        shader.SetFloat("mountainStrength", ridgeMultiplier);
+        computeShader.SetFloat("mountainScale", ridgeScale);
+        computeShader.SetInt("mountainOctaves", ridgeOctaves);
+        computeShader.SetFloat("mountainLacunarity", ridgeLacunarity);
+        computeShader.SetFloat("mountainPersistence", ridgePersistence);
+        computeShader.SetFloat("mountainStrength", ridgeMultiplier);
 
-        shader.SetFloat("mountainMaskMin", ridgeMinBase);
-        shader.SetFloat("mountainMaskPower", ridgeStartPower);
+        //computeShader.SetFloat("mountainMaskMin", ridgeMinBase);
+        //computeShader.SetFloat("mountainMaskPower", ridgeStartPower);
 
-        shader.SetFloat("oceanFloorDepth", oceanFloorDepth);
-        shader.SetFloat("oceanFloorSmoothing", oceanFloorSmoothing);
-        shader.SetFloat("oceanDepthMultiplier", oceanDepthMultiplier);
+        computeShader.SetFloat("oceanFloorDepth", oceanFloorDepth);
+        computeShader.SetFloat("oceanFloorSmoothing", oceanFloorSmoothing);
+        computeShader.SetFloat("oceanDepthMultiplier", oceanDepthMultiplier);
 
 
-        shader.SetFloat("heightMultiplier", heightMultiplier);
+        computeShader.SetFloat("heightMultiplier", heightMultiplier);
 
         // Offset
         Vector3 randomOffset = new Vector3(
@@ -78,7 +85,18 @@ public class FractalNoiseLayerSO4 : TerrainLayerSO
             UnityEngine.Random.Range(-1000f, 1000f),
             UnityEngine.Random.Range(-1000f, 1000f)
         );
-        shader.SetVector("noiseOffset", randomOffset);
+        computeShader.SetVector("noiseOffset", randomOffset);
+
+
+        computeShader.SetFloat("ridgeMaskScale", ridgeMaskScale);
+        computeShader.SetInt("ridgeMaskOctaves", ridgeMaskOctaves);
+        computeShader.SetFloat("ridgeMaskLacunarity", ridgeMaskLacunarity);
+        computeShader.SetFloat("ridgeMaskPersistence", ridgeMaskPersistence);
+        computeShader.SetFloat("ridgeMaskThreshold", ridgeMaskThreshold);
+        computeShader.SetFloat("ridgeMaskFalloff", ridgeMaskFalloff);
+
+
+
     }
 
 

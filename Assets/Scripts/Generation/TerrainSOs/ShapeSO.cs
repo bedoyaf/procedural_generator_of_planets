@@ -1,23 +1,33 @@
 using System;
 using UnityEngine;
 
-// Base class for all terrain generation layers/steps
+
+/// <summary>
+/// Runs the compute shaders for planet terrain
+/// </summary>
+/// <remarks>
+/// Just sets up the shaders and dispatches them
+/// </remarks>
+
 public abstract class TerrainLayerSO : ScriptableObject
 {
-    public bool enabled = true; // Allows easily toggling layers
+    [SerializeField] public bool layerEnabled = true; // Allows easily toggling layers
     [SerializeField] public ComputeShader computeShader;
-    [SerializeField] public string kernelName = "CSMain"; // Default, override if needed
+    [SerializeField] public string kernelName = "CSMain"; 
+
+    [SerializeField] protected int threadGroupSize = 512;
 
     protected float radius;
 
-    public int kernelHandle = -1;
+    [HideInInspector] public int kernelHandle = -1;
 
-    // Called once to find the kernel
-    public virtual void FindKernel()
+    /// <summary>
+    /// Searches for the kernelHandle for shader setup
+    /// </summary>
+    public void FindKernel()
     {
         if (computeShader != null && !string.IsNullOrEmpty(kernelName))
         {
-            Console.WriteLine("nvm jak jsem se sem dostal"+kernelName);
             kernelHandle = computeShader.FindKernel(kernelName);
             if (kernelHandle < 0)
             {
@@ -32,31 +42,20 @@ public abstract class TerrainLayerSO : ScriptableObject
         }
     }
 
-    // Abstract method for derived classes to set their specific shader parameters
-    // Takes the shared buffers as arguments.
-    public abstract void SetShaderParameters(ComputeShader shader, int kernel, ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices, float radius);
+    /// <summary>
+    /// Sets up the shader params
+    /// </summary>
+    public abstract void SetShaderParameters( ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices);
 
-    // Method to dispatch the shader for this layer
-    public virtual void Dispatch(ComputeShader shader, int kernel, int numVertices)
+    /// <summary>
+    /// Dispathes the shader to make it run
+    /// </summary>
+    /// <param name="kernel"></param>
+    public void Dispatch( int numVertices)
     {
-        if (!enabled || shader == null || kernel < 0) return;
+        if (!layerEnabled || computeShader == null || kernelHandle < 0) return;
 
-        // Sensible default thread group calculation, might need adjustment
-        int threadGroups = Mathf.Max(1, Mathf.CeilToInt(numVertices / 512.0f));
-        shader.Dispatch(kernel, threadGroups, 1, 1);
+        int threadGroups = Mathf.Max(1, Mathf.CeilToInt(numVertices / threadGroupSize));
+        computeShader.Dispatch(kernelHandle, threadGroups, 1, 1);
     }
-
-
-    /*
-    // Optional: Reset method called when script is added or reset in inspector
-    protected virtual void Reset()
-    {
-        FindKernel(); // Attempt to find kernel on reset
-    }
-
-    // Optional: Validate method called when values change in inspector
-    protected virtual void OnValidate()
-    {
-        FindKernel(); // Re-check kernel if shader/name changes
-    }*/
 }

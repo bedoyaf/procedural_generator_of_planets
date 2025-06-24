@@ -8,7 +8,6 @@ using System.Linq;
 using UnityEngine.UIElements;
 using System.Drawing;
 using Unity.Mathematics.Geometry;
-using ProceduralMeshes;
 using Color = UnityEngine.Color;
 using static SphereMeshOptimal;
 
@@ -28,12 +27,6 @@ public class BiomPipeline
     private float temperatureNoiseScale = 1.0f;
     private float temperatureNoiseStrength = 0.2f;
 
-
-
-    private float falloff = 1f;
-
-    private float smoothnessExponent = 1;
-    private float blenddistance = 1;
 
   //  private float delta = 0.005f;
 
@@ -92,16 +85,7 @@ public class BiomPipeline
         float poleTemperature, 
         float temperatureNoiseScale, 
         float temperatureNoiseStrength,
-        float falloff,
-        float smoothnessExponent,
-        float blenddistance,
-        float heightBlendmin,
-        float heightBlendmax,
-        float heightBlendCurve,
         Transform planetPosition
-        
-        //,
-    //    float delta
         )
     {
         this.slopeThreshold = slopeThreshold;
@@ -109,15 +93,7 @@ public class BiomPipeline
         this.poleTemperature =  poleTemperature;
         this.temperatureNoiseScale = temperatureNoiseScale;
         this.temperatureNoiseStrength = temperatureNoiseStrength;
-        this.falloff = falloff;
-        this.smoothnessExponent = smoothnessExponent;
-        this.blenddistance = blenddistance;
         this.currentPlanetPos = planetPosition;
-        //    this.delta = delta;
-
-        this.heightBlendmin = heightBlendmin;
-        this.heightBlendmax = heightBlendmax;
-        this.heightBlendCurve = heightBlendCurve;
     }
 
     private ComputeBuffer heightBuffer;
@@ -157,345 +133,10 @@ public class BiomPipeline
         baseVertices = vertices;
 
         int numVertices = baseVertices.Length;
-        // int[] biomeIndices = new int[numVertices];
 
-        /*
-        float minHeight2 = float.MaxValue;
-        float maxHeight2 = float.MinValue;
 
-        for (int i = 0; i < heights.Length; i++)
-        {
-            float h = heights[i];
-
-            //    if(i%1000==0)Debug.Log(heights[i]);
-
-            if (h < minHeight2) minHeight2 = h;
-            if (h > maxHeight2) maxHeight2 = h;
-        }
-        Debug.Log("highest point is " + maxHeight2);
-        Debug.Log("lowest point is " + minHeight2);
-
-        maxHeight = maxHeight2;
-        minHeight = minHeight2;*/
-
-        /*  ComputeBuffer heightBuffer = new ComputeBuffer(vertices.Length, sizeof(float));
-          material.SetInt("_VertexCount", heights.Length);
-          heightBuffer.SetData(heights);
-          material.SetBuffer("_VertexHeights", heightBuffer);*/
-
-        //         material.SetFloat("_BaseRadius", minHeight2);
-        //       material.SetFloat("_MaxHeight", maxHeight2);
-
-
-
-
-
-        //   Color[] vertexColors = new Color[numVertices];
-        /*    List<Vector4> biomeUVs = new List<Vector4>(numVertices);
-            for (int i = 0; i < numVertices; i++)
-            {
-
-
-                 float temp = CalculateTemperature(baseVertices[i]);
-                 biomeIndices[i] = FindBiomeIndex(heights[i], temp, normals[i], vertices[i]);
-
-                 int biomeIndex = biomeIndices[i]; // already assigned per vertex
-                                                   //   BiomeSO biome = biomeCollection.biomes[biomeIndex];
-                                                   //  vertexColors[i] = biome.biomeColor;
-                biomeUVs.Add(new Vector4((float)biomeIndices[i], 0f, 0f, 0f));
-            }
-            //   mesh.colors = vertexColors;
-
-            mesh.SetUVs(2, biomeUVs);
-            Texture2DArray biomTexArray = GenerateBiomeTextureArray(biomeCollection);
-            material.SetTexture("_BiomeTexArray", biomTexArray);
-
-            */
-
-        /*
-        List<Vector4> biomeDataUVs = new(numVertices);
-
-        for (int i = 0; i < numVertices; i++)
-        {
-            float temp = CalculateTemperature(baseVertices[i]);
-            float height = heights[i];
-            Vector3 normal = normals[i];
-
-            BiomeData data = FindBiomeData(height, temp, vertices[i], normals[i]); // You implement this
-
-            if (i % 1000 == 0) Debug.Log("p: "+data.primaryBiome+" s: "+ data.secondaryBiome +" blend: "+data.blendFactor);
-
-            float primary = data.primaryBiome;
-            float secondary = (data.secondaryBiome >= 0) ? data.secondaryBiome : -1f;
-            float blend = Mathf.Clamp01(data.blendFactor);
-
-
-            biomeDataUVs.Add(new Vector4(primary, -1f, 0f, 0f));
-            //biomeDataUVs.Add(new Vector4(primary, secondary, blend, 0f)); // packed into UV2
-        }
-
-        mesh.SetUVs(2, biomeDataUVs);
-        material.SetTexture("_BiomeTexArray", GenerateBiomeTextureArray(biomeCollection));
-        material.SetInt("_BiomeTexArray_Depth", biomeCollection.biomes.Count);
-        */
-
-        /*     List<Vector4> biomeUVs = new List<Vector4>(numVertices);
-
-             for (int i = 0; i < numVertices; i++)
-             {
-                 float height = heights[i];
-                 float temp = CalculateTemperature(baseVertices[i]);
-                 Vector3 normal = normals[i];
-                 Vector3 vertex = vertices[i];
-
-                 int primary = FindBiomeIndex(height, temp, normal, vertex);
-                 int secondary = primary;
-                 float blendScore = 0f;
-
-                 // Sample offsets in a spherical pattern
-                 Vector3[] offsets = new Vector3[]
-                 {
-                     new Vector3(1, 0, 0), new Vector3(-1, 0, 0),
-                     new Vector3(0, 1, 0), new Vector3(0, -1, 0),
-                     new Vector3(0, 0, 1), new Vector3(0, 0, -1)
-                 };
-
-                 float[] scales = new float[] { 0.01f, 0.007f, 0.004f }; // decreasing deltas
-
-                 foreach (float scale in scales)
-                 {
-                         float height2 = height + scale; // you might want to sample from height map if available
-                         Vector3 approxNormal = normal; // could estimate from nearby noise if needed
-
-                         int checkBiome = FindBiomeIndex(height2, temp, approxNormal, vertex);
-
-                         if (checkBiome != primary)
-                         {
-                             secondary = checkBiome;
-                             blendScore += 1f;
-                         }
-                 }
-
-                 float blend = Mathf.Clamp01(blendScore / (offsets.Length * scales.Length));
-           //      if (i % 1000 == 0 && blend > 0) Debug.Log($"Blend at {i}: {blend}");
-
-                 biomeUVs.Add(new Vector4(primary, secondary, blend, 0f));
-             }
-
-             mesh.SetUVs(2, biomeUVs);
-
-             Texture2DArray biomTexArray = GenerateBiomeTextureArray(biomeCollection);
-             material.SetTexture("_BiomeTexArray", biomTexArray);
-        */
-
-        /*   List<Vector4> biomeUVs = new List<Vector4>(numVertices);
-
-           for (int i = 0; i < numVertices; i++)
-           {
-               float height = heights[i];
-               float temp = CalculateTemperature(baseVertices[i]);
-               Vector3 normal = normals[i];
-               Vector3 vertex = vertices[i];
-
-               int primary = FindBiomeIndex(height, temp, normal, vertex);
-               int secondary = primary;
-               float blendScore = 0f;
-
-               // Sample offsets in a spherical pattern
-               Vector3[] offsets = new Vector3[]
-               {
-                        new Vector3(1, 0, 0), new Vector3(-1, 0, 0),
-                        new Vector3(0, 1, 0), new Vector3(0, -1, 0),
-                        new Vector3(0, 0, 1), new Vector3(0, 0, -1)
-               };
-
-               float[] scales = new float[] { 0.01f, 0.007f,0.004f, 0.001f, 0.0007f, 0.0001f }; // decreasing deltas
-
-               foreach (float scale in scales)
-               {
-                   float height2 = height + scale; // you might want to sample from height map if available
-                   Vector3 approxNormal = normal; // could estimate from nearby noise if needed
-
-                   int checkBiome = FindBiomeIndex(height2, temp, approxNormal, vertex);
-
-                   if (checkBiome != primary)
-                   {
-                       secondary = checkBiome;
-                       blendScore += 1f;
-                   }
-               }
-
-               float blend = Mathf.Clamp01(blendScore / (scales.Length));
-               //      if (i % 1000 == 0 && blend > 0) Debug.Log($"Blend at {i}: {blend}");
-
-               biomeUVs.Add(new Vector4(primary, secondary, blend, 0f));
-           }
-
-           mesh.SetUVs(2, biomeUVs);
-
-           UnityEngine.Color[] biomeColors = biomeCollection.biomes.Select(b => b.biomeColor).ToArray();
-
-           ComputeBuffer colorBuffer = new ComputeBuffer(biomeColors.Length, sizeof(float) * 4);
-           colorBuffer.SetData(biomeColors);
-
-
-           material.SetBuffer("_BiomeColors", colorBuffer);
-
-           */
-
-        //puvodni shit blend top 2 ------------------------------------------------------------
-        /*
-      var biomeIndices = new List<Vector4>(vertices.Length);
-      var biomeWeights = new List<Vector4>(vertices.Length);
-
-      for (int i = 0; i < vertices.Length; i++)
-      {
-          float height = heights[i];
-        //  float temp = temperatures[i];
-
-          HeightType heightType = biomeClassifier.GetHeightType(height);
-          //   TemperatureType tempType = biomeClassifier.GetTemperatureType(temp);
-
-          float slope = CalculateSlopeFromNormal(normals[i], vertices[i]);
-
-          var scores = new List<(int biomeIndex, float score)>();
-
-          for (int j = 0; j < biomeCollection.biomes.Count; j++)
-          {
-              var biome = biomeCollection.biomes[j];
-
-
-
-
-              var supportedHeight = biome.supportedHeights[0];
-              float heightCenter = GetTypeCenter(supportedHeight);
-              float heightRange = GetTypeRange(supportedHeight);
-              float heightScore = Mathf.Clamp01(1f - Mathf.Abs(height - heightCenter) / (heightRange * blenddistance + 1e-5f));
-
-              // SLOPE SCORING
-              (float slopeMin, float slopeMax) = biomeClassifier.GetSlopeValues(biome.supportedSlopes[0]);
-              float slopeCenter = (slopeMin + slopeMax) / 2f;
-              float slopeRange = (slopeMax - slopeMin) / 2f;
-              float slopeScore = Mathf.Clamp01(1f - Mathf.Abs(slope - slopeCenter) / (slopeRange * blenddistance + 1e-5f));
-
-            slopeScore = 0;
-
-              float score = heightScore * biome.heightAffinity + slopeScore * biome.slopeAffinity;
-              scores.Add((j, score));
-
-          }
-
-          scores.Sort((a, b) => b.score.CompareTo(a.score));
-
-          int indexA = scores.Count > 0 ? scores[0].biomeIndex : 0;
-          int indexB = scores.Count > 1 ? scores[1].biomeIndex : indexA;
-
-          float weightA = scores.Count > 0 ? scores[0].score : 1f;
-          float weightB = scores.Count > 1 ? scores[1].score : 0f;
-
-          float total = weightA + weightB + 1e-5f;
-          //    if (i % 1000 == 0) Debug.Log("skibidi: "+weightA);
-
-          if (i % 1000 == 1) Debug.Log("index: " + indexA + " weight " + weightA + " indexB: " + indexB + "weight " + weightB);
-
-          biomeIndices.Add(new Vector4(indexA, indexB, 0, 0));
-          biomeWeights.Add(new Vector4(weightA / total, weightB / total, 0, 0));
-      }
-      Texture2DArray biomTexArray = GenerateBiomeTextureArray(biomeCollection);
-      material.SetTexture("_Biomes", biomTexArray);
-      mesh.SetUVs(2, biomeIndices);
-      mesh.SetUVs(3, biomeWeights);
-
-    */
-
-        //  ------------------------------------------------------
-
-        /*
-        
-        int[] biomIndicies = new int[vertices.Length];
-        for (int i = 0; i < vertices.Length; i++)
-        {
-            float height = heights[i];
-            float temp = CalculateTemperature(baseVertices[i]);
-            Vector3 normal = normals[i];
-            Vector3 vertex = vertices[i];
-
-            biomIndicies[i] = FindBiomeIndex(height, temp, normal, vertex);
-        }
-
-        int[] triangles = mesh.triangles;
-        Vector3[] originalVerts = mesh.vertices;
-        Color[] originalColors = mesh.colors;
-
-        int triCount = triangles.Length / 3;
-        Vector3[] newVerts = new Vector3[triangles.Length];
-
-        Vector4[] uv1 = new Vector4[triangles.Length]; // color0
-        Vector4[] uv2 = new Vector4[triangles.Length]; // color1
-        Vector4[] uv3 = new Vector4[triangles.Length]; // color2
-        Vector3[] barycentrics = new Vector3[triangles.Length]; // TEXCOORD0
-
-        int[] newTris = new int[triangles.Length];
-
-        for (int tri = 0; tri < triCount; tri++)
-        {
-            int i0 = triangles[tri * 3 + 0];
-            int i1 = triangles[tri * 3 + 1];
-            int i2 = triangles[tri * 3 + 2];
-
-            Color c0 = biomeCollection.biomes[biomIndicies[i0]].biomeColor;
-            Color c1 = biomeCollection.biomes[biomIndicies[i1]].biomeColor;
-            Color c2 = biomeCollection.biomes[biomIndicies[i2]].biomeColor;
-
-            // For each vertex of the triangle, duplicate and assign
-            int baseIndex = tri * 3;
-
-            newVerts[baseIndex + 0] = originalVerts[i0];
-            newVerts[baseIndex + 1] = originalVerts[i1];
-            newVerts[baseIndex + 2] = originalVerts[i2];
-
-            barycentrics[baseIndex + 0] = new Vector3(1, 0, 0); // A
-            barycentrics[baseIndex + 1] = new Vector3(0, 1, 0); // B
-            barycentrics[baseIndex + 2] = new Vector3(0, 0, 1); // C
-
-            uv1[baseIndex + 0] = c0;
-            uv2[baseIndex + 0] = c1;
-            uv3[baseIndex + 0] = c2;
-
-            uv1[baseIndex + 1] = c0;
-            uv2[baseIndex + 1] = c1;
-            uv3[baseIndex + 1] = c2;
-
-            uv1[baseIndex + 2] = c0;
-            uv2[baseIndex + 2] = c1;
-            uv3[baseIndex + 2] = c2;
-
-            newTris[baseIndex + 0] = baseIndex + 0;
-            newTris[baseIndex + 1] = baseIndex + 1;
-            newTris[baseIndex + 2] = baseIndex + 2;
-        }
-
-        Mesh triMesh = new Mesh();
-        triMesh.indexFormat = numVertices > 65535 ?
-               UnityEngine.Rendering.IndexFormat.UInt32 :
-               UnityEngine.Rendering.IndexFormat.UInt16;
-
-        triMesh.vertices = newVerts;
-        triMesh.triangles = newTris;
-        triMesh.SetUVs(0, barycentrics);
-        triMesh.SetUVs(1, uv1);
-        triMesh.SetUVs(2, uv2);
-        triMesh.SetUVs(3, uv3);
-        triMesh.RecalculateNormals();
-        triMesh.RecalculateBounds();
-
-
-        meshFilter.mesh = triMesh;
-        */
-
-        /*
         //4 blend zmrd
-
+        /*
         var biomeIndices = new List<Vector4>(vertices.Length);
         var biomeWeights = new List<Vector4>(vertices.Length);
 
@@ -547,7 +188,7 @@ public class BiomPipeline
 
                 // float totalAffinity = biome.heightAffinity + biome.slopeAffinity +  biome.temperatureAffinity + 1e-5f;
                 float score = (heightScore * biome.heightAffinity +
-                               slopeScore * biome.slopeAffinity/)*tempScore;// / totalAffinity;
+                               slopeScore * biome.slopeAffinity)*tempScore;// / totalAffinity;
 
                 scores.Add((j, score));
             }
@@ -556,7 +197,7 @@ public class BiomPipeline
             var top4 = scores.OrderByDescending(s => s.score).Take(4).ToList();
 
             // 2. Lexikograficky setøiï tìchto top 4 podle biomeIndex
-        //    top4 = top4.OrderBy(s => s.biomeIndex).ToList();
+            top4 = top4.OrderBy(s => s.biomeIndex).ToList();
 
             // 3. Rozbal indexy a váhy
             int indexA = top4[0].biomeIndex;
@@ -580,7 +221,14 @@ public class BiomPipeline
         material.SetTexture("_Biomes", biomTexArray);
         mesh.SetUVs(2, biomeIndices);
         mesh.SetUVs(3, biomeWeights);
+        
+        
+
+
         */
+
+        //4 blend trippy
+        /*
         var biomeIndices = new Vector4[vertices.Length];
         var biomeWeights = new Vector4[vertices.Length];
         var vertexBiomeScores = new Dictionary<int, float>[vertices.Length];
@@ -615,10 +263,7 @@ public class BiomPipeline
                 float tempScore = Mathf.Clamp01(1f - Mathf.Abs(temp - tempCenter) / (tempRange * biome.blenddistance + 1e-5f));
 
 
-
-                //     float score = heightScore * biome.heightAffinity + slopeScore * biome.slopeAffinity;
-                float score = (heightScore * biome.heightAffinity +
-                    slopeScore * biome.slopeAffinity ) * tempScore;
+                float score = (heightScore * biome.heightAffinity + slopeScore * biome.slopeAffinity)*tempScore;
 
                 if (score > 0.001f)
                     scores[j] = score;
@@ -656,6 +301,7 @@ public class BiomPipeline
                 top4.Add(0); // fallback pokud je ménì než 4 biomy (napø. u vody)
 
             // Pøidìl váhy každému vrcholu podle tìchto top4 biomù
+
             foreach (int vert in new[] { a, b, c })
             {
                 var vertexScores = vertexBiomeScores[vert];
@@ -672,6 +318,8 @@ public class BiomPipeline
 
                 biomeIndices[vert] = new Vector4(top4[0], top4[1], top4[2], top4[3]);
                 biomeWeights[vert] = weights;
+             //   if (rizz) Debug.Log("Top verticies "+tri+": "+top4[0]+" "+ top4[1]+" "+ top4[2]+" "+ top4[3]);
+
             }
         }
 
@@ -681,190 +329,398 @@ public class BiomPipeline
 
         Texture2DArray biomeTextureArray = GenerateBiomeTextureArray(biomeCollection);
         material.SetTexture("_Biomes", biomeTextureArray);
-
-
-
-
-
-
-        /*
-        
-     //   Debug.Log("skibidi: " + currentPlanetPos[0] +" "+ currentPlanetPos[1]+" " + currentPlanetPos[2]);
-
-        Texture2DArray biomTexArray = GenerateBiomeTextureArray(biomeCollection);
-        material.SetTexture("_Biomes", biomTexArray);
-
-        // Set blending and scale parameters
-     //     material.SetFloat("_Scale", textureScale);
-          material.SetFloat("_BlendDistance", blenddistance);
-        material.SetVector("_PlanetCenter", currentPlanetPos.position);
-
-        //     material.SetFloat("_HeightBlendMin", heightBlendMin);
-        //    material.SetFloat("_HeightBlendMax", heightBlendMax);
-        //     material.SetFloat("_HeightBlendCurve", heightBlendCurve);
-
-        // Prepare biome data
-        int biomeCount = Mathf.Min(biomeCollection.biomes.Count, 8); // Max 8 for now
-        Vector4[] biomeDataArray = new Vector4[8];
-        for (int i = 0; i < biomeCount; i++)
-        {
-
-            var supportedHeight = biomeCollection.biomes[i].supportedHeights[0];
-            float heightCenter = GetTypeCenter(supportedHeight);
-            float heightRange = GetTypeRange(supportedHeight);
-
-            biomeDataArray[i] = new Vector4(
-                heightCenter,
-                heightRange,
-                biomeCollection.biomes[i].heightAffinity,
-                biomeCollection.biomes[i].slopeAffinity
-            );
-        }
-
-
-        Vector4[] slopeData = new Vector4[biomeCount];
-        for (int i = 0; i < biomeCount; i++)
-        {
-
-            var biome = biomeCollection.biomes[i];
-            (float slopeMin, float slopeMax) = biomeClassifier.GetSlopeValues(biome.supportedSlopes[0]);
-         //   Debug.Log("skibidi: " + slopeMin);
-            slopeData[i] = new Vector4(slopeMin, slopeMax, 0, 0);
-        }
-        material.SetVectorArray("_BiomeSlopeData", slopeData);
-
-
-
-        // Fill remaining entries with zeroes
-        for (int i = biomeCount; i < 8; i++)
-            biomeDataArray[i] = Vector4.zero;
-
-
-
-
-        material.SetInt("_BiomeCount", biomeCount);
-        material.SetVectorArray("_BiomeData", biomeDataArray);
-        
-        */
-        /*
-        List<Vector2> biomeIndices = new List<Vector2>(numVertices);
-        for (int i = 0; i < numVertices; i++)
-        {
-
-
-            float temp = CalculateTemperature(baseVertices[i]);
-            
-            int newIndex = FindBiomeIndex(heights[i], temp, normals[i], vertices[i]);
-
-            biomeIndices.Add(new Vector2((float)newIndex, 0f));
-        }
-        //   mesh.colors = vertexColors;
-
-        mesh.SetUVs(2, biomeIndices);
-        Texture2DArray biomTexArray = GenerateBiomeTextureArray(biomeCollection);
-        material.SetTexture("_BiomeTexArray", biomTexArray);
-        */
-        /*
-        
-        int[] triangles = mesh.triangles;
-        Vector3[] biomeData = new Vector3[numVertices];
-        for (int i = 0; i < triangles.Length; i += 3)
-        {
-            int triA = triangles[i];
-            int triB = triangles[i + 1];
-            int triC = triangles[i + 2];
-
-            biomeData[triA] = new Vector3(FindBiomeIndex(heights[triA], 0, normals[triA], vertices[triA]), 0, 0); // only first channel
-            biomeData[triB] = new Vector3(0, FindBiomeIndex(heights[triB], 0, normals[triB], vertices[triB]), 0); // only second channel
-            biomeData[triC] = new Vector3(0, 0, FindBiomeIndex(heights[triC], 0, normals[triC], vertices[triC])); // only third channel
-        }
-        mesh.SetUVs(2, biomeData);
-        Texture2DArray biomTexArray = GenerateBiomeTextureArray(biomeCollection);
-        material.SetTexture("_BiomeTexArray", biomTexArray);
         
         */
 
-
-
-
-
-
+        // tady se to sere u regeneraci asi tvorenim meshe, bacha na to rizzlere
 
         /*
-        float[] biomeStrengths = new float[biomeCollection.biomes.Count];
-        List<Vector3> biomeWeights = new List<Vector3>(numVertices);
-        List<Vector3> biomeIndices = new List<Vector3>(numVertices);
-        for(int i = 0;i<numVertices;i++)
+        var deformedVerticies =meshFilter.mesh.vertices;    
+
+        var biomeIndices = new Vector4[vertices.Length];
+        var biomeWeights = new Vector4[vertices.Length];
+        var vertexBiomeScores = new Dictionary<int, float>[vertices.Length];
+
+        // 1. Spoèítej skóre pro každý vrchol
+        for (int i = 0; i < vertices.Length; i++)
         {
-            float totalStrength = 0;
+            float height = heights[i];
+            float slope = CalculateSlopeFromNormal(normals[i], vertices[i]);
+            var scores = new Dictionary<int, float>();
+
             for (int j = 0; j < biomeCollection.biomes.Count; j++)
             {
-                // Calculate strength based on distance from the biome's ideal height
-                float dist = Mathf.Abs(heights[i] - GetTypeCenter(biomeCollection.biomes[j].supportedHeights[0]));
-                float strength = Mathf.Max(0, 1 - (dist / blenddistance*GetTypeRange(biomeCollection.biomes[j].supportedHeights[0])));
+                var biome = biomeCollection.biomes[j];
+                var supportedHeight = biome.supportedHeights[0];
 
-                // Optional: Power makes the core of the biome stronger
-                strength = Mathf.Pow(strength, 1.5f);
+                float heightCenter = GetTypeCenter(supportedHeight);
+                float heightRange = GetTypeRange(supportedHeight);
+                float effectiveRange = heightRange * biome.blenddistance + 1e-5f;
 
-                biomeStrengths[j] = strength;
-                totalStrength += strength;
+                float heightScore = Mathf.Clamp01(1f - Mathf.Abs(height - heightCenter) / effectiveRange);
+
+                (float slopeMin, float slopeMax) = biomeClassifier.GetSlopeValues(biome.supportedSlopes[0]);
+                float slopeCenter = (slopeMin + slopeMax) / 2f;
+                float slopeRange = (slopeMax - slopeMin) / 2f;
+
+                float slopeScore = Mathf.Clamp01(1f - Mathf.Abs(slope - slopeCenter) / (slopeRange * biome.blenddistance + 1e-5f));
+
+                float temp = CalculateTemperature(baseVertices[i]);
+                float tempCenter = GetTypeCenter(biome.supportedTemperatures[0]);
+                float tempRange = GetTypeRange(biome.supportedTemperatures[0]);
+                float tempScore = Mathf.Clamp01(1f - Mathf.Abs(temp - tempCenter) / (tempRange * biome.blenddistance + 1e-5f));
+
+
+                float score = (heightScore * biome.heightAffinity + slopeScore * biome.slopeAffinity) * tempScore;
+
+                if (score > 0.001f)
+                    scores[j] = score;
             }
 
-            // Normalize the weights so they sum to 1
-            Vector3 finalWeights = Vector3.zero;
-            if (totalStrength > 0)
+            vertexBiomeScores[i] = scores;
+        }
+
+
+        List<Vector3> newVertices = new List<Vector3>();
+        List<Vector3> newNormals = new List<Vector3>();
+        List<Vector4> newBiomeIndices = new List<Vector4>();
+        List<Vector4> newBiomeWeights = new List<Vector4>();
+        List<int> newTriangles = new List<int>();
+
+        int[] triangles = mesh.triangles;
+
+        for (int tri = 0; tri < triangles.Length; tri += 3)
+        {
+            int a = triangles[tri];
+            int b = triangles[tri + 1];
+            int c = triangles[tri + 2];
+
+            // Kombinuj biome score ze všech 3 vrcholù
+            var combined = new Dictionary<int, float>();
+
+            foreach (int vert in new[] { a, b, c })
             {
-                // This safely handles cases with 1, 2, or 3 biomes.
-                // It assumes biome 0 -> R, 1 -> G, 2 -> B channel.
-                if (biomeCollection.biomes.Count > 0) finalWeights.x = biomeStrengths[0] / totalStrength;
-                if (biomeCollection.biomes.Count > 1) finalWeights.y = biomeStrengths[1] / totalStrength;
-                if (biomeCollection.biomes.Count > 2) finalWeights.z = biomeStrengths[2] / totalStrength;
-            }
-            else
-            {
-                // Fallback: If vertex is outside all blend zones, assign it to the first biome.
-                if (biomeCollection.biomes.Count > 0) finalWeights.x = 1;
+                foreach (var kvp in vertexBiomeScores[vert])
+                {
+                    if (!combined.ContainsKey(kvp.Key))
+                        combined[kvp.Key] = 0f;
+                    combined[kvp.Key] += kvp.Value;
+                }
             }
 
-            biomeWeights.Add(finalWeights);
+            var top4 = combined.OrderByDescending(kvp => kvp.Value)
+                               .Take(4)
+                               .Select(kvp => kvp.Key)
+                               .OrderBy(i => i)
+                               .ToList();
+            while (top4.Count < 4) top4.Add(0); // fallback
+
+            // Duplikuj všechny 3 vrcholy trojúhelníku
+            foreach (int vert in new[] { a, b, c })
+            {
+                Vector3 position = deformedVerticies[vert];
+                Vector3 normal = normals[vert];
+
+                // Vypoèítej váhy pro top4
+                Vector4 weights = Vector4.zero;
+                var scores = vertexBiomeScores[vert];
+                for (int i = 0; i < 4; i++)
+                {
+                    int biomeIdx = top4[i];
+                    weights[i] = scores.TryGetValue(biomeIdx, out float score) ? score : 0f;
+                }
+                float total = weights.x + weights.y + weights.z + weights.w + 1e-6f;
+                weights /= total;
+
+                newVertices.Add(position);
+                newNormals.Add(normal);
+                newBiomeIndices.Add(new Vector4(top4[0], top4[1], top4[2], top4[3]));
+                newBiomeWeights.Add(weights);
+                newTriangles.Add(newVertices.Count - 1);
+                if (tri%10000==0) Debug.Log("Top verticies " + tri + ": " + top4[0] + " " + top4[1] + " " + top4[2] + " " + top4[3]);
+                if (tri % 10000 == 0) Debug.Log("Top verticies " + tri + ": " + weights[0] + " " + weights[1] + " " + weights[2] + " " + weights[3]);
+            }
 
         }
-        mesh.SetUVs(2, biomeIndices); // List<Vector3> of biome index triplets (int-castable floats)
-        mesh.SetUVs(3, biomeWeights); // List<Vector3> of blend weights (must sum to ~1.0)
-        Texture2DArray biomTexArray = GenerateBiomeTextureArray(biomeCollection);
-        material.SetTexture("_BiomeTexArray", biomTexArray);
+
+
+
+
+
+
+
+        Texture2DArray biomeTextureArray = GenerateBiomeTextureArray(biomeCollection);
+        material.SetTexture("_Biomes", biomeTextureArray);
+
+        Mesh newMesh = new Mesh();
+        newMesh.indexFormat = newVertices.Count > 65535 ?
+               UnityEngine.Rendering.IndexFormat.UInt32 :
+               UnityEngine.Rendering.IndexFormat.UInt16;
+
+        newMesh.SetVertices(newVertices);
+        newMesh.SetNormals(newNormals);
+        newMesh.SetTriangles(newTriangles, 0);
+        newMesh.SetUVs(2, newBiomeIndices.ToList());
+        newMesh.SetUVs(3, newBiomeWeights.ToList());
+        newMesh.RecalculateBounds();
+
+        meshFilter.mesh = newMesh;
         
         */
-        /*
-        List<Vector3> biomeIndices = new List<Vector3>(numVertices);
 
-        for (int i = 0; i < numVertices; i++)
+
+
+
+        //splatting
+        
+        Vector2[] uvs1 = new Vector2[vertices.Length];
+        for (int i = 0; i < vertices.Length; i++)
         {
-
-
-
-            float temp = CalculateTemperature(baseVertices[i]);
-            int biomeIndex = FindBiomeIndex(heights[i], temp, normals[i], vertices[i]);
-
-
-            biomeIndices.Add(new Vector3((float)biomeIndex, 0, 0)); // only .x will be used
+            Vector3 normalized = vertices[i].normalized;
+            float u = 0.5f + Mathf.Atan2(normalized.z, normalized.x) / (2f * Mathf.PI);
+            float v = 0.5f - Mathf.Asin(normalized.y) / Mathf.PI;
+            uvs1[i] = new Vector2(u, v);
         }
-
-        mesh.SetUVs(2, biomeIndices); // TEXCOORD2.x = biome index
-
-        Texture2DArray biomTexArray = GenerateBiomeTextureArray(biomeCollection);
-        material.SetTexture("_BiomeTexArray", biomTexArray);
-        */
+        mesh.uv = uvs1;
 
 
+
+        Vector3[] vertices1 = mesh.vertices;
+            Vector3[] normals1 = mesh.normals;
+            Vector2[] uvs = mesh.uv;
+            int[] triangles = mesh.triangles;
+      //      int numVertices = vertices.Length;
+
+            if (numVertices == 0 || uvs.Length != numVertices || triangles.Length == 0)
+            {
+                Debug.LogError("Biome texturing failed: Mesh data is invalid or incomplete (missing UVs?).");
+                return;
+            }
+
+            // KROK 1: Vypoèítat data biomù pro každý vrchol
+            var perVertexIndices = new List<Vector4>(numVertices);
+            var perVertexWeights = new List<Vector4>(numVertices);
+            var scoresList = new List<(int, float)>();
+
+            for (int i = 0; i < numVertices; i++)
+            {
+                Vector3 worldPos = vertices1[i];
+                float height = heights[i];
+                float slope = CalculateSlopeFromNormal(normals1[i], worldPos.normalized);
+                float temperature = CalculateTemperature(worldPos);
+
+                scoresList.Clear();
+                for (int j = 0; j < biomeCollection.biomes.Count; j++)
+                {
+                    var biome = biomeCollection.biomes[j];
+
+                    var supportedHeight = biome.supportedHeights[0];
+                    float heightCenter = biomeClassifier.GetTypeCenter(supportedHeight);
+                    float heightRange = biomeClassifier.GetTypeRange(supportedHeight);
+                    float heightScore = Mathf.Clamp01(1f - Mathf.Abs(height - heightCenter) / (heightRange * biome.blenddistance + 1e-5f));
+
+                    (float slopeMin, float slopeMax) = biomeClassifier.GetSlopeValues(biome.supportedSlopes[0]);
+                    float slopeCenter = (slopeMin + slopeMax) / 2f;
+                    float slopeRange = (slopeMax - slopeMin) / 2f;
+                    float slopeScore = Mathf.Clamp01(1f - Mathf.Abs(slope - slopeCenter) / (slopeRange * biome.blenddistance + 1e-5f));
+
+                    var supportedTemp = biome.supportedTemperatures[0];
+                    float tempCenter = biomeClassifier.GetTypeCenter(supportedTemp);
+                    float tempRange = biomeClassifier.GetTypeRange(supportedTemp);
+                    float tempScore = Mathf.Clamp01(1f - Mathf.Abs(temperature - tempCenter) / (tempRange * biome.blenddistance + 1e-5f));
+
+                    float finalScore = (heightScore * biome.heightAffinity + slopeScore * biome.slopeAffinity) * tempScore;
+                    if (finalScore > 0)
+                    {
+                        scoresList.Add((j, finalScore));
+                    }
+                }
+
+                var top4 = scoresList.OrderByDescending(s => s.Item2).Take(4).ToList();
+                while (top4.Count < 4) { top4.Add((0, 0.0f)); }
+
+                float totalWeight = top4.Sum(s => s.Item2) + 1e-6f;
+                perVertexIndices.Add(new Vector4(top4[0].Item1, top4[1].Item1, top4[2].Item1, top4[3].Item1));
+                perVertexWeights.Add(new Vector4(top4[0].Item2 / totalWeight, top4[1].Item2 / totalWeight, top4[2].Item2 / totalWeight, top4[3].Item2 / totalWeight));
+
+              //  if (i % 100 == 0 && top4[0].Item1==0) Debug.Log($"váhy {top4[0].Item2/totalWeight} {top4[1].Item2/totalWeight} {top4[2].Item2/totalWeight} {top4[3].Item2/totalWeight}");
+            }
+
+            // KROK 2: Rasterizovat data do textur
+            const int mapResolution = 2048;
+            // Vytvoøíme indexMap BEZ mipmap a nastavíme správné filtrování
+            var indexMap = new Texture2D(mapResolution, mapResolution, TextureFormat.RGBA32, false, true); // false = no mipmaps
+            indexMap.filterMode = FilterMode.Point;
+            indexMap.wrapMode = TextureWrapMode.Repeat;
+            var weightMap = new Texture2D(mapResolution, mapResolution, TextureFormat.RGBA32, true, true); // true = use mipmaps
+            weightMap.filterMode = FilterMode.Bilinear;
+            weightMap.wrapMode = TextureWrapMode.Repeat;
+            var indexMapColors = new Color32[mapResolution * mapResolution];
+            var weightMapColors = new Color[mapResolution * mapResolution];
+
+            Action<Vector2, Vector2, Vector2, Vector4, Vector4, Vector4, Vector4, Vector4, Vector4> rasterizeTriangle =
+                (uv0, uv1, uv2, i0, i1, i2, w0, w1, w2) =>
+                {
+                    var allBiomes = new Dictionary<int, (float w_v0, float w_v1, float w_v2)>();
+                    Action<Vector4, Vector4> addBiomesForVertex = (indices, weights) => {
+                        for (int i = 0; i < 4; i++)
+                        {
+                            int index = (int)indices[i];
+                            if (weights[i] > 0 && !allBiomes.ContainsKey(index))
+                            {
+                                allBiomes.Add(index, (0, 0, 0));
+                            }
+                        }
+                    };
+
+                    addBiomesForVertex(i0, w0); 
+                    addBiomesForVertex(i1, w1); 
+                    addBiomesForVertex(i2, w2);
+
+                    var biomeList = allBiomes.Keys.ToList();
+                    for (int i = 0; i < biomeList.Count; i++)
+                    {
+                        int biomeIndex = biomeList[i];
+                        var currentWeights = allBiomes[biomeIndex];
+                        for (int j = 0; j < 4; j++)
+                        {
+                            if ((int)i0[j] == biomeIndex) currentWeights.w_v0 = w0[j];
+                            if ((int)i1[j] == biomeIndex) currentWeights.w_v1 = w1[j];
+                            if ((int)i2[j] == biomeIndex) currentWeights.w_v2 = w2[j];
+                        }
+                        allBiomes[biomeIndex] = currentWeights;
+                    }
+
+                    Vector2 p0 = new Vector2(uv0.x * (mapResolution - 1), uv0.y * (mapResolution - 1));
+                    Vector2 p1 = new Vector2(uv1.x * (mapResolution - 1), uv1.y * (mapResolution - 1));
+                    Vector2 p2 = new Vector2(uv2.x * (mapResolution - 1), uv2.y * (mapResolution - 1));
+
+                    int xMin = (int)Mathf.Floor(Mathf.Min(p0.x, p1.x, p2.x));
+                    int xMax = (int)Mathf.Ceil(Mathf.Max(p0.x, p1.x, p2.x));
+                    int yMin = (int)Mathf.Floor(Mathf.Min(p0.y, p1.y, p2.y));
+                    int yMax = (int)Mathf.Ceil(Mathf.Max(p0.y, p1.y, p2.y));
+
+                    var perPixelScores = new List<(int index, float score)>();
+
+                    for (int y = yMin; y <= yMax; y++)
+                    {
+                        for (int x = xMin; x <= xMax; x++)
+                        {
+                            if (x < 0 || x >= mapResolution || y < 0 || y >= mapResolution) continue;
+
+                            Vector2 p = new Vector2(x, y);
+                            Vector3 bary = Barycentric(p, p0, p1, p2);
+
+                            if (bary.x >= -0.001f && bary.y >= -0.001f && bary.z >= -0.001f)
+                            {
+                                perPixelScores.Clear();
+                                foreach (var biomeIndex in biomeList)
+                                {
+                                    var vWeights = allBiomes[biomeIndex];
+                                    float interpolatedWeight = vWeights.w_v0 * bary.x + vWeights.w_v1 * bary.y + vWeights.w_v2 * bary.z;
+                                    if (interpolatedWeight > 0.0001f)
+                                    {
+                                        perPixelScores.Add((biomeIndex, interpolatedWeight));
+                                    }
+                                }
+
+                                var top4 = perPixelScores.OrderByDescending(s => s.score).Take(4).ToList();
+                                while (top4.Count < 4) { top4.Add((0, 0.0f)); }
+
+                                var finalIndices = new Vector4(top4[0].index, top4[1].index, top4[2].index, top4[3].index);
+                                var finalWeights = new Vector4(top4[0].score, top4[1].score, top4[2].score, top4[3].score);
+
+                                int pixelIndex = y * mapResolution + x;
+                                indexMapColors[pixelIndex] = new Color32((byte)finalIndices.x, (byte)finalIndices.y, (byte)finalIndices.z, (byte)finalIndices.w);
+                                weightMapColors[pixelIndex] = new Color(finalWeights.x, finalWeights.y, finalWeights.z, finalWeights.w);
+                            }
+                        }
+                    }
+                };
+
+            for (int i = 0; i < triangles.Length; i += 3)
+            {
+                int v0 = triangles[i];
+                int v1 = triangles[i + 1];
+                int v2 = triangles[i + 2];
+
+                Vector2 uv0 = uvs[v0];
+                Vector2 uv1 = uvs[v1];
+                Vector2 uv2 = uvs[v2];
+
+            // Jednoduchá oprava švu na UV mapì
+              if (Mathf.Max(uv0.x, uv1.x, uv2.x) - Mathf.Min(uv0.x, uv1.x, uv2.x) > 0.8f)
+              {
+                  continue;
+              }
+
+
+            rasterizeTriangle(uv0, uv1, uv2,
+                    perVertexIndices[v0], perVertexIndices[v1], perVertexIndices[v2],
+                    perVertexWeights[v0], perVertexWeights[v1], perVertexWeights[v2]);
+            }
+
+
+
+
+        // KROK 3: Aplikovat textury na materiál
+        indexMap.SetPixels32(indexMapColors);
+            indexMap.Apply(false); // false = neaktualizovat mipmapy (protože žádné nejsou) a ponechat èitelné
+
+            weightMap.SetPixels(weightMapColors);
+            weightMap.Apply(true); // true = aktualizovat mipmapy
+
+            material.SetTexture("_Biomes", GenerateBiomeTextureArray(biomeCollection));
+            material.SetTexture("_IndexMap", indexMap);
+            material.SetTexture("_WeightMap", weightMap);
+            meshRenderer.sharedMaterial = material;
+
+            // Volitelné: Uložení debug textur
+
+            try
+            {
+                System.IO.File.WriteAllBytes(Application.dataPath + "/_DEBUG_indexMap.png", indexMap.EncodeToPNG());
+                System.IO.File.WriteAllBytes(Application.dataPath + "/_DEBUG_weightMap.png", weightMap.EncodeToPNG());
+                Debug.Log("Biome debug textures saved to Assets folder.");
+            }
+            catch (Exception e) { Debug.LogError($"Failed to save debug textures: {e.Message}"); }
+
+        Texture2DArray biomeTextureArray = GenerateBiomeTextureArray(biomeCollection);
+        material.SetTexture("_Biomes", biomeTextureArray);
+        
 
         meshRenderer.sharedMaterial = material;
     }
 
 
-    private float heightBlendmin = 1.5f;
-    private float heightBlendmax = 0.5f;
-    private float heightBlendCurve = 2.5f;
+
+    private static Vector3 Barycentric(Vector2 p, Vector2 a, Vector2 b, Vector2 c)
+    {
+        Vector2 v0 = b - a;
+        Vector2 v1 = c - a;
+        Vector2 v2 = p - a;
+
+        float d00 = Vector2.Dot(v0, v0);
+        float d01 = Vector2.Dot(v0, v1);
+        float d11 = Vector2.Dot(v1, v1);
+        float d20 = Vector2.Dot(v2, v0);
+        float d21 = Vector2.Dot(v2, v1);
+
+        float denom = d00 * d11 - d01 * d01;
+        if (Mathf.Abs(denom) < 1e-6f)
+            return new Vector3(-1, -1, -1); // Degenerate triangle
+
+        float v = (d11 * d20 - d01 * d21) / denom;
+        float w = (d00 * d21 - d01 * d20) / denom;
+        float u = 1.0f - v - w;
+
+        return new Vector3(u, v, w);
+    }
+
+
+  //  private float heightBlendmin = 1.5f;
+  //  private float heightBlendmax = 0.5f;
+  //  private float heightBlendCurve = 2.5f;
 
     // public float delta = 0.005f;
 
@@ -929,6 +785,8 @@ public class BiomPipeline
         return possibleBiomes.Count > 0 ? possibleBiomes[0].Index : 0;
     }
 
+
+
     float CalculateSlopeFromNormal(Vector3 normal, Vector3 localUP)
     {
         // The slope angle in radians (dot product between the normal and the up direction)
@@ -938,25 +796,6 @@ public class BiomPipeline
         return slopeAngle; // Or transform it to a desired scale
     }
 
-
-
- //   [SerializeField] private Gradient biomeGradient;
-    //   [SerializeField, Range(16, 1024)] private int resolution = 256;
-
-
-    private Texture2D GenerateGradientTexture(Gradient gradient, int width)
-    {
-        Texture2D tex = new Texture2D(width, 1, TextureFormat.RGBA32, false);
-
-        for (int x = 0; x < width; x++)
-        {
-            float t = x / (float)(width - 1);
-            tex.SetPixel(x, 0, gradient.Evaluate(t));
-        }
-
-        tex.Apply();
-        return tex;
-    }
 
 
 
@@ -990,51 +829,6 @@ public class BiomPipeline
         return texArray;
     }
 
-
-
-    /*
-    public struct BiomeData
-    {
-        public int primaryBiome;
-        public int secondaryBiome; // -1 if no blend
-        public float blendFactor;  // 0 = hard, 1 = full blend (only near edges)
-    }
-    public BiomeData GetBlendedBiome(
-    float height,
-    float temp)
-    {
-        BiomeSO primary = FindBiome(height, temp);
-
-        // Check in 4 directions: height+/-, temp+/-
-        BiomeSO heightUp = FindBiome(height + delta, temp);
-        BiomeSO heightDown = FindBiome(height - delta, temp);
-        //       BiomeSO tempUp = FindBiome(height, temp + delta);
-        //       BiomeSO tempDown = FindBiome(height, temp - delta);
-
-        BiomeSO[] neighbors = { heightUp, heightDown };
-
-        foreach (var neighbor in neighbors)
-        {
-            if (neighbor != null && neighbor != primary)
-            {
-                float blendFactor = 1.0f; // or use distance to center of threshold if you want smoothing
-                return new BiomeData
-                {
-                    primaryBiome = biomeCollection.biomes.IndexOf(primary),
-                    secondaryBiome = biomeCollection.biomes.IndexOf(neighbor),
-                    blendFactor = blendFactor
-                };
-            }
-        }
-
-        return new BiomeData
-        {
-            primaryBiome = biomeCollection.biomes.IndexOf(primary),
-            secondaryBiome = -1,
-            blendFactor = 0f
-        };
-    }
-*/
     private BiomeSO FindBiome(float height, float temp)
     {
         HeightType hType = biomeClassifier.GetHeightType(height);
@@ -1048,84 +842,9 @@ public class BiomPipeline
 
         return null;
     }
-    /*
-    BiomeData FindBiomeData(float height, float temperature, Vector3 vertex, Vector3 normal)
-    {
-        int primary = FindBiomeIndex(height, temperature, vertex, normal); // your logic
-        int secondary = -1;
-        float blend = 0f;
 
 
-        int low = FindBiomeIndex(height - delta, temperature, vertex, normal);
-        int high = FindBiomeIndex(height + delta, temperature, vertex, normal);
-
-        if (low != primary)
-        {
-            Debug.Log("lower");
-            secondary = low;
-            blend = 1f - Mathf.InverseLerp(height - delta, height, height);
-        }
-        else if (high != primary)
-        {
-            secondary = high;
-            blend = Mathf.InverseLerp(height, height + delta, height);
-        }
-
-        return new BiomeData
-        {
-            primaryBiome = primary,
-            secondaryBiome = secondary,
-            blendFactor = blend
-        };
-    }*/
 
 
-    private float GetTypeCenter(HeightType type)
-    {
-        return type switch
-        {
-            HeightType.Ocean => (biomeClassifier.ocean.min + biomeClassifier.ocean.max) * 0.5f,
-            HeightType.Low => (biomeClassifier.lowHeight.min + biomeClassifier.lowHeight.max) * 0.5f,
-            HeightType.Medium => (biomeClassifier.mediumHeight.min + biomeClassifier.mediumHeight.max) * 0.5f,
-            HeightType.High => (biomeClassifier.highHeight.min + biomeClassifier.highHeight.max) * 0.5f,
-            HeightType.Mountain => (biomeClassifier.mountainHeight.min + biomeClassifier.mountainHeight.max) * 0.5f,
-            _ => 0f
-        };
-    }
-
-    private float GetTypeCenter(TemperatureType type)
-    {
-        return type switch
-        {
-            TemperatureType.Cold => (biomeClassifier.coldTemp.min + biomeClassifier.coldTemp.max) * 0.5f,
-            TemperatureType.Temperate => (biomeClassifier.temperateTemp.min + biomeClassifier.temperateTemp.max) * 0.5f,
-            TemperatureType.Hot => (biomeClassifier.hotTemp.min + biomeClassifier.hotTemp.max) * 0.5f,
-            _ => 0f
-        };
-    }
-
-    private float GetTypeRange(HeightType type)
-    {
-        return type switch
-        {
-            HeightType.Ocean => (biomeClassifier.ocean.max - biomeClassifier.ocean.min) * 0.5f,
-            HeightType.Low => (biomeClassifier.lowHeight.max - biomeClassifier.lowHeight.min) * 0.5f,
-            HeightType.Medium => (biomeClassifier.mediumHeight.max - biomeClassifier.mediumHeight.min) * 0.5f,
-            HeightType.High => (biomeClassifier.highHeight.max - biomeClassifier.highHeight.min) * 0.5f,
-            HeightType.Mountain => (biomeClassifier.mountainHeight.max - biomeClassifier.mountainHeight.min) * 0.5f,
-            _ => 1f
-        };
-    }
-
-    private float GetTypeRange(TemperatureType type)
-    {
-        return type switch
-        {
-            TemperatureType.Cold => (biomeClassifier.coldTemp.max - biomeClassifier.coldTemp.min) * 0.5f,
-            TemperatureType.Temperate => (biomeClassifier.temperateTemp.max - biomeClassifier.temperateTemp.min) * 0.5f,
-            TemperatureType.Hot => (biomeClassifier.hotTemp.max - biomeClassifier.hotTemp.min) * 0.5f,
-            _ => 1f
-        };
-    }
 
 }

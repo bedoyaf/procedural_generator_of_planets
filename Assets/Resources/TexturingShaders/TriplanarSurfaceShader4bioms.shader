@@ -101,6 +101,9 @@ Shader "Custom/MyBiomeBlendShader4Biomes"
                 float NdotL = saturate(dot(normal, lightDir));
                 float3 litColor = finalColor.rgb * _LightColor0.rgb * NdotL;
 
+
+        //        return float4(weight0,weight1,weight2,0);
+                
                 return float4(litColor, 1.0);
             }
 

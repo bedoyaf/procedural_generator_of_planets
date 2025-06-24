@@ -12,23 +12,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1581d5017ce7d72438bbbe3a39d975de, type: 3}
   m_Name: FractalNoiseLayer4
   m_EditorClassIdentifier: 
-  enabled: 1
+  layerEnabled: 1
   computeShader: {fileID: 7200000, guid: 1105b15d652c75c4e965343e01598507, type: 3}
   kernelName: GenerateSphereNoise
+  threadGroupSize: 512
   kernelHandle: 0
-  baseScale: 0.96
+  baseScale: 0.9
   baseOctaves: 3
-  baseLacunarity: 2.06
-  basePersistence: 0.346
-  baseMultiplier: 1
-  ridgeScale: 2.32
-  ridgeOctaves: 4
-  ridgeLacunarity: 2
-  ridgePersistence: 0.5
-  ridgeMultiplier: 1.63
-  ridgeMinBase: 0.075
-  ridgeStartPower: 1.16
-  oceanFloorDepth: 0.338
-  oceanFloorSmoothing: 0.5
-  oceanDepthMultiplier: 0.28
+  baseLacunarity: 1.8
+  basePersistence: 0.5
+  baseMultiplier: 0.8
+  ridgeScale: 2.14
+  ridgeOctaves: 5
+  ridgeLacunarity: 2.79
+  ridgePersistence: 0.14
+  ridgeMultiplier: 0.78
+  ridgeMaskScale: 0.9
+  ridgeMaskOctaves: 5
+  ridgeMaskLacunarity: 1.8
+  ridgeMaskPersistence: 0.5
+  ridgeMaskThreshold: 0.298
+  ridgeMaskFalloff: 0.2
+  oceanFloorDepth: 0.08
+  oceanFloorSmoothing: 0.1
+  oceanDepthMultiplier: 0.73
   heightMultiplier: 1

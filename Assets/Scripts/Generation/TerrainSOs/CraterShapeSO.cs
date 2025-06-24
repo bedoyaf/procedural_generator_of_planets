@@ -34,9 +34,9 @@ public class CraterLayerSO : TerrainLayerSO
     private int lastNumVertices = -1;
 
 
-    public override void SetShaderParameters(ComputeShader shader, int kernel, ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices, float radius)
+    public override void SetShaderParameters( ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices)
     {
-        if (!enabled || shader == null || kernel < 0) return;
+        if (!layerEnabled || computeShader == null || kernelHandle < 0) return;
 
         // --- Regenerate Craters if Needed ---
         // We need access to the original vertex data for placement,
@@ -71,26 +71,26 @@ public class CraterLayerSO : TerrainLayerSO
             Debug.LogWarning($"Crater buffer not ready or empty for layer '{this.name}'. Skipping.", this);
             return; // Skip if no craters generated
         }
-        this.radius = radius;
+     //   this.radius = radius;
 
-        shader.SetBuffer(kernel, "vertices", positionBuffer);
-        shader.SetBuffer(kernel, "heights", heightBuffer);
-        shader.SetInt("numVertices", numVertices);
-        shader.SetFloat("sphereRadius", radius);
+        computeShader.SetBuffer(kernelHandle, "vertices", positionBuffer);
+        computeShader.SetBuffer(kernelHandle, "heights", heightBuffer);
+        computeShader.SetInt("numVertices", numVertices);
+        computeShader.SetFloat("sphereRadius", radius);
 
-        shader.SetBuffer(kernel, "craters", craterBuffer); // Use consistent naming
-        shader.SetInt("numCraters", craterList.Count);
-        shader.SetFloat("smoothness", smoothness);
+        computeShader.SetBuffer(kernelHandle, "craters", craterBuffer); // Use consistent naming
+        computeShader.SetInt("numCraters", craterList.Count);
+        computeShader.SetFloat("smoothness", smoothness);
         // Pass random range values or fixed values based on desired behavior
-        shader.SetFloat("rimSteepness", UnityEngine.Random.Range(rimSteepnessRange.x, rimSteepnessRange.y));
-        shader.SetFloat("floorHeight", UnityEngine.Random.Range(floorHeightRange.x, floorHeightRange.y));
-        shader.SetFloat("rimWidth", UnityEngine.Random.Range(rimWidthRange.x, rimWidthRange.y));
+        computeShader.SetFloat("rimSteepness", UnityEngine.Random.Range(rimSteepnessRange.x, rimSteepnessRange.y));
+        computeShader.SetFloat("floorHeight", UnityEngine.Random.Range(floorHeightRange.x, floorHeightRange.y));
+        computeShader.SetFloat("rimWidth", UnityEngine.Random.Range(rimWidthRange.x, rimWidthRange.y));
 
     }
 
     // **Helper function - Needs proper implementation**
     // This is a placeholder. You need a way to get the initial sphere positions.
-    // Maybe PlanetGenerator passes them when calling SetShaderParameters,
+    // Maybe PlanetGenerator passes them when calling SetcomputeShaderParameters,
     // or reads them back from the buffer if the first layer initializes it.
     private Vector3[] GetOriginalPositions(ComputeBuffer positionBuffer, int numVertices)
     {

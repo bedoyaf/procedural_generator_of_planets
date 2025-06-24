@@ -14,19 +14,19 @@ public class NoiseLayerSO : TerrainLayerSO
     // Override kernel name if different from "CSMain"
     // [SerializeField] protected new string kernelName = "NoiseTerrain"; // Example if needed
 
-    public override void SetShaderParameters(ComputeShader shader, int kernel, ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices, float radius)
+    public override void SetShaderParameters( ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices)
     {
-        if (!enabled || shader == null || kernel < 0) return;
+        if (!layerEnabled || computeShader == null || kernelHandle < 0) return;
 
-        shader.SetBuffer(kernel, "vertices", positionBuffer); // Assuming shader uses _Positions
-        shader.SetBuffer(kernel, "heights", heightBuffer);     // Assuming shader uses _Heights
-        shader.SetInt("numVertices", numVertices);
-   //     shader.SetFloat("sphereRadius", radius);
+        computeShader.SetBuffer(kernelHandle, "vertices", positionBuffer); // Assuming computeShader uses _Positions
+        computeShader.SetBuffer(kernelHandle, "heights", heightBuffer);     // Assuming computeShader uses _Heights
+        computeShader.SetInt("numVertices", numVertices);
+   //     computeShader.SetFloat("sphereRadius", radius);
 
-        shader.SetFloat("noiseScale", noiseScale);
-        shader.SetFloat("amplitude", amplitude);
-        shader.SetFloat("power", power);
-        shader.SetFloat("baseHeight", baseHeightContribution);
+        computeShader.SetFloat("noiseScale", noiseScale);
+        computeShader.SetFloat("amplitude", amplitude);
+        computeShader.SetFloat("power", power);
+        computeShader.SetFloat("baseHeight", baseHeightContribution);
 
         //   shader.SetBool("additive", additive);
     }

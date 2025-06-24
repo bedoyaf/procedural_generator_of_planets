@@ -11,24 +11,24 @@ public class SimpleNoiseLayerSO : TerrainLayerSO
     // Or uncomment the Reset method below to set it by default.
     // [SerializeField] protected new string kernelName = "GenerateSphereNoise";
 
-    public override void SetShaderParameters(ComputeShader shader, int kernel, ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices, float radius)
+    public override void SetShaderParameters( ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices)
     {
         // Basic validation
-        if (!enabled || shader == null || kernel < 0 || positionBuffer == null || heightBuffer == null)
+        if (!layerEnabled || computeShader == null || kernelHandle < 0 || positionBuffer == null || heightBuffer == null)
         {
-            Debug.LogError($"Skipping layer '{this.name}' due to missing requirements (enabled={enabled}, shader={(shader != null)}, kernel={kernel}, posBuffer={(positionBuffer != null)}, heightBuffer={(heightBuffer != null)})", this);
+            Debug.LogError($"Skipping layer '{this.name}' due to missing requirements (enabled={layerEnabled}, computeShader={(computeShader != null)}, kernel={kernelHandle}, posBuffer={(positionBuffer != null)}, heightBuffer={(heightBuffer != null)})", this);
             return;
         }
 
         // Set common buffers using standardized names
-        shader.SetBuffer(kernel, "_Positions", positionBuffer); // Expects unit sphere positions
-        shader.SetBuffer(kernel, "_Heights", heightBuffer);     // Expects current height multipliers (read/write)
-        shader.SetInt("_NumVertices", numVertices);
-        shader.SetFloat("_Radius", radius);                   // Pass the main planet radius
+        computeShader.SetBuffer(kernelHandle, "_Positions", positionBuffer); // Expects unit sphere positions
+        computeShader.SetBuffer(kernelHandle, "_Heights", heightBuffer);     // Expects current height multipliers (read/write)
+        computeShader.SetInt("_NumVertices", numVertices);
+        computeShader.SetFloat("_Radius", radius);                   // Pass the main planet radius
 
 
-        shader.SetFloat("_NoiseScale", noiseScale);
-        shader.SetFloat("_HeightMultiplier", heightMultiplier);
+        computeShader.SetFloat("_NoiseScale", noiseScale);
+        computeShader.SetFloat("_HeightMultiplier", heightMultiplier);
     }
     /*
     // Optional: Automatically set the kernel name when the asset is created/reset

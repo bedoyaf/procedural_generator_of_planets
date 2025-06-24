@@ -12,23 +12,23 @@ public class SimpleNoiseLayerSO2 : TerrainLayerSO
     public float heightMultiplier = 1.0f;
 
 
-    public override void SetShaderParameters(ComputeShader shader, int kernel, ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices, float radius)
+    public override void SetShaderParameters( ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices)
     {
         // Basic validation
-        if (!enabled || shader == null || kernel < 0 || positionBuffer == null || heightBuffer == null)
+        if (!layerEnabled || computeShader == null || kernelHandle < 0 || positionBuffer == null || heightBuffer == null)
         {
-            Debug.LogError($"Skipping layer '{this.name}' due to missing requirements (enabled={enabled}, shader={(shader != null)}, kernel={kernel}, posBuffer={(positionBuffer != null)}, heightBuffer={(heightBuffer != null)})", this);
+            Debug.LogError($"Skipping layer '{this.name}' due to missing requirements (enabled={layerEnabled}, computeShader={(computeShader != null)}, kernel={kernelHandle}, posBuffer={(positionBuffer != null)}, heightBuffer={(heightBuffer != null)})", this);
             return;
         }
 
         // Set common buffers using standardized names
-        shader.SetBuffer(kernel, "vertices", positionBuffer); // Unit sphere positions
-        shader.SetBuffer(kernel, "heights", heightBuffer);     // Current height multipliers (read/write)
-        shader.SetInt("numVertices", numVertices);
+        computeShader.SetBuffer(kernelHandle, "vertices", positionBuffer); // Unit sphere positions
+        computeShader.SetBuffer(kernelHandle, "heights", heightBuffer);     // Current height multipliers (read/write)
+        computeShader.SetInt("numVertices", numVertices);
 
 
-        shader.SetFloat("noiseScale", noiseScale);
-        shader.SetFloat("heightMultiplier", heightMultiplier);
+        computeShader.SetFloat("noiseScale", noiseScale);
+        computeShader.SetFloat("heightMultiplier", heightMultiplier);
 
         Vector3 randomOffset = new Vector3(
             UnityEngine.Random.Range(-1000f, 1000f),

@@ -1,21 +1,29 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System; // Needed for IDisposable
+using System;
 
-// Doesn't need to be a MonoBehaviour
-// Implement IDisposable for proper buffer cleanup
+/// <summary>
+/// Main script for running terrain generation, goes through compute shaders
+/// </summary>
+/// <remarks>
+/// Runs each stores layer with a compute shader, has IDisposable to release all relevant buffer when necessary
+/// </remarks>
 public class TerrainPipelineProcessor : IDisposable
 {
     private ComputeBuffer positionBuffer;
     private ComputeBuffer heightBuffer;
-    // Add other buffers if your pipeline needs them (e.g., normalBuffer)
 
-    private float[] currentHeights; // Internal storage for initial/final heights
+    private float[] currentHeights; 
     private int numVertices;
 
+    /// <summary>
+    /// Sets up the pipeline by initializing buffers
+    /// </summary>
+    /// <param name="vertexCount"></param>
+    /// <returns>returns success</returns>
     public bool Initialize(int vertexCount)
     {
-        ReleaseBuffers(); // Release any existing buffers first
+        ReleaseBuffers(); 
 
         if (vertexCount <= 0)
         {
@@ -28,11 +36,9 @@ public class TerrainPipelineProcessor : IDisposable
 
         try
         {
-            positionBuffer = new ComputeBuffer(numVertices, sizeof(float) * 3); // Stride for Vector3
-            heightBuffer = new ComputeBuffer(numVertices, sizeof(float));     // Stride for float
-                                                                              // Initialize other buffers...
-
-            // Prepare initial height data (all 1.0f)
+            positionBuffer = new ComputeBuffer(numVertices, sizeof(float) * 3); 
+            heightBuffer = new ComputeBuffer(numVertices, sizeof(float));     
+                                                                             
             currentHeights = new float[numVertices];
             for (int i = 0; i < numVertices; ++i) currentHeights[i] = 1.0f;
 
@@ -46,7 +52,14 @@ public class TerrainPipelineProcessor : IDisposable
         }
     }
 
-    public float[] ProcessTerrain(List<TerrainLayerSO> layers, Vector3[] baseVertices, float radius, int seed)
+    /// <summary>
+    /// Runs the lists of TerrainLayerSO, running each compute shader and storing the new heights
+    /// </summary>
+    /// <param name="layers">svriptable objects containing the compute shaders that will get executed</param>
+    /// <param name="baseVertices">vertecies in a spherical shape</param>
+    /// <param name="seed">the seed for the random generation</param>
+    /// <returns>arry of floats representing the new heights</returns>
+    public float[] ProcessTerrain(List<TerrainLayerSO> layers, Vector3[] baseVertices, int seed)
     {
         if (positionBuffer == null || heightBuffer == null || !positionBuffer.IsValid() || !heightBuffer.IsValid())
         {
@@ -63,7 +76,7 @@ public class TerrainPipelineProcessor : IDisposable
         if (layers == null || layers.Count == 0)
         {
             Debug.LogWarning("No terrain layers provided. Returning initial heights.");
-            // Return a copy of the initial heights
+
             float[] initialHeightsCopy = new float[numVertices];
             Array.Copy(currentHeights, initialHeightsCopy, numVertices);
             return initialHeightsCopy;
@@ -71,52 +84,43 @@ public class TerrainPipelineProcessor : IDisposable
 
 
         Debug.Log("Starting Terrain Generation Pipeline...");
-        UnityEngine.Random.InitState(seed); // Ensure consistent randomness for layers
+        UnityEngine.Random.InitState(seed); 
 
         try
         {
-            currentHeights = new float[numVertices]; //skibidien
-            // Upload initial data
-            positionBuffer.SetData(baseVertices);   // Unit sphere positions
-            heightBuffer.SetData(currentHeights);  // Initial heights (usually 1.0)
+            currentHeights = new float[numVertices]; 
 
-            // Run the pipeline
+            positionBuffer.SetData(baseVertices); 
+            heightBuffer.SetData(currentHeights); 
+
             foreach (TerrainLayerSO layer in layers)
             {
-                if (layer != null && layer.enabled && layer.computeShader != null)
+                if (layer != null && layer.layerEnabled && layer.computeShader != null)
                 {
-                    Console.WriteLine("name"+layer.kernelName);
-                    if (layer.kernelHandle < 0) layer.FindKernel(); // Ensure kernel is found
+                    Debug.Log("name "+layer.kernelHandle);
+                    if (layer.kernelHandle < 0) layer.FindKernel(); 
                     if (layer.kernelHandle < 0)
                     {
                         Debug.LogWarning($"Skipping layer '{layer.name}' due to invalid kernel.", layer);
                         continue;
                     }
 
-                    // Set params & dispatch
-                    layer.SetShaderParameters(layer.computeShader, layer.kernelHandle, positionBuffer, heightBuffer, numVertices, radius);
+                    layer.SetShaderParameters( positionBuffer, heightBuffer, numVertices);
                     Debug.Log($"Dispatching Layer: {layer.name}");
-                    layer.Dispatch(layer.computeShader, layer.kernelHandle, numVertices);
+                    layer.Dispatch( numVertices);
                 }
-                else if (layer != null && !layer.enabled) { /* Log skip */ }
-                else if (layer != null) { Debug.LogWarning($"Skipping layer '{layer.name}' - Compute Shader is null.", layer); }
+                else if (layer == null) { Debug.LogWarning($"Skipping layer '{layer.name}' - Compute Shader is null.", layer); }
             }
 
-            // Get results back
-            heightBuffer.GetData(currentHeights); // Read final heights back into our array
+            heightBuffer.GetData(currentHeights); 
 
-
-       /*   for (int i = 0; i < Mathf.Min(20, currentHeights.Length); i++)
-            {
-                Debug.Log($"Vertex {i}: FinalHeight = {currentHeights[i]:F4}");
-            }*/
             Debug.Log("Terrain Generation Pipeline Finished.");
-            return currentHeights; // Return the processed height data
+            return currentHeights; 
         }
         catch (Exception e)
         {
             Debug.LogError($"Error during terrain pipeline processing: {e.Message}");
-            return null; // Return null on error
+            return null; 
         }
     }
 
@@ -126,33 +130,15 @@ public class TerrainPipelineProcessor : IDisposable
         positionBuffer = null;
         heightBuffer?.Release();
         heightBuffer = null;
-        // Release other buffers...
-
-        // Release buffers held by SOs (important!)
-        // This part is tricky as the processor doesn't own the layers list.
-        // The PlanetGenerator should perhaps iterate its layers and call release on them.
-        // Or, the SOs themselves could be made IDisposable, but that's less common.
-        // For now, let's assume PlanetGenerator handles SO buffer release.
 
         numVertices = 0;
         currentHeights = null;
-        // Debug.Log("Compute buffers released by TerrainPipelineProcessor."); // Less verbose logging
     }
 
-    // Implement IDisposable
     public void Dispose()
     {
         ReleaseBuffers();
-        // Suppress finalization because we've handled cleanup
-        GC.SuppressFinalize(this);
-    }
 
-    // Optional: Finalizer as a backup (not always necessary if Dispose is called correctly)
-    ~TerrainPipelineProcessor()
-    {
-        // This finalizer will be called by the GC if Dispose() was not called.
-        // It's a safety net but can have performance implications.
-        // Debug.LogWarning("TerrainPipelineProcessor finalizer called - Dispose() was missed?");
-        ReleaseBuffers();
+        GC.SuppressFinalize(this);
     }
 }

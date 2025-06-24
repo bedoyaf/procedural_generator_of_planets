@@ -51,52 +51,52 @@ public class FractalNoiseLayerSO3 : TerrainLayerSO
     //  [SerializeField] private Vector3 noiseOffset = Vector3.zero;
 
 
-    public override void SetShaderParameters(ComputeShader shader, int kernel, ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices, float radius)
+    public override void SetShaderParameters( ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices)
     {
-        if (!enabled || shader == null || kernel < 0 || positionBuffer == null || heightBuffer == null)
+        if (!layerEnabled || computeShader == null || kernelHandle < 0 || positionBuffer == null || heightBuffer == null)
         {
             Debug.LogWarning($"Skipping layer '{this.name}' due to missing requirements.", this);
             return;
         }
 
         // Required buffers
-        shader.SetBuffer(kernel, "vertices", positionBuffer);
-        shader.SetBuffer(kernel, "heights", heightBuffer);
+        computeShader.SetBuffer(kernelHandle, "vertices", positionBuffer);
+        computeShader.SetBuffer(kernelHandle, "heights", heightBuffer);
 
         // General
-        shader.SetInt("numVertices", numVertices);
+        computeShader.SetInt("numVertices", numVertices);
 
         // Base layer noise
-        shader.SetFloat("baseNoiseScale", baseNoiseScale); // optional, not used in shader right now
-        shader.SetFloat("baseScale", baseScale);
-        shader.SetInt("baseOctaves", baseOctaves);
-        shader.SetFloat("baseLacunarity", baseLacunarity);
-        shader.SetFloat("basePersistence", basePersistence);
-        shader.SetFloat("baseMultiplier", baseMultiplier);
+        computeShader.SetFloat("baseNoiseScale", baseNoiseScale); // optional, not used in computeShader right now
+        computeShader.SetFloat("baseScale", baseScale);
+        computeShader.SetInt("baseOctaves", baseOctaves);
+        computeShader.SetFloat("baseLacunarity", baseLacunarity);
+        computeShader.SetFloat("basePersistence", basePersistence);
+        computeShader.SetFloat("baseMultiplier", baseMultiplier);
 
         // Detail layer noise
-        shader.SetFloat("detailNoiseScale", detailNoiseScale); // optional, not used in shader right now
-        shader.SetFloat("detailScale", detailScale);
-        shader.SetInt("detailOctaves", detailOctaves);
-        shader.SetFloat("detailLacunarity", detailLacunarity);
-        shader.SetFloat("detailPersistence", detailPersistence);
-        shader.SetFloat("detailMultiplier", detailMultiplier);
+        computeShader.SetFloat("detailNoiseScale", detailNoiseScale); // optional, not used in computeShader right now
+        computeShader.SetFloat("detailScale", detailScale);
+        computeShader.SetInt("detailOctaves", detailOctaves);
+        computeShader.SetFloat("detailLacunarity", detailLacunarity);
+        computeShader.SetFloat("detailPersistence", detailPersistence);
+        computeShader.SetFloat("detailMultiplier", detailMultiplier);
 
         // Height multiplier
-        shader.SetFloat("heightMultiplier", heightMultiplier);
+        computeShader.SetFloat("heightMultiplier", heightMultiplier);
 
-        shader.SetFloat("ridgeScale", ridgeScale); // Tune as needed
-        shader.SetFloat("ridgeMultiplier", ridgeMultiplier);
-        shader.SetInt("ridgeOctaves", ridgeOctaves);
-        shader.SetFloat("ridgeLacunarity", ridgeLacunarity);
-        shader.SetFloat("ridgePersistence", ridgePersistence);
+        computeShader.SetFloat("ridgeScale", ridgeScale); // Tune as needed
+        computeShader.SetFloat("ridgeMultiplier", ridgeMultiplier);
+        computeShader.SetInt("ridgeOctaves", ridgeOctaves);
+        computeShader.SetFloat("ridgeLacunarity", ridgeLacunarity);
+        computeShader.SetFloat("ridgePersistence", ridgePersistence);
 
-        shader.SetFloat("ridgeStartPower", ridgeStartPower);
-        shader.SetFloat("ridgeMinBase", ridgeMinBase);
-        shader.SetFloat("ridgeAttenuationScale", ridgeAttenuationScale);
-        shader.SetFloat("ridgeAttenuationFrequency", ridgeAttenuationFrequency);
-        shader.SetFloat("ridgeAttenuationOctaves", ridgeAttenuationOctaves);
-        shader.SetFloat("ridgeAttenuationPersistence", ridgeAttenuationPersistence);
+        computeShader.SetFloat("ridgeStartPower", ridgeStartPower);
+        computeShader.SetFloat("ridgeMinBase", ridgeMinBase);
+        computeShader.SetFloat("ridgeAttenuationScale", ridgeAttenuationScale);
+        computeShader.SetFloat("ridgeAttenuationFrequency", ridgeAttenuationFrequency);
+        computeShader.SetFloat("ridgeAttenuationOctaves", ridgeAttenuationOctaves);
+        computeShader.SetFloat("ridgeAttenuationPersistence", ridgeAttenuationPersistence);
 
 
         // Noise offset (random or seeded)
@@ -105,7 +105,7 @@ public class FractalNoiseLayerSO3 : TerrainLayerSO
             UnityEngine.Random.Range(-1000f, 1000f),
             UnityEngine.Random.Range(-1000f, 1000f)
         );
-        shader.SetVector("noiseOffset", randomOffset); // assume set in the inspector or by code
+        computeShader.SetVector("noiseOffset", randomOffset); // assume set in the inspector or by code
     }
 
 
