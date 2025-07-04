@@ -412,7 +412,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 1b4ec69aaa303034880d4cd297fa608e, type: 2}
+  - {fileID: 2100000, guid: f7ee42e0b43fd1b44b168d6ec521f208, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -457,19 +457,18 @@ MonoBehaviour:
   seed: 0
   sphereAlgorithm: 2
   generateBioms: 1
-  slopeThreshold: 30
   equatorTemperature: 1
   poleTemperature: 0
   temperatureNoiseScale: 1
   temperatureNoiseStrength: 0.2
-  biomeCollection: {fileID: 11400000, guid: e11f9117bbe0653438d643f1543e86a7, type: 2}
+  biomeCollection: {fileID: 11400000, guid: 671cdc68e4afc074588a1b12e3691545, type: 2}
   biomeClassifier: {fileID: 11400000, guid: 9def40f43272a2044982306e0ea6d3c9, type: 2}
   planetSettings:
-    material: {fileID: 2100000, guid: 1b4ec69aaa303034880d4cd297fa608e, type: 2}
+    material: {fileID: 2100000, guid: c0318d38d2475f24b81d04f7721a2e68, type: 2}
     resolution: 300
     radius: 1
     terrainLayers:
-    - {fileID: 11400000, guid: e722fb34daa24e845b5d09457dcec2dd, type: 2}
+    - {fileID: 11400000, guid: a6bc6a5413fc28e44a0b28c6f5475245, type: 2}
     hasBioms: 1
   waterSettings:
     material: {fileID: 2100000, guid: a7db9a4c08d8ef54484911b8305efd11, type: 2}

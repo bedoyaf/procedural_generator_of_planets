@@ -1,12 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
-public enum HeightType { Ocean, Low, Medium, High, Mountain }
-public enum TemperatureType { Cold, Temperate, Hot }
-
-public enum SlopeType { Flat, Steep, MildlySteep }
-
+/// <summary>
+/// Class that represents and stores the biom data, mainly the bioms requirements on position and texture
+/// </summary>
 [CreateAssetMenu(fileName = "NewBiome", menuName = "Planet Generation/Biome")]
 public class BiomeSO : ScriptableObject
 {
@@ -17,11 +14,9 @@ public class BiomeSO : ScriptableObject
 
     public Texture2D biomeTexture;
 
-
-    //   public Color tint;
-    public List<HeightType> supportedHeights;
-    public List<TemperatureType> supportedTemperatures;
-    public List<SlopeType> supportedSlopes;
+    public List<BiomAttributeHeight> supportedHeights;
+    public List<BiomAttributeTemp> supportedTemperatures;
+    public List<BiomAttributeSlope> supportedSlopes;
 
     // Optional weights, for more nuanced matching
     [Range(0f, 1f)] public float heightAffinity = 1f;

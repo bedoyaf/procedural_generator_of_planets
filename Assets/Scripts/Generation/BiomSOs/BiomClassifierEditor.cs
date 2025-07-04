@@ -1,65 +1,100 @@
-// BiomeClassifierEditor.cs
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
 
 [CustomEditor(typeof(BiomeClassifierSO))]
-public class BiomeClassifierEditor : Editor
+public class BiomeClassifierSOEditor : Editor
 {
-    private bool showHeights = true;
-    private bool showTemps = true;
-    private bool showSlopes = true;
+    /* ---------- Serialized properties ---------- */
+    private SerializedProperty heightsProp, heightRangesProp;
+    private SerializedProperty tempsProp, tempRangesProp;
+    private SerializedProperty slopesProp, slopeRangesProp;
 
+    /* ---------- Inicializace ---------- */
+    private void OnEnable()
+    {
+        heightsProp = serializedObject.FindProperty("heights");
+        heightRangesProp = serializedObject.FindProperty("heightRanges");
+
+        tempsProp = serializedObject.FindProperty("temperatures");
+        tempRangesProp = serializedObject.FindProperty("temperaturesRanges");
+
+        slopesProp = serializedObject.FindProperty("slopes");
+        slopeRangesProp = serializedObject.FindProperty("slopeRanges");
+    }
+
+    /* ---------- Hlavní Inspector ---------- */
     public override void OnInspectorGUI()
     {
         serializedObject.Update();
 
-        BiomeClassifierSO data = (BiomeClassifierSO)target;
+        EditorGUILayout.LabelField("Biome Attribute Lists", EditorStyles.boldLabel);
 
-        showHeights = EditorGUILayout.Foldout(showHeights, "Height Ranges", true);
-        if (showHeights)
-        {
-            EditorGUI.indentLevel++;
-            data.ocean = DrawFloatRange("Ocean", data.ocean);
-            data.lowHeight = DrawFloatRange("Low", data.lowHeight);
-            data.mediumHeight = DrawFloatRange("Medium", data.mediumHeight);
-            data.highHeight = DrawFloatRange("High", data.highHeight);
-            data.mountainHeight = DrawFloatRange("Mountain", data.mountainHeight);
-            EditorGUI.indentLevel--;
-        }
+        EditorGUILayout.PropertyField(heightsProp, true);
+        EditorGUILayout.PropertyField(tempsProp, true);
+        EditorGUILayout.PropertyField(slopesProp, true);
 
-        showTemps = EditorGUILayout.Foldout(showTemps, "Temperature Ranges", true);
-        if (showTemps)
-        {
-            EditorGUI.indentLevel++;
-            data.coldTemp = DrawFloatRange("Cold", data.coldTemp);
-            data.temperateTemp = DrawFloatRange("Temperate", data.temperateTemp);
-            data.hotTemp = DrawFloatRange("Hot", data.hotTemp);
-            EditorGUI.indentLevel--;
-        }
+        EditorGUILayout.Space(10);
 
-        showSlopes = EditorGUILayout.Foldout(showSlopes, "Slope Ranges", true);
-        if (showSlopes)
-        {
-            EditorGUI.indentLevel++;
-            data.flatSlope = DrawFloatRange("Flat", data.flatSlope);
-            data.mildlySteepSlope = DrawFloatRange("Mild", data.mildlySteepSlope);
-            data.steepSlope = DrawFloatRange("Steep", data.steepSlope);
-            EditorGUI.indentLevel--;
-        }
+        DrawAttributeSection("Height Types", heightsProp, heightRangesProp);
+        EditorGUILayout.Space(6);
+
+        DrawAttributeSection("Temperature Types", tempsProp, tempRangesProp);
+        EditorGUILayout.Space(6);
+
+        DrawAttributeSection("Slope Types", slopesProp, slopeRangesProp);
 
         serializedObject.ApplyModifiedProperties();
+    }
 
-        if (GUI.changed)
+    /* ---------- Jedna sekce (atributy + rozsahy) ---------- */
+    private void DrawAttributeSection(string label,
+                                      SerializedProperty attrList,
+                                      SerializedProperty rangeList)
+    {
+       
+
+        EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
+
+        // Ujisti se, že rangeList má stejnou délku jako attrList
+        SyncRangeListSize(attrList, rangeList);
+
+        for (int i = 0; i < attrList.arraySize; i++)
         {
-            EditorUtility.SetDirty(data);
+            EditorGUILayout.BeginVertical("box");
+
+            // 1) Atribut (ScriptableObject / SO)
+            SerializedProperty attrElement = attrList.GetArrayElementAtIndex(i);
+            EditorGUILayout.PropertyField(attrElement, new GUIContent($"Element {i}"));
+
+            // 2) Rozsah (min / max)
+            if (attrElement.objectReferenceValue != null)
+            {
+                SerializedProperty rangeElement = rangeList.GetArrayElementAtIndex(i);
+                SerializedProperty minProp = rangeElement.FindPropertyRelative("min");
+                SerializedProperty maxProp = rangeElement.FindPropertyRelative("max");
+
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(minProp, new GUIContent("Min"));
+                EditorGUILayout.PropertyField(maxProp, new GUIContent("Max"));
+                EditorGUI.indentLevel--;
+            }
+
+            EditorGUILayout.EndVertical();
         }
     }
 
-    private FloatRange DrawFloatRange(string label, FloatRange range)
+    /* ---------- Pomocná synchronizace velikosti ---------- */
+    private static void SyncRangeListSize(SerializedProperty sourceList,
+                                          SerializedProperty targetList)
     {
-        EditorGUILayout.LabelField(label, EditorStyles.boldLabel);
-        range.min = EditorGUILayout.FloatField("Min", range.min);
-        range.max = EditorGUILayout.FloatField("Max", range.max);
-        return range;
+        if (targetList == null) return;
+
+        while (targetList.arraySize < sourceList.arraySize)
+            targetList.InsertArrayElementAtIndex(targetList.arraySize);
+
+        while (targetList.arraySize > sourceList.arraySize)
+            targetList.DeleteArrayElementAtIndex(targetList.arraySize - 1);
     }
 }
+#endif

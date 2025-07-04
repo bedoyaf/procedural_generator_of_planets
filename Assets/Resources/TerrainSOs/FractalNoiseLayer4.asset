@@ -15,20 +15,19 @@ MonoBehaviour:
   layerEnabled: 1
   computeShader: {fileID: 7200000, guid: 1105b15d652c75c4e965343e01598507, type: 3}
   kernelName: GenerateSphereNoise
-  threadGroupSize: 512
   kernelHandle: 0
   baseScale: 0.9
   baseOctaves: 3
   baseLacunarity: 1.8
   basePersistence: 0.5
   baseMultiplier: 0.8
-  ridgeScale: 2.14
+  ridgeScale: 3.26
   ridgeOctaves: 5
   ridgeLacunarity: 2.79
   ridgePersistence: 0.14
-  ridgeMultiplier: 0.78
-  ridgeMaskScale: 0.9
-  ridgeMaskOctaves: 5
+  ridgeMultiplier: 1.53
+  ridgeMaskScale: 1
+  ridgeMaskOctaves: 3
   ridgeMaskLacunarity: 1.8
   ridgeMaskPersistence: 0.5
   ridgeMaskThreshold: 0.298

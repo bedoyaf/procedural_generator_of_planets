@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d7573244af93c8242a56e11e66a74aa2, type: 3}
   m_Name: FractalNoiseLayer2 1
   m_EditorClassIdentifier: 
-  enabled: 1
-  computeShader: {fileID: 0}
-  kernelName: CSMain
+  layerEnabled: 1
+  computeShader: {fileID: 7200000, guid: f01f4b7e81d6dbd4b905742e0c6dcdeb, type: 3}
+  kernelName: GenerateSphereNoise
   kernelHandle: -1
   noiseScale: 1
   heightMultiplier: 1

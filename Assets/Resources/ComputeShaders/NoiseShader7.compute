@@ -131,6 +131,7 @@ float fbm(float3 pos, int octaves, float lacunarity, float persistence)
     return total / maxValue;
 }
 
+/*
 float smoothRidgeNoise(float3 pos, int octaves, float lacunarity, float persistence)
 {
     float total = 0.0;
@@ -155,6 +156,22 @@ float smoothRidgeNoise(float3 pos, int octaves, float lacunarity, float persiste
     }
 
     return total / maxValue;
+}*/
+//
+float ridgeNoise(float3 pos, int octaves, float lacunarity, float persistence)
+{
+    float total = 0.0, amp = 0.5, freq = 1.0, maxV = 0.0;
+    for (int i = 0; i < octaves; i++)
+    {
+        float n = snoise(pos * freq);
+        n = 1.0 - abs(n); // 
+        n *= n; // 
+        total += n * amp;
+        maxV += amp;
+        amp *= persistence;
+        freq *= lacunarity;
+    }
+    return total / maxV;
 }
 
 
@@ -176,26 +193,36 @@ void GenerateSphereNoise(uint id : SV_DispatchThreadID)
     continent *= (continent < 0) ? 1 + oceanDepthMultiplier : 1;
 
     // Mountains masked by continent height
-    float ridge = smoothRidgeNoise(noisePos * mountainScale, mountainOctaves, mountainLacunarity, mountainPersistence);
+   // float ridge = smoothRidgeNoise(noisePos * mountainScale, mountainOctaves, mountainLacunarity, mountainPersistence);
+    float ridge = ridgeNoise(noisePos * mountainScale,
+                         mountainOctaves,
+                         mountainLacunarity,
+                         mountainPersistence);
     
-    float ridgeMask = fbm(pos * ridgeMaskScale, ridgeMaskOctaves, ridgeMaskLacunarity, ridgeMaskPersistence);
+    
+    float landMask = smoothstep(0.0, 0.3, continent);
+ /*   float ridgeMask = fbm(pos * ridgeMaskScale, ridgeMaskOctaves, ridgeMaskLacunarity, ridgeMaskPersistence);
     ridgeMask = ridgeMask * 0.5 + 0.5;
     
     float landMask = smoothstep(0.0, 0.3, continent);
 // Soft threshold to create a smooth transition
-    ridgeMask = saturate(ridgeMask /*- ridgeMaskThreshold*/)/**ridgeMaskFalloff*/;
-    
-    ridgeMask = pow(ridgeMask, 0.5);
+    ridgeMask = saturate(ridgeMask )*ridgeMaskFalloff;
+   
+    ridgeMask = pow(ridgeMask, 0.5);*/
     
  //   float ridgeMask2 = pow(saturate((continent - 0.4) / (1.0 - 0.4)), 3);
-
-    
-    
  //   float safeLand = smoothMax(continent, 0.25, 0.05); // trochu zvedni pevninu
   //  float ridgeStrengthSkibid = smoothstep(0.0, 1.0, safeLand); 
 
-//    ridge = ridge * ridgeStrengthSkibid;
-    
+    float ridgeMask = saturate((continent - 6.8) / (1.0 - 6.8));
+    ridgeMask = pow(ridgeMask, 0.53); 
+
+    float ridgeAtt = fbm(noisePos * 1,
+                     ridgeMaskOctaves,
+                     2.0, ridgeMaskPersistence);
+    ridgeAtt = saturate(ridgeAtt);
+    ridgeMask *= ridgeAtt * ridgeMaskScale;
+
     
  //  heights[id] += ridgeMask;
     

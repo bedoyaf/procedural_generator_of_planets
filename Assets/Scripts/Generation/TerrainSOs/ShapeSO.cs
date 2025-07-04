@@ -15,8 +15,6 @@ public abstract class TerrainLayerSO : ScriptableObject
     [SerializeField] public ComputeShader computeShader;
     [SerializeField] public string kernelName = "CSMain"; 
 
-    [SerializeField] protected int threadGroupSize = 512;
-
     protected float radius;
 
     [HideInInspector] public int kernelHandle = -1;
@@ -55,7 +53,7 @@ public abstract class TerrainLayerSO : ScriptableObject
     {
         if (!layerEnabled || computeShader == null || kernelHandle < 0) return;
 
-        int threadGroups = Mathf.Max(1, Mathf.CeilToInt(numVertices / threadGroupSize));
+        int threadGroups = Mathf.Max(1, Mathf.CeilToInt(numVertices / 512.0f));
         computeShader.Dispatch(kernelHandle, threadGroups, 1, 1);
     }
 }

@@ -146,7 +146,6 @@ public class SphereMeshOptimal : ISphereMesh
     private Dictionary<(int, int), int> CreateCacheOfFaceVerticies(Edge e1, Edge e2, Edge e3)
     {
         Dictionary<(int, int), int> currentvertices = new Dictionary<(int, int), int> ();
-
         //corner
         currentvertices[(0, 0)] = e1.VertexIndices[0];
 
@@ -190,7 +189,6 @@ public class SphereMeshOptimal : ISphereMesh
     /// <remarks>
     /// the list of the newly connected triangles on the face
     /// </remarks>
-
     private List<Triangle> ConnectVerticiesToTriangles(Dictionary<(int, int), int> currentvertices, int numOfVerticiesOnEdge)
     {
         List<Triangle> newTriangles = new List<Triangle>(); 

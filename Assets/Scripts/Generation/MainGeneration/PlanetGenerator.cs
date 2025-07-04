@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using Unity.VisualScripting;
 
 [RequireComponent(typeof(MeshFilter))]
 public class PlanetGenerator : MonoBehaviour
@@ -29,8 +30,6 @@ public class PlanetGenerator : MonoBehaviour
     // --- Bioms ---
 
     [Header("Bioms")]
-    [Header("Slopes")]
-    [SerializeField, Range(0f, 90f)] private float slopeThreshold = 30f;
     [Header("Temperature Settings")]
     [Tooltip("Temperature equator")]
     [SerializeField, Range(0f, 1f)] private float equatorTemperature = 1.0f;
@@ -110,6 +109,7 @@ public class PlanetGenerator : MonoBehaviour
     [ContextMenu("Generate Planet (Mesh + Terrain)")]
     public void GeneratePlanetAndTerrain()
     {
+        if (biomPipeline.RegeratedMesh) ResetMesh();
         // Generate sphere data first
         if (GenerateSphereData(planetSettings, planetData))
         {
@@ -120,6 +120,7 @@ public class PlanetGenerator : MonoBehaviour
     [ContextMenu("Generate Planet with water (Mesh + Terrain)")]
     public void GeneratePlanetAndTerrainWater()
     {
+        if(biomPipeline.RegeratedMesh) ResetMesh();
         // Generate sphere data first
         if (GenerateSphereData(planetSettings,planetData))
         {
@@ -131,6 +132,7 @@ public class PlanetGenerator : MonoBehaviour
     [ContextMenu("Generate Sphere Mesh Only")]
     public void GenerateSphereMesh()
     {
+        if (biomPipeline.RegeratedMesh) ResetMesh();
         if (GenerateSphereData(planetSettings,planetData))
         {
             ApplyDataToMesh(true,planetSettings,planetData); 
@@ -162,7 +164,7 @@ public class PlanetGenerator : MonoBehaviour
             data.processedVertices = new Vector3[data.numVertices];
             data.processedHeights = new float[data.numVertices]; // Heights are calculated later
 
-            biomPipeline.UpdateBiomPipeline(settings.radius, data.processedHeights);
+            biomPipeline.UpdateBiomPipeline( data.processedHeights);
 
             // Initialize the terrain pipeline processor with the correct vertex count
             if (terrainPipelineProcessor == null) terrainPipelineProcessor = new TerrainPipelineProcessor();
@@ -190,8 +192,6 @@ public class PlanetGenerator : MonoBehaviour
             data.generatedMesh.vertices = sphereMeshGenerator.BaseVertices.ToArray();
             // Set triangles (indices) - this doesn't change with terrain height
             data.generatedMesh.triangles = sphereMeshGenerator.Triangles;
-
-            biomPipeline.UpdateBiomPipelineMesh(data.generatedMesh);
 
             // Vertices will be set by ApplyDataToMesh
             Debug.Log("Sphere data generated successfully.");
@@ -240,7 +240,7 @@ public class PlanetGenerator : MonoBehaviour
         {
             // Store the results if successful
             data.processedHeights = finalHeights;
-            biomPipeline.UpdateBiomPipeline(settings.radius, data.processedHeights);
+            biomPipeline.UpdateBiomPipeline(data.processedHeights);
             // 3. Apply results to the mesh
             ApplyDataToMesh(false, settings, data); // Apply calculated heights
         }
@@ -250,6 +250,21 @@ public class PlanetGenerator : MonoBehaviour
             // Optionally revert mesh to base state
             // ApplyDataToMesh(true);
         }
+    }
+
+    private void ResetMesh()
+    {
+        planetData.meshFilter.mesh = null;
+
+ //       MeshFilter meshFilter;
+
+        planetData.generatedMesh=null;
+        planetData.baseVertices=null;      // Raw unit sphere vertices
+        planetData.processedHeights=null;    // Final height multipliers from GPU
+        planetData.processedVertices=null; // Final world-space vertices for mesh
+        planetData.numVertices = 0;
+        planetData.meshDataGenerated = false; // Tracks if sphere data exists
+        planetData.pipelineInitialized = false; // Tracks if processor is ready
     }
 
 
@@ -313,12 +328,10 @@ public class PlanetGenerator : MonoBehaviour
         data.generatedMesh.RecalculateBounds(); // Crucial!
         Debug.Log("Mesh updated.");
 
-        biomPipeline.UpdateBiomPipelineMesh(data.generatedMesh);
-
         if(generateBioms && settings.hasBioms)
         {
-            biomPipeline.UpdateBiomPipelineValues(slopeThreshold,equatorTemperature,poleTemperature,temperatureNoiseScale,temperatureNoiseStrength,transform/*,delta*/);
-            biomPipeline.ApplyTexturesToMesh(settings.material,data.baseVertices, data.generatedMesh.normals);
+            biomPipeline.UpdateBiomPipelineValues(equatorTemperature,poleTemperature,temperatureNoiseScale,temperatureNoiseStrength/*,delta*/);
+            biomPipeline.ApplyTexturesToMesh(settings.material,data.baseVertices, data.generatedMesh.normals, data.generatedMesh.triangles);
         }
     }
 
@@ -341,5 +354,30 @@ public class PlanetGenerator : MonoBehaviour
             }
         }
         Debug.Log("Compute resources released by PlanetGenerator.");
+    }
+
+    void OnDisable()
+    {
+        ReleaseResources(planetSettings, planetData);
+        ReleaseResources(waterSettings, waterSphereData);
+    }
+
+    void OnDestroy()
+    {
+        ReleaseResources(planetSettings, planetData);
+        ReleaseResources(waterSettings, waterSphereData);
+        // Destroy the mesh asset if it's not needed elsewhere
+        if (planetData.generatedMesh != null)
+        {
+            // Use DestroyImmediate in editor context if needed, otherwise Destroy
+            if (Application.isPlaying) Destroy(planetData.generatedMesh);
+            else DestroyImmediate(planetData.generatedMesh);
+        }
+        if (waterSphereData.generatedMesh != null)
+        {
+            // Use DestroyImmediate in editor context if needed, otherwise Destroy
+            if (Application.isPlaying) Destroy(waterSphereData.generatedMesh);
+            else DestroyImmediate(waterSphereData.generatedMesh);
+        }
     }
 }

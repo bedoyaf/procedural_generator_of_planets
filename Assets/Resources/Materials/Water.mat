@@ -82,6 +82,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
+    - _IceAlpha: 1
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
@@ -92,11 +93,17 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
+    - _WaterAlpha: 0.5
     - _ZWrite: 1
+    - _heightEnd: 0.87
+    - _heightStart: 0.72
     m_Colors:
-    - _Base_Colour: {r: 0, g: 0.5790384, b: 1, a: 0.6039216}
+    - _Base_Colour: {r: 0, g: 0.5803919, b: 1, a: 0.6039216}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _Ice: {r: 1, g: 1, b: 1, a: 1}
+    - _PlanetCenter: {r: 0, g: 0, b: 0, a: 0}
+    - _Water_Colour: {r: 0, g: 0.5790384, b: 1, a: 0.6039216}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &850041473929291326

@@ -97,7 +97,6 @@ public class TerrainPipelineProcessor : IDisposable
             {
                 if (layer != null && layer.layerEnabled && layer.computeShader != null)
                 {
-                    Debug.Log("name "+layer.kernelHandle);
                     if (layer.kernelHandle < 0) layer.FindKernel(); 
                     if (layer.kernelHandle < 0)
                     {

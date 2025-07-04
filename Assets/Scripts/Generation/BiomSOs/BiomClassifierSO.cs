@@ -1,111 +1,161 @@
+﻿using System.Collections.Generic;
 using UnityEngine;
+using static UnityEngine.Rendering.DebugUI;
 
 [CreateAssetMenu(fileName = "BiomeClassifier", menuName = "Planet Generation/Biome Classifier")]
 public class BiomeClassifierSO : ScriptableObject
 {
     [Header("Height Types")]
-    public FloatRange ocean;
-    public FloatRange lowHeight;
-    public FloatRange mediumHeight;
-    public FloatRange highHeight;
-    public FloatRange mountainHeight;
 
-    [Header("Temperature Types")]
-    public FloatRange coldTemp;
-    public FloatRange temperateTemp;
-    public FloatRange hotTemp;
+   [SerializeField] public List<BiomAttributeHeight> heights;
+    [SerializeField] public List<BiomAttributeTemp>  temperatures;
+    [SerializeField] public List<BiomAttributeSlope> slopes;
+
+ //   public Dictionary<BiomAttributeHeight, FloatRange> heightDict;
+ //   public Dictionary<BiomAttributeSlope, FloatRange> slopeDict;
+ //   public Dictionary<BiomAttributeTemp, FloatRange> tempDict;
 
 
-    [Header("Slope Types")]
-    public FloatRange steepSlope;
-    public FloatRange mildlySteepSlope;
-    public FloatRange flatSlope;
+    [SerializeField] public List<FloatRange> heightRanges = new();
+    [SerializeField] public List<FloatRange> temperaturesRanges = new();
+    [SerializeField] public List<FloatRange> slopeRanges = new();
 
-    public HeightType GetHeightType(float height)
+
+    public void Awake()
     {
-        if (mountainHeight.Contains(height))
+        /*  heightDict = new Dictionary< BiomAttributeHeight, FloatRange>();
+          foreach (var attr in heights)
+          {
+              if (!heightDict.ContainsKey(attr))
+                  heightDict.Add(attr, new FloatRange());
+              else Debug.LogError($"Biom attribute name {attr.name} already stored");
+          }
+
+          tempDict = new Dictionary<BiomAttributeTemp, FloatRange>();
+          foreach (var attr in temperatures)
+          {
+              if (!tempDict.ContainsKey(attr))
+                  tempDict.Add(attr, new FloatRange());
+              else Debug.LogError($"Biom attribute name {attr.name} already stored");
+          }
+
+          slopeDict = new Dictionary< BiomAttributeSlope, FloatRange>();
+          foreach (var attr in slopes)
+          {
+              if (!slopeDict.ContainsKey(attr))
+                  slopeDict.Add(attr, new FloatRange());
+              else Debug.LogError($"Biom attribute name {attr.name} already stored");
+          }*/
+        PopulateLists(heights, heightRanges, "height");
+        PopulateLists(temperatures, temperaturesRanges, "temperature");
+        PopulateLists(slopes, slopeRanges, "slope");
+    }
+
+
+    private void PopulateLists<TAttribute>(List<TAttribute> primaryList, List<FloatRange> rangeList, string typeName) where TAttribute : BiomAtrributeAbstract
+    {
+
+
+        for (int i = 0; i < primaryList.Count; i++)
         {
-            return HeightType.Mountain;
+            if (primaryList[i] == null)
+            {
+                Debug.LogWarning($"Null {typeName} attribute at index {i}. Skipping.");
+                continue;
+            }
+
+            FloatRange range = (i < rangeList.Count) ? rangeList[i] : new FloatRange();
+
         }
-        if (highHeight.Contains(height)) { 
-            return HeightType.High;
+    }
+
+
+    public float GetTypeCenter(BiomAttributeHeight type)
+    {
+        int index = heights.IndexOf(type);
+        if (index == -1)
+        {
+            Debug.LogError("Invalid BiomAttribute in biome");
+        }    
+        return (heightRanges[index].max + heightRanges[index].min) * 0.5f;
+    }
+
+    public float GetTypeCenter(BiomAttributeTemp type)
+    {
+        int index = temperatures.IndexOf(type);
+        if (index == -1)
+        {
+            Debug.LogError("Invalid BiomAttribute in biome");
         }
-        if (mediumHeight.Contains(height)) return HeightType.Medium;
-        if (lowHeight.Contains(height)) return HeightType.Low;
-        return HeightType.Mountain;
+        return (temperaturesRanges[index].max + temperaturesRanges[index].min) * 0.5f;
     }
-
-    public (float,float) GetSlopeValues(SlopeType slopeType)
+    public float GetTypeCenter(BiomAttributeSlope type)
     {
-        if (slopeType == SlopeType.Steep)
+        int index = slopes.IndexOf(type);
+        if (index == -1)
         {
-            return (steepSlope.min,steepSlope.max);
+            Debug.LogError("Invalid BiomAttribute in biome");
         }
-        if (slopeType == SlopeType.Flat)
+        return (slopeRanges[index].max + slopeRanges[index].min) * 0.5f;
+    }
+
+    public float GetTypeRange(BiomAttributeHeight type)
+    {
+        int index = heights.IndexOf(type);
+        if (index == -1)
         {
-            return (flatSlope.min, flatSlope.max);
+            Debug.LogError("Invalid BiomAttribute in biome");
         }
-        if (slopeType == SlopeType.MildlySteep)
+        return (heightRanges[index].max - heightRanges[index].min) * 0.5f;
+    }
+
+    public float GetTypeRange(BiomAttributeTemp type)
+    {
+        int index = temperatures.IndexOf(type);
+        if (index == -1)
         {
-            return (mediumHeight.min, mildlySteepSlope.max);
+            Debug.LogError("Invalid BiomAttribute in biome");
         }
-        return (-1, -1);
+        return (temperaturesRanges[index].max - temperaturesRanges[index].min) * 0.5f;
     }
-
-    public TemperatureType GetTemperatureType(float temp)
+    public float GetTypeRange(BiomAttributeSlope type)
     {
-        if (coldTemp.Contains(temp)) return TemperatureType.Cold;
-        if (temperateTemp.Contains(temp)) return TemperatureType.Temperate;
-        return TemperatureType.Hot;
-    }
-
-    public float GetTypeCenter(HeightType type)
-    {
-        return type switch
+        int index = slopes.IndexOf(type);
+        if (index == -1)
         {
-            HeightType.Ocean => (ocean.min + ocean.max) * 0.5f,
-            HeightType.Low => (lowHeight.min + lowHeight.max) * 0.5f,
-            HeightType.Medium => (mediumHeight.min + mediumHeight.max) * 0.5f,
-            HeightType.High => (highHeight.min + highHeight.max) * 0.5f,
-            HeightType.Mountain => (mountainHeight.min + mountainHeight.max) * 0.5f,
-            _ => 0f
-        };
+            Debug.LogError("Invalid BiomAttribute in biome");
+        }
+        return (slopeRanges[index].max - slopeRanges[index].min) * 0.5f;
     }
 
-    public float GetTypeCenter(TemperatureType type)
+    public BiomAttributeHeight GetHeightType(float height)
     {
-        return type switch
+        for (int i = 0;i< heightRanges.Count;i++)
         {
-            TemperatureType.Cold => (coldTemp.min + coldTemp.max) * 0.5f,
-            TemperatureType.Temperate => (temperateTemp.min + temperateTemp.max) * 0.5f,
-            TemperatureType.Hot => (hotTemp.min + hotTemp.max) * 0.5f,
-            _ => 0f
-        };
+            if (heightRanges[i].max > height && heightRanges[i].min < height) return heights[i];
+        }
+        return heights[0];
     }
 
-    public float GetTypeRange(HeightType type)
+    public BiomAttributeTemp GetTempType(float temp)
     {
-        return type switch
+        for (int i = 0; i < temperaturesRanges.Count;i++)
         {
-            HeightType.Ocean => (ocean.max - ocean.min) * 0.5f,
-            HeightType.Low => (lowHeight.max - lowHeight.min) * 0.5f,
-            HeightType.Medium => (mediumHeight.max - mediumHeight.min) * 0.5f,
-            HeightType.High => (highHeight.max - highHeight.min) * 0.5f,
-            HeightType.Mountain => (mountainHeight.max - mountainHeight.min) * 0.5f,
-            _ => 1f
-        };
+            if (temperaturesRanges[i].max > temp && heightRanges[i].min < temp) return temperatures[i];
+        }
+        return temperatures[0];
     }
 
-    public float GetTypeRange(TemperatureType type)
+    public BiomAttributeSlope GetSlopeType(float slope)
     {
-        return type switch
+        for (int i = 0; i < slopeRanges.Count;i++)
         {
-            TemperatureType.Cold => (coldTemp.max - coldTemp.min) * 0.5f,
-            TemperatureType.Temperate => (temperateTemp.max - temperateTemp.min) * 0.5f,
-            TemperatureType.Hot => (hotTemp.max - hotTemp.min) * 0.5f,
-            _ => 1f
-        };
+            if (slopeRanges[i].max > slope && slopeRanges[i].min < slope) return slopes[i];
+        }
+        return slopes[0];
     }
+
+
 }
 
 [System.Serializable]
@@ -116,3 +166,4 @@ public struct FloatRange
     public bool Contains(float value) => value >= min && value <= max;
 
 }
+
