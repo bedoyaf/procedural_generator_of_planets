@@ -12,6 +12,7 @@ public class PlanetGenerator : MonoBehaviour
     private int currentlyUsedSeed = -1;
 
     [SerializeField] SphereMeshGenerator.SphereAlgorithm sphereAlgorithm = SphereMeshGenerator.SphereAlgorithm.Optimal;
+    [SerializeField] BiomBlendType biomBlendType = BiomBlendType.Discrete;
 
     [Header("Sphere Mesh Settings")]
 
@@ -25,7 +26,7 @@ public class PlanetGenerator : MonoBehaviour
 
 
     // [SerializeField] public BiomPipeline biomPipeline;
-    private BiomPipeline biomPipeline = new BiomPipeline();
+    private BiomePipeline biomePipeline = new BiomePipeline();
 
     // --- Bioms ---
 
@@ -71,8 +72,8 @@ public class PlanetGenerator : MonoBehaviour
 
         sphereMeshGenerator = new SphereMeshGenerator();
         terrainPipelineProcessor = new TerrainPipelineProcessor();
-        if (biomPipeline == null) Debug.LogError("BiomPipeLine missing");
-        biomPipeline.Initialize(GetComponent<MeshRenderer>(),GetComponent<MeshFilter>(),biomeClassifier,biomeCollection);
+        if (biomePipeline == null) Debug.LogError("BiomPipeLine missing");
+        biomePipeline.Initialize(GetComponent<MeshRenderer>(),GetComponent<MeshFilter>(),biomeClassifier,biomeCollection);
     }
 
 
@@ -109,7 +110,7 @@ public class PlanetGenerator : MonoBehaviour
     [ContextMenu("Generate Planet (Mesh + Terrain)")]
     public void GeneratePlanetAndTerrain()
     {
-        if (biomPipeline.RegeratedMesh) ResetMesh();
+        if (biomePipeline.RegeratedMesh) ResetMesh();
         // Generate sphere data first
         if (GenerateSphereData(planetSettings, planetData))
         {
@@ -120,19 +121,25 @@ public class PlanetGenerator : MonoBehaviour
     [ContextMenu("Generate Planet with water (Mesh + Terrain)")]
     public void GeneratePlanetAndTerrainWater()
     {
-        if(biomPipeline.RegeratedMesh) ResetMesh();
+        DateTime before = DateTime.Now;
+
+        if (biomePipeline.RegeratedMesh) ResetMesh();
         // Generate sphere data first
         if (GenerateSphereData(planetSettings,planetData))
         {
             GenerateTerrain(planetSettings,planetData);
         }
         GenerateWaterSphere();
+
+        DateTime after = DateTime.Now;
+        TimeSpan duration = after.Subtract(before);
+        Debug.Log("Duration in milliseconds: " + duration.Milliseconds);
     }
 
     [ContextMenu("Generate Sphere Mesh Only")]
     public void GenerateSphereMesh()
     {
-        if (biomPipeline.RegeratedMesh) ResetMesh();
+        if (biomePipeline.RegeratedMesh) ResetMesh();
         if (GenerateSphereData(planetSettings,planetData))
         {
             ApplyDataToMesh(true,planetSettings,planetData); 
@@ -164,7 +171,7 @@ public class PlanetGenerator : MonoBehaviour
             data.processedVertices = new Vector3[data.numVertices];
             data.processedHeights = new float[data.numVertices]; // Heights are calculated later
 
-            biomPipeline.UpdateBiomPipeline( data.processedHeights);
+            biomePipeline.UpdateBiomPipeline( data.processedHeights);
 
             // Initialize the terrain pipeline processor with the correct vertex count
             if (terrainPipelineProcessor == null) terrainPipelineProcessor = new TerrainPipelineProcessor();
@@ -240,7 +247,7 @@ public class PlanetGenerator : MonoBehaviour
         {
             // Store the results if successful
             data.processedHeights = finalHeights;
-            biomPipeline.UpdateBiomPipeline(data.processedHeights);
+            biomePipeline.UpdateBiomPipeline(data.processedHeights);
             // 3. Apply results to the mesh
             ApplyDataToMesh(false, settings, data); // Apply calculated heights
         }
@@ -330,8 +337,8 @@ public class PlanetGenerator : MonoBehaviour
 
         if(generateBioms && settings.hasBioms)
         {
-            biomPipeline.UpdateBiomPipelineValues(equatorTemperature,poleTemperature,temperatureNoiseScale,temperatureNoiseStrength/*,delta*/);
-            biomPipeline.ApplyTexturesToMesh(settings.material,data.baseVertices, data.generatedMesh.normals, data.generatedMesh.triangles);
+            biomePipeline.UpdateBiomPipelineValues(equatorTemperature,poleTemperature,temperatureNoiseScale,temperatureNoiseStrength/*,delta*/);
+            biomePipeline.ApplyTexturesToMesh(settings.material,data.baseVertices, data.generatedMesh.normals, data.generatedMesh.triangles, biomBlendType);
         }
     }
 

@@ -42,8 +42,12 @@ public class OrbitCamera : MonoBehaviour
 
         // Zoom with scroll wheel
         float scroll = Input.GetAxis("Mouse ScrollWheel");
-        distance -= scroll * scrollSpeed;
-        distance = Mathf.Clamp(distance, minDistance, maxDistance);
+        if (Mathf.Abs(scroll) > 0.0001f)
+        {
+            float zoomFactor = 1f - scroll * scrollSpeed * 0.1f;
+            distance *= zoomFactor;
+            distance = Mathf.Clamp(distance, minDistance, maxDistance);
+        }
 
         // Apply transformation
         Quaternion rotation = Quaternion.Euler(pitch, yaw, 0);

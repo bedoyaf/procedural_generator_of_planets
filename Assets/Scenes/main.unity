@@ -412,7 +412,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: f7ee42e0b43fd1b44b168d6ec521f208, type: 2}
+  - {fileID: 2100000, guid: 1594b73a91c6bcf478dd1e62e1d82f0d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -461,10 +461,10 @@ MonoBehaviour:
   poleTemperature: 0
   temperatureNoiseScale: 1
   temperatureNoiseStrength: 0.2
-  biomeCollection: {fileID: 11400000, guid: 671cdc68e4afc074588a1b12e3691545, type: 2}
-  biomeClassifier: {fileID: 11400000, guid: 9def40f43272a2044982306e0ea6d3c9, type: 2}
+  biomeCollection: {fileID: 11400000, guid: 053724142764ef4449f994390ab8655e, type: 2}
+  biomeClassifier: {fileID: 11400000, guid: e2fd8182ccba1674e83ce183558dbfbd, type: 2}
   planetSettings:
-    material: {fileID: 2100000, guid: c0318d38d2475f24b81d04f7721a2e68, type: 2}
+    material: {fileID: 2100000, guid: 1594b73a91c6bcf478dd1e62e1d82f0d, type: 2}
     resolution: 300
     radius: 1
     terrainLayers:
@@ -486,14 +486,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1759935697}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0.91861886, z: 0, w: 0.39514476}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1.1762071, y: 6.0185194, z: -3.0367603}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1319176987}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: -133.45, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1820470507
 GameObject:
   m_ObjectHideFlags: 0
