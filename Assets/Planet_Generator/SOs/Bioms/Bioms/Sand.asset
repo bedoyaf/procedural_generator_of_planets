@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23897497f1b897b408153c98892f58eb, type: 3}
+  m_Name: Sand
+  m_EditorClassIdentifier: 
+  biomeTexture: {fileID: 2800000, guid: 4c5718f245255644a972c860bdad690f, type: 3}
+  supportedHeights:
+  - {fileID: 11400000, guid: e5d69e6bea57c944dad7992c19f40166, type: 2}
+  supportedTemperatures:
+  - {fileID: 11400000, guid: aa33bd860d9c4da438341bd141665e9a, type: 2}
+  supportedSlopes:
+  - {fileID: 11400000, guid: 54406f697109fdb459f296ff1285e167, type: 2}
+  heightAffinity: 1
+  slopeAffinity: 0
+  temperatureAffinity: 1
+  blenddistance: 1.2
+  heightMask: 0
+  tempMask: 0
+  slopeMask: 0

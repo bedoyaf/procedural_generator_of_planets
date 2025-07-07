@@ -131,7 +131,7 @@ GameObject:
   - component: {fileID: 1319176988}
   - component: {fileID: 1319176989}
   m_Layer: 0
-  m_Name: Oceanzmrd
+  m_Name: OceanSphere
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -456,28 +456,32 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   seed: 0
   sphereAlgorithm: 2
+  biomBlendType: 1
   generateBioms: 1
   equatorTemperature: 1
   poleTemperature: 0
   temperatureNoiseScale: 1
   temperatureNoiseStrength: 0.2
-  biomeCollection: {fileID: 11400000, guid: 053724142764ef4449f994390ab8655e, type: 2}
-  biomeClassifier: {fileID: 11400000, guid: e2fd8182ccba1674e83ce183558dbfbd, type: 2}
+  biomeCollection: {fileID: 11400000, guid: e11f9117bbe0653438d643f1543e86a7, type: 2}
+  biomeClassifier: {fileID: 11400000, guid: 9def40f43272a2044982306e0ea6d3c9, type: 2}
   planetSettings:
-    material: {fileID: 2100000, guid: 1594b73a91c6bcf478dd1e62e1d82f0d, type: 2}
     resolution: 300
     radius: 1
     terrainLayers:
     - {fileID: 11400000, guid: a6bc6a5413fc28e44a0b28c6f5475245, type: 2}
-    hasBioms: 1
+    isWaterSphere: 0
   waterSettings:
-    material: {fileID: 2100000, guid: a7db9a4c08d8ef54484911b8305efd11, type: 2}
     resolution: 300
     radius: 1
     terrainLayers:
     - {fileID: 11400000, guid: 77831bb0088f6e946bb32453caefedc1, type: 2}
-    hasBioms: 0
+    isWaterSphere: 0
   waterGameObject: {fileID: 1319176986}
+  waterMaterial: {fileID: 2100000, guid: a7db9a4c08d8ef54484911b8305efd11, type: 2}
+  materialDiscreteMax8: {fileID: 2100000, guid: 1594b73a91c6bcf478dd1e62e1d82f0d, type: 2}
+  materialDiscreteTripling: {fileID: 2100000, guid: f7ee42e0b43fd1b44b168d6ec521f208, type: 2}
+  materialSmoothMax8: {fileID: 2100000, guid: c0318d38d2475f24b81d04f7721a2e68, type: 2}
+  materialSmoothTripling: {fileID: 2100000, guid: c0318d38d2475f24b81d04f7721a2e68, type: 2}
 --- !u!4 &1759935701
 Transform:
   m_ObjectHideFlags: 0
@@ -531,7 +535,7 @@ Camera:
   m_GameObject: {fileID: 1820470507}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
+  m_ClearFlags: 2
   m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
