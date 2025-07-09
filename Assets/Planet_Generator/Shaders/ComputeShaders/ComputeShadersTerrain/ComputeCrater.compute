@@ -23,7 +23,6 @@ float floorHeight;
 float smoothness;
 float rimSteepness;
 float rimWidth;
-float sphereRadius;
 
 
 float smoothMin(float a, float b, float k)
@@ -39,10 +38,10 @@ float smoothMax(float a, float b, float k)
 
 
 
-[numthreads(512, 1, 1)] // Define the number of threads per group
+[numthreads(512, 1, 1)] 
 void ComputeCrater(uint id : SV_DispatchThreadID)
 {
-    if (id >= numVertices) // Prevent out-of-bounds access
+    if (id >= numVertices)
         return;
    
     
@@ -72,7 +71,8 @@ void ComputeCrater(uint id : SV_DispatchThreadID)
 
     }
     
-    heights[id] += /*sphereRadius +*/ craterHeight;
+    heights[id] +=  craterHeight;
+    
 }
 
 

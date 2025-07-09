@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 
 /// <summary>
-/// Runs 
+/// Runs the sphere generating algorithms
 /// </summary>
 /// /// <remarks>
 /// The generator allows to choose and run any sphereMesh with ISphereMesh

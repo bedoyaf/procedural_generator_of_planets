@@ -25,13 +25,13 @@ MonoBehaviour:
   ridgeOctaves: 5
   ridgeLacunarity: 2.79
   ridgePersistence: 0.14
-  ridgeMultiplier: 1.53
-  ridgeMaskScale: 1
+  ridgeMultiplier: 0.636
+  ridgeMaskScale: 3
   ridgeMaskOctaves: 3
-  ridgeMaskLacunarity: 1.8
-  ridgeMaskPersistence: 0.5
-  ridgeMaskThreshold: 0.298
-  ridgeMaskFalloff: 0.2
+  ridgeMaskLacunarity: 2.473
+  ridgeMaskPersistence: 0.509
+  ridgeMaskThreshold: 0.487
+  ridgeMaskFalloff: 0.0172
   oceanFloorDepth: 0.08
   oceanFloorSmoothing: 0.1
   oceanDepthMultiplier: 0.73

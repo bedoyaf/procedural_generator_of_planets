@@ -1,6 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
+
+/// <summary>
+/// Scriptable object that allows the customization and setup of the spheres values and terrain algorithms
+/// </summary>
 [System.Serializable]
 public class PlanetMeshSettings
 {
@@ -15,20 +20,4 @@ public class PlanetMeshSettings
     [SerializeField] public List<TerrainLayerSO> terrainLayers = new List<TerrainLayerSO>();
 
     [HideInInspector] public bool isWaterSphere = false;
-}
-
-public class PlanetData
-{
-    public GameObject gameobject;
-    // --- Dependencies ---
-    public MeshFilter meshFilter;
-
-    public Mesh generatedMesh;
-    public MeshRenderer meshRenderer;
-    public Vector3[] baseVertices;      // Raw unit sphere vertices
-    public float[] processedHeights;    // Final height multipliers from GPU
-    public Vector3[] processedVertices; // Final world-space vertices for mesh
-    public int numVertices;
-    public bool meshDataGenerated = false; // Tracks if sphere data exists
-    public bool pipelineInitialized = false; // Tracks if processor is ready
 }

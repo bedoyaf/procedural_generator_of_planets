@@ -76,7 +76,6 @@ public class CraterLayerSO : TerrainLayerSO
         computeShader.SetBuffer(kernelHandle, "vertices", positionBuffer);
         computeShader.SetBuffer(kernelHandle, "heights", heightBuffer);
         computeShader.SetInt("numVertices", numVertices);
-        computeShader.SetFloat("sphereRadius", radius);
 
         computeShader.SetBuffer(kernelHandle, "craters", craterBuffer); // Use consistent naming
         computeShader.SetInt("numCraters", craterList.Count);
@@ -123,14 +122,14 @@ public class CraterLayerSO : TerrainLayerSO
             return;
         }
 
-        UnityEngine.Random.State previousState = UnityEngine.Random.state; // Save current random state
-        UnityEngine.Random.InitState(seed); // Use the provided seed for reproducibility
+   //     UnityEngine.Random.State previousState = UnityEngine.Random.state; // Save current random state
+   //     UnityEngine.Random.InitState(seed); // Use the provided seed for reproducibility
 
         craterList.Clear();
         for (int i = 0; i < numCraters; i++)
         {
             int randomIndex = UnityEngine.Random.Range(0, numVertices);
-            Vector3 randomCenter = originalVertices[randomIndex].normalized * radius; // Place on sphere surface
+            Vector3 randomCenter = originalVertices[randomIndex].normalized/* * radius*/; // Place on sphere surface
 
             float randomRadius = UnityEngine.Random.Range(craterRadiusRange.x, craterRadiusRange.y);
             // Depth is essentially floorHeight in the shader context now
@@ -158,13 +157,8 @@ public class CraterLayerSO : TerrainLayerSO
         {
             craterBuffer = null; // Ensure buffer is null if no craters
         }
-
-
-        UnityEngine.Random.state = previousState; // Restore random state
-        Debug.Log($"Generated {craterList.Count} craters for layer '{this.name}'. Buffer size: {Marshal.SizeOf(typeof(CraterData))}", this);
     }
 
-    // Release buffer when SO is unloaded or destroyed
     private void OnDisable()
     {
         ReleaseBuffers();
@@ -182,10 +176,4 @@ public class CraterLayerSO : TerrainLayerSO
         cachedOriginalPositions = null; // Clear cache
         Debug.Log($"Released crater buffer for layer '{this.name}'.");
     }
-    /*
-    protected override void Reset()
-    {
-        kernelName = "ComputeCrater"; // Set default kernel name
-        base.Reset();
-    }*/
 }

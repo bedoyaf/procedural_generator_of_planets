@@ -5,58 +5,193 @@ using UnityEngine;
 [CustomEditor(typeof(PlanetGenerator))]
 public class PlanetGeneratorEditor : Editor
 {
-    private List<bool> foldouts = new List<bool>();
+    private SerializedProperty planetSOProp;
+    private SerializedProperty waterSettingsProp;
+    private SerializedProperty waterGameObjectProp;
+    private SerializedProperty waterMaterialProp;
+    private SerializedProperty materialDiscreteMax8Prop;
+    private SerializedProperty materialDiscreteTriplingProp;
+    private SerializedProperty materialSmoothMax8Prop;
+    private SerializedProperty materialSmoothTriplingProp;
+
+    private bool showPlanetSOSettingsFoldout = false;
+    private bool showWaterSettingsFoldout = false;
+    private bool showMaterialSettingsFoldout = false;
+
+    // Tato list bude opìt potøebná pro samostatnou sekci Terrain Layers
+    private List<bool> terrainLayerFoldouts = new List<bool>();
+
+    private void OnEnable()
+    {
+        planetSOProp = serializedObject.FindProperty("planetSO");
+        waterSettingsProp = serializedObject.FindProperty("waterSettings");
+        waterGameObjectProp = serializedObject.FindProperty("waterGameObject");
+        waterMaterialProp = serializedObject.FindProperty("waterMaterial");
+        materialDiscreteMax8Prop = serializedObject.FindProperty("materialDiscreteMax8");
+        materialDiscreteTriplingProp = serializedObject.FindProperty("materialDiscreteTripling");
+        materialSmoothMax8Prop = serializedObject.FindProperty("materialSmoothMax8");
+        materialSmoothTriplingProp = serializedObject.FindProperty("materialSmoothTripling");
+
+        // Inicializace foldoutù pro samostatnou sekci Terrain Layers
+        PlanetGenerator generator = (PlanetGenerator)target;
+        if (generator != null && generator.planetSO != null && generator.planetSO.meshSettings != null)
+        {
+            // Ponecháváme inicializaci zde, protože je potøeba pro samostatnou sekci
+            while (terrainLayerFoldouts.Count < generator.planetSO.meshSettings.terrainLayers.Count)
+                terrainLayerFoldouts.Add(false);
+        }
+    }
 
     public override void OnInspectorGUI()
     {
-        DrawDefaultInspector();
+        serializedObject.Update();
+
         PlanetGenerator generator = (PlanetGenerator)target;
 
+        // Vykreslíme samotný PlanetSO Object Field, aby ho bylo možné pøiøadit
+        EditorGUILayout.PropertyField(planetSOProp, true);
+
+        EditorGUILayout.Space(10);
+
+        // Vykreslení ostatních fieldù PlanetGeneratoru, které nejsou v našich foldoutech
+        SerializedProperty iterator = serializedObject.GetIterator();
+        bool enterChildren = true;
+        while (iterator.NextVisible(enterChildren))
+        {
+            enterChildren = false;
+
+            if (iterator.name == "m_Script" ||
+                iterator.name == "planetSO" ||
+                iterator.name == "waterSettings" ||
+                iterator.name == "waterGameObject" ||
+                iterator.name == "waterMaterial" ||
+                iterator.name == "materialDiscreteMax8" ||
+                iterator.name == "materialDiscreteTripling" ||
+                iterator.name == "materialSmoothMax8" ||
+                iterator.name == "materialSmoothTripling")
+            {
+                continue;
+            }
+
+            EditorGUILayout.PropertyField(iterator, true);
+        }
+
+        EditorGUILayout.Space(10);
+
+        // Vykreslení OBSAHU PlanetSO vlastností pod foldoutem (vèetnì meshSettings)
+        if (planetSOProp != null && planetSOProp.objectReferenceValue != null)
+        {
+            showPlanetSOSettingsFoldout = EditorGUILayout.Foldout(showPlanetSOSettingsFoldout, "PlanetSO Details", true);
+            if (showPlanetSOSettingsFoldout)
+            {
+                EditorGUI.indentLevel++;
+                SerializedObject nestedPlanetSO = new SerializedObject(planetSOProp.objectReferenceValue);
+                SerializedProperty currentProp = nestedPlanetSO.GetIterator();
+
+                if (currentProp.NextVisible(true))
+                {
+                    do
+                    {
+                        if (currentProp.name == "m_Script") continue;
+
+                        EditorGUILayout.PropertyField(currentProp, true);
+                    }
+                    while (currentProp.NextVisible(false));
+                }
+
+                nestedPlanetSO.ApplyModifiedProperties();
+                EditorGUI.indentLevel--;
+            }
+        }
+
+        EditorGUILayout.Space(10);
+
+        // Vykreslení Water Settings pod foldoutem
+        showWaterSettingsFoldout = EditorGUILayout.Foldout(showWaterSettingsFoldout, "Water Settings", true);
+        if (showWaterSettingsFoldout)
+        {
+            EditorGUI.indentLevel++;
+            EditorGUILayout.PropertyField(waterSettingsProp, true);
+            EditorGUILayout.PropertyField(waterGameObjectProp, true);
+            EditorGUILayout.PropertyField(waterMaterialProp, true);
+            EditorGUI.indentLevel--;
+        }
+
+        EditorGUILayout.Space(10);
+
+        // Vykreslení Material Settings pod foldoutem
+        showMaterialSettingsFoldout = EditorGUILayout.Foldout(showMaterialSettingsFoldout, "Material Settings", true);
+        if (showMaterialSettingsFoldout)
+        {
+            EditorGUI.indentLevel++;
+            EditorGUILayout.PropertyField(materialDiscreteMax8Prop, true);
+            EditorGUILayout.PropertyField(materialDiscreteTriplingProp, true);
+            EditorGUILayout.PropertyField(materialSmoothMax8Prop, true);
+            EditorGUILayout.PropertyField(materialSmoothTriplingProp, true);
+            EditorGUI.indentLevel--;
+        }
+
+        EditorGUILayout.Space(10);
+
+        // --- ZDE JE VRÁCENA SAMOSTATNÁ SEKCE TERRAIN LAYERS ---
         // Draw Terrain Layers Section
         EditorGUILayout.LabelField("Terrain Layers", EditorStyles.boldLabel);
 
-        // Make sure the foldout list is the correct size
-        while (foldouts.Count < generator.planetSettings.terrainLayers.Count)
-            foldouts.Add(false);
-
-        for (int i = 0; i < generator.planetSettings.terrainLayers.Count; i++)
+        if (generator.planetSO != null && generator.planetSO.meshSettings != null && generator.planetSO.meshSettings.terrainLayers != null)
         {
-            EditorGUILayout.BeginVertical("box");
+            // Znovu zajistíme správnou velikost seznamu foldoutù
+            while (terrainLayerFoldouts.Count < generator.planetSO.meshSettings.terrainLayers.Count)
+                terrainLayerFoldouts.Add(false);
 
-            // Draw editable object field
-            generator.planetSettings.terrainLayers[i] = (TerrainLayerSO)EditorGUILayout.ObjectField(
-                $"Layer {i}",
-                generator.planetSettings.terrainLayers[i],
-                typeof(TerrainLayerSO),
-                false
-            );
-
-            if (generator.planetSettings.terrainLayers[i] != null)
+            for (int i = 0; i < generator.planetSO.meshSettings.terrainLayers.Count; i++)
             {
-                foldouts[i] = EditorGUILayout.Foldout(foldouts[i], "Details", true);
-                if (foldouts[i])
-                {
-                    EditorGUI.indentLevel++;
-                    CreateEditor(generator.planetSettings.terrainLayers[i])?.OnInspectorGUI();
-                    EditorGUI.indentLevel--;
-                }
-            }
+                EditorGUILayout.BeginVertical("box");
 
-            EditorGUILayout.EndVertical();
+                generator.planetSO.meshSettings.terrainLayers[i] = (TerrainLayerSO)EditorGUILayout.ObjectField(
+                    $"Layer {i}",
+                    generator.planetSO.meshSettings.terrainLayers[i],
+                    typeof(TerrainLayerSO),
+                    false
+                );
+
+                if (generator.planetSO.meshSettings.terrainLayers[i] != null)
+                {
+                    terrainLayerFoldouts[i] = EditorGUILayout.Foldout(terrainLayerFoldouts[i], "Details", true);
+                    if (terrainLayerFoldouts[i])
+                    {
+                        EditorGUI.indentLevel++;
+                        CreateEditor(generator.planetSO.meshSettings.terrainLayers[i])?.OnInspectorGUI();
+                        EditorGUI.indentLevel--;
+                    }
+                }
+
+                EditorGUILayout.EndVertical();
+            }
+        }
+        else
+        {
+            EditorGUILayout.HelpBox("Assign a PlanetSO and ensure its Mesh Settings are configured to see Terrain Layers.", MessageType.Info);
         }
         EditorGUILayout.Space();
+        // --- KONEC VRÁCENÉ SEKCE ---
 
         EditorGUILayout.Space();
 
         // Buttons
         if (GUILayout.Button("Generate Sphere")) generator.GenerateSphereMesh();
-        if (GUILayout.Button("Apply Terrain")) generator.GenerateTerrain(generator.planetSettings,generator.planetData);
+        if (GUILayout.Button("Apply Terrain")) generator.GenerateTerrain(generator.planetSO.meshSettings, generator.planetData);
         if (GUILayout.Button("Generate Sphere and Terrain")) generator.GeneratePlanetAndTerrain();
         if (GUILayout.Button("Generate Sphere and Terrain and Water")) generator.GeneratePlanetAndTerrainWater();
 
         if (GUI.changed)
         {
             EditorUtility.SetDirty(generator);
+            if (generator.planetSO != null)
+            {
+                EditorUtility.SetDirty(generator.planetSO);
+            }
         }
+
+        serializedObject.ApplyModifiedProperties();
     }
 }

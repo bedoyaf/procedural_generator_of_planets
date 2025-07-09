@@ -8,11 +8,12 @@ using Unity.VisualScripting;
 public class PlanetGenerator : MonoBehaviour
 {
     [Header("Setup")]
-    [SerializeField] int seed = 0;
+    public PlanetSO planetSO;
+//    [SerializeField] int seed = 0;
     private int currentlyUsedSeed = -1;
 
     [SerializeField] SphereMeshGenerator.SphereAlgorithm sphereAlgorithm = SphereMeshGenerator.SphereAlgorithm.Optimal;
-    [SerializeField] BiomeBlendType biomBlendType = BiomeBlendType.Discrete;
+   // [SerializeField] BiomeBlendType biomBlendType = BiomeBlendType.Discrete;
 
     [Header("Sphere Mesh Settings")]
 
@@ -21,16 +22,14 @@ public class PlanetGenerator : MonoBehaviour
     private TerrainPipelineProcessor terrainPipelineProcessor;
 
     [Header("BiomStuff")]
-    public bool generateBioms = true;
-
-
+  //  public bool generateBioms = true;
 
     // [SerializeField] public BiomPipeline biomPipeline;
     private BiomePipeline biomePipeline = new BiomePipeline();
 
     // --- Bioms ---
 
-    [Header("Bioms")]
+  /*  [Header("Bioms")]
     [Header("Temperature Settings")]
     [Tooltip("Temperature equator")]
     [SerializeField, Range(0f, 1f)] private float equatorTemperature = 1.0f;
@@ -42,20 +41,18 @@ public class PlanetGenerator : MonoBehaviour
     [SerializeField] private float temperatureNoiseScale = 1.0f;
 
     [Tooltip("Strength of noise.")]
-    [SerializeField] private float temperatureNoiseStrength = 0.2f;
+    [SerializeField] private float temperatureNoiseStrength = 0.2f;*/
 
 
 
 
     [Header("References")]
-  //  [SerializeField] private Material material;
-
-    [SerializeField] private BiomeCollectionSO biomeCollection;
-    [SerializeField] private BiomeClassifierSO biomeClassifier;
+  /*  [SerializeField] private BiomeCollectionSO biomeCollection;
+    [SerializeField] private BiomeClassifierSO biomeClassifier;*/
 
 
     // --- Ocean ---
-    [SerializeField] public PlanetMeshSettings planetSettings;
+   // private PlanetMeshSettings planetSettings=null;
     [SerializeField] public PlanetMeshSettings waterSettings;
 
     [SerializeField] private GameObject waterGameObject;
@@ -83,8 +80,10 @@ public class PlanetGenerator : MonoBehaviour
         if (biomePipeline == null) Debug.LogError("BiomPipeLine missing");
 
 
-        biomePipeline.Initialize(GetComponent<MeshRenderer>(),GetComponent<MeshFilter>(),biomeClassifier,biomeCollection);
+        biomePipeline.Initialize(GetComponent<MeshRenderer>(),GetComponent<MeshFilter>(),planetSO.biomeClassifier,planetSO.biomeCollection);
         waterSettings.isWaterSphere = true;
+
+        
     }
 
 
@@ -92,40 +91,23 @@ public class PlanetGenerator : MonoBehaviour
     {
      //   planetSettings.material.SetVector("_PlanetCenter", transform.position);
 
-        if (currentlyUsedSeed != seed)
+        if (currentlyUsedSeed != planetSO.seed)
         {
-            UnityEngine.Random.InitState(seed);
-            currentlyUsedSeed = seed;
+            UnityEngine.Random.InitState(planetSO.seed);
+            currentlyUsedSeed = planetSO.seed;
             // If you want runtime updates on seed change:
             // if (meshDataGenerated) GenerateTerrain();
         }
     }
-
-   /* void OnValidate()
-    {
-        // Clamp values
-        resolution = Mathf.Max(0, resolution);
-        radius = Mathf.Max(0.1f, radius);
-        biomPipeline.UpdateBiomPipeline(radius, processedHeights);
-
-        // Re-find kernels for all layers if shaders/names changed in SOs
-        if (terrainLayers != null)
-        {
-            foreach (var layer in terrainLayers)
-            {
-                if (layer != null) layer.FindKernel();
-            }
-        }
-    }*/
 
     [ContextMenu("Generate Planet (Mesh + Terrain)")]
     public void GeneratePlanetAndTerrain()
     {
         if (biomePipeline.RegeratedMesh) ResetMesh();
         // Generate sphere data first
-        if (GenerateSphereData(planetSettings, planetData))
+        if (GenerateSphereData(planetSO.meshSettings, planetData))
         {
-            GenerateTerrain(planetSettings,planetData);
+            GenerateTerrain(planetSO.meshSettings,planetData);
         }
     }
 
@@ -136,9 +118,9 @@ public class PlanetGenerator : MonoBehaviour
 
         if (biomePipeline.RegeratedMesh) ResetMesh();
         // Generate sphere data first
-        if (GenerateSphereData(planetSettings,planetData))
+        if (GenerateSphereData(planetSO.meshSettings,planetData))
         {
-            GenerateTerrain(planetSettings,planetData);
+            GenerateTerrain(planetSO.meshSettings,planetData);
         }
         GenerateWaterSphere();
 
@@ -151,9 +133,9 @@ public class PlanetGenerator : MonoBehaviour
     public void GenerateSphereMesh()
     {
         if (biomePipeline.RegeratedMesh) ResetMesh();
-        if (GenerateSphereData(planetSettings,planetData))
+        if (GenerateSphereData(planetSO.meshSettings,planetData))
         {
-            ApplyDataToMesh(true,planetSettings,planetData); 
+            ApplyDataToMesh(true,planetSO.meshSettings,planetData); 
         }
     }
 
@@ -275,7 +257,7 @@ public class PlanetGenerator : MonoBehaviour
 
 
         // 2. Run the Terrain Pipeline
-        float[] finalHeights = terrainPipelineProcessor.ProcessTerrain(settings.terrainLayers, data.baseVertices, seed);
+        float[] finalHeights = terrainPipelineProcessor.ProcessTerrain(settings.terrainLayers, data.baseVertices, planetSO.seed);
 
         if (finalHeights != null)
         {
@@ -370,11 +352,11 @@ public class PlanetGenerator : MonoBehaviour
         data.meshFilter.mesh = data.generatedMesh;
         Debug.Log("Mesh updated.");
 
-        if(generateBioms && !settings.isWaterSphere)
+        if(planetSO.generateBioms && !settings.isWaterSphere)
         {
             biomePipeline.UpdateMaterials(materialDiscreteMax8,materialDiscreteTripling,materialSmoothMax8,materialSmoothTripling);
-            biomePipeline.UpdateBiomPipelineValues(equatorTemperature,poleTemperature,temperatureNoiseScale,temperatureNoiseStrength/*,delta*/);
-            biomePipeline.ApplyTexturesToMesh(data.baseVertices, data.generatedMesh.normals, data.generatedMesh.triangles, biomBlendType);
+            biomePipeline.UpdateBiomPipelineValues(planetSO.equatorTemperature,planetSO.poleTemperature,planetSO.temperatureNoiseScale,planetSO.temperatureNoiseStrength/*,delta*/);
+            biomePipeline.ApplyTexturesToMesh(data.baseVertices, data.generatedMesh.normals, data.generatedMesh.triangles, planetSO.biomBlendType);
         }
         else if(settings.isWaterSphere)
         {
@@ -405,13 +387,13 @@ public class PlanetGenerator : MonoBehaviour
 
     void OnDisable()
     {
-        ReleaseResources(planetSettings, planetData);
+        ReleaseResources(planetSO.meshSettings, planetData);
         ReleaseResources(waterSettings, waterSphereData);
     }
 
     void OnDestroy()
     {
-        ReleaseResources(planetSettings, planetData);
+        ReleaseResources(planetSO.meshSettings, planetData);
         ReleaseResources(waterSettings, waterSphereData);
         // Destroy the mesh asset if it's not needed elsewhere
         if (planetData.generatedMesh != null)

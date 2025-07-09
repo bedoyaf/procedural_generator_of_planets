@@ -454,22 +454,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97d4522ff5b29ac4b893c9e70c55145e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  seed: 0
+  planetSO: {fileID: 11400000, guid: 01c96d9f317dcda4c883f1079e136266, type: 2}
   sphereAlgorithm: 2
-  biomBlendType: 1
-  generateBioms: 1
-  equatorTemperature: 1
-  poleTemperature: 0
-  temperatureNoiseScale: 1
-  temperatureNoiseStrength: 0.2
-  biomeCollection: {fileID: 11400000, guid: e11f9117bbe0653438d643f1543e86a7, type: 2}
-  biomeClassifier: {fileID: 11400000, guid: 9def40f43272a2044982306e0ea6d3c9, type: 2}
-  planetSettings:
-    resolution: 300
-    radius: 1
-    terrainLayers:
-    - {fileID: 11400000, guid: a6bc6a5413fc28e44a0b28c6f5475245, type: 2}
-    isWaterSphere: 0
   waterSettings:
     resolution: 300
     radius: 1
@@ -481,7 +467,7 @@ MonoBehaviour:
   materialDiscreteMax8: {fileID: 2100000, guid: 1594b73a91c6bcf478dd1e62e1d82f0d, type: 2}
   materialDiscreteTripling: {fileID: 2100000, guid: f7ee42e0b43fd1b44b168d6ec521f208, type: 2}
   materialSmoothMax8: {fileID: 2100000, guid: c0318d38d2475f24b81d04f7721a2e68, type: 2}
-  materialSmoothTripling: {fileID: 2100000, guid: c0318d38d2475f24b81d04f7721a2e68, type: 2}
+  materialSmoothTripling: {fileID: 2100000, guid: d64fcbe6028824542876180cc024f862, type: 2}
 --- !u!4 &1759935701
 Transform:
   m_ObjectHideFlags: 0
