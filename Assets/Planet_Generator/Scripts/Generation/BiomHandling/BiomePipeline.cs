@@ -100,6 +100,7 @@ public class BiomePipeline
         this.temperatureNoiseStrength = temperatureNoiseStrength;
     }
 
+
     /// <summary>
     /// Main function for mapping bioms onto the planet, by mainly setting up the texture shaders
     /// </summary>
@@ -110,6 +111,18 @@ public class BiomePipeline
     public void ApplyTexturesToMesh(Vector3[] vertices, Vector3[] normals, int[] triangles, BiomeBlendType biomeBlendType)
     {
         Texture2DArray biomeTextureArray = GenerateBiomeTextureArray(biomeCollection);
+
+        Debug.Log($"Biome texture array: {biomeTextureArray}");
+
+        if (biomeTextureArray == null)
+        {
+            Debug.LogError("Biome Texture2DArray is NULL!");
+        }
+        else
+        {
+            Debug.Log($"Biome Texture2DArray: size={biomeTextureArray.depth}, resolution={biomeTextureArray.width}x{biomeTextureArray.height}, format={biomeTextureArray.format}");
+        }
+
 
         Material material = null;
         bool hasMoreThan8Biomes = false;
@@ -154,13 +167,13 @@ public class BiomePipeline
         this.triangles = triangles;
         //  baseVertices = vertices;
 
-        int numVertices = meshFilter.mesh.vertices.Length;//baseVertices.Length;
+        int numVertices = meshFilter.sharedMesh.vertices.Length;//baseVertices.Length;
 
 
         //Diskretni zmrdovina 
         DateTime before = DateTime.Now;
 
-        Vector3[] deformedVerticies = meshFilter.mesh.vertices;
+        Vector3[] deformedVerticies = meshFilter.sharedMesh.vertices;
 
      //   NativeArray<int> biomesPerVertex = GetBiomeForEachVertexParalel(vertices, normals);
 
@@ -177,7 +190,7 @@ public class BiomePipeline
             if (hasMoreThan8Biomes)
             {
                 RegeratedMesh = true;
-                meshFilter.mesh = BuildNewMeshDiscrete(deformedVerticies, normals, biomesPerVertex);
+                meshFilter.sharedMesh = BuildNewMeshDiscrete(deformedVerticies, normals, biomesPerVertex);
             }
             else
             {
@@ -189,7 +202,7 @@ public class BiomePipeline
         {
               var biomIndiciesWeightScores = GetTop4BiomForEachVertex(deformedVerticies, normals);
 
-            meshFilter.mesh = BuildNewMeshContinuous(deformedVerticies,normals,biomIndiciesWeightScores.Item3);
+            meshFilter.sharedMesh = BuildNewMeshContinuous(deformedVerticies,normals,biomIndiciesWeightScores.Item3);
 
           /*  float min = 0;
             float max = 0;  
@@ -220,7 +233,7 @@ public class BiomePipeline
         Debug.Log("Biom creation Duration in milliseconds: " + duration.Milliseconds);
 
 
-   //     meshRenderer.sharedMaterial = material;
+        meshRenderer.sharedMaterial = material;
     }
 
     private Mesh BuildNewMeshContinuous(Vector3[] vertices, Vector3[] normals, Dictionary<int, float>[] biomIndiciesWeightScores)
@@ -316,8 +329,8 @@ public class BiomePipeline
                 biomeWeights0[i][biom] = 1;
             }
         }
-        meshFilter.mesh.SetUVs(2, biomeWeights0);
-        meshFilter.mesh.SetUVs(3, biomeWeights1);
+        meshFilter.sharedMesh.SetUVs(2, biomeWeights0);
+        meshFilter.sharedMesh.SetUVs(3, biomeWeights1);
 
         biomesPerVertex.Dispose();
     }

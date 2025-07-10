@@ -13,11 +13,6 @@ public class BiomeClassifierSO : ScriptableObject
     [SerializeField] public List<BiomeAttributeTemp>  temperatures;
     [SerializeField] public List<BiomeAttributeSlope> slopes;
 
- //   public Dictionary<BiomAttributeHeight, FloatRange> heightDict;
- //   public Dictionary<BiomAttributeSlope, FloatRange> slopeDict;
- //   public Dictionary<BiomAttributeTemp, FloatRange> tempDict;
-
-
     [SerializeField] public List<FloatRange> heightRanges = new();
     [SerializeField] public List<FloatRange> temperaturesRanges = new();
     [SerializeField] public List<FloatRange> slopeRanges = new();
@@ -25,29 +20,6 @@ public class BiomeClassifierSO : ScriptableObject
 
     public void Awake()
     {
-        /*  heightDict = new Dictionary< BiomAttributeHeight, FloatRange>();
-          foreach (var attr in heights)
-          {
-              if (!heightDict.ContainsKey(attr))
-                  heightDict.Add(attr, new FloatRange());
-              else Debug.LogError($"Biom attribute name {attr.name} already stored");
-          }
-
-          tempDict = new Dictionary<BiomAttributeTemp, FloatRange>();
-          foreach (var attr in temperatures)
-          {
-              if (!tempDict.ContainsKey(attr))
-                  tempDict.Add(attr, new FloatRange());
-              else Debug.LogError($"Biom attribute name {attr.name} already stored");
-          }
-
-          slopeDict = new Dictionary< BiomAttributeSlope, FloatRange>();
-          foreach (var attr in slopes)
-          {
-              if (!slopeDict.ContainsKey(attr))
-                  slopeDict.Add(attr, new FloatRange());
-              else Debug.LogError($"Biom attribute name {attr.name} already stored");
-          }*/
         if (heights.Count > 0) PopulateLists(heights, heightRanges, "height");
         if (temperatures.Count > 0) PopulateLists(temperatures, temperaturesRanges, "temperature");
         if (slopes.Count > 0) PopulateLists(slopes, slopeRanges, "slope");

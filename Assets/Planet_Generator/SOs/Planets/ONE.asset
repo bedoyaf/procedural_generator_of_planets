@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1cd70f19102d4524196625250bcb6a25, type: 3}
+  m_Name: ONE
+  m_EditorClassIdentifier: 
+  seed: 0
+  meshSettings:
+    resolution: 300
+    radius: 1
+    terrainLayers:
+    - {fileID: 11400000, guid: a6bc6a5413fc28e44a0b28c6f5475245, type: 2}
+    isWaterSphere: 0
+  biomeCollection: {fileID: 11400000, guid: f8348438e11ca274bbe18a477e9aba91, type: 2}
+  biomeClassifier: {fileID: 11400000, guid: 57274b92e5f60634f9f1d41bdec2f4c3, type: 2}
+  generateBioms: 1
+  biomBlendType: 0
+  equatorTemperature: 1
+  poleTemperature: 0
+  temperatureNoiseScale: 1
+  temperatureNoiseStrength: 0.2

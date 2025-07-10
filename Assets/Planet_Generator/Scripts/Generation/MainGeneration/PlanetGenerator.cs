@@ -18,8 +18,8 @@ public class PlanetGenerator : MonoBehaviour
     [Header("Sphere Mesh Settings")]
 
     [Header("Generation Pipeline")]
-    private SphereMeshGenerator sphereMeshGenerator;
-    private TerrainPipelineProcessor terrainPipelineProcessor;
+    private SphereMeshGenerator sphereMeshGenerator = new SphereMeshGenerator();
+    private TerrainPipelineProcessor terrainPipelineProcessor = new TerrainPipelineProcessor();
 
     [Header("BiomStuff")]
   //  public bool generateBioms = true;
@@ -71,17 +71,10 @@ public class PlanetGenerator : MonoBehaviour
 
     void Awake()
     {
-        planetData.meshFilter = GetComponent<MeshFilter>();
-        waterSphereData.gameobject = waterGameObject;
-        waterSphereData.meshFilter = waterGameObject.GetComponent<MeshFilter>();
-
-        sphereMeshGenerator = new SphereMeshGenerator();
-        terrainPipelineProcessor = new TerrainPipelineProcessor();
-        if (biomePipeline == null) Debug.LogError("BiomPipeLine missing");
 
 
-        biomePipeline.Initialize(GetComponent<MeshRenderer>(),GetComponent<MeshFilter>(),planetSO.biomeClassifier,planetSO.biomeCollection);
-        waterSettings.isWaterSphere = true;
+       // biomePipeline.Initialize(GetComponent<MeshRenderer>(),GetComponent<MeshFilter>(),planetSO.biomeClassifier,planetSO.biomeCollection);
+        
 
         
     }
@@ -103,6 +96,7 @@ public class PlanetGenerator : MonoBehaviour
     [ContextMenu("Generate Planet (Mesh + Terrain)")]
     public void GeneratePlanetAndTerrain()
     {
+        planetData.meshFilter = GetComponent<MeshFilter>();
         if (biomePipeline.RegeratedMesh) ResetMesh();
         // Generate sphere data first
         if (GenerateSphereData(planetSO.meshSettings, planetData))
@@ -114,6 +108,7 @@ public class PlanetGenerator : MonoBehaviour
     [ContextMenu("Generate Planet with water (Mesh + Terrain)")]
     public void GeneratePlanetAndTerrainWater()
     {
+        planetData.meshFilter = GetComponent<MeshFilter>();
         DateTime before = DateTime.Now;
 
         if (biomePipeline.RegeratedMesh) ResetMesh();
@@ -132,6 +127,8 @@ public class PlanetGenerator : MonoBehaviour
     [ContextMenu("Generate Sphere Mesh Only")]
     public void GenerateSphereMesh()
     {
+        planetData.meshFilter = GetComponent<MeshFilter>();
+
         if (biomePipeline.RegeratedMesh) ResetMesh();
         if (GenerateSphereData(planetSO.meshSettings,planetData))
         {
@@ -141,6 +138,10 @@ public class PlanetGenerator : MonoBehaviour
 
     public void GenerateWaterSphere()
     {
+        waterSettings.isWaterSphere = true;
+        waterSphereData.gameobject = waterGameObject;
+        waterSphereData.meshFilter = waterGameObject.GetComponent<MeshFilter>();
+
         if (waterGameObject == null)
         {
             // Create new GameObject
@@ -173,6 +174,7 @@ public class PlanetGenerator : MonoBehaviour
 
     private bool GenerateSphereData(PlanetMeshSettings settings, PlanetData data)
     {
+       // if(sphereMeshGenerator==null)
         data.meshDataGenerated = sphereMeshGenerator.Generate(sphereAlgorithm, settings.resolution);
 
         if (data.meshDataGenerated)
@@ -354,6 +356,8 @@ public class PlanetGenerator : MonoBehaviour
 
         if(planetSO.generateBioms && !settings.isWaterSphere)
         {
+            biomePipeline.Initialize(GetComponent<MeshRenderer>(), GetComponent<MeshFilter>(), planetSO.biomeClassifier, planetSO.biomeCollection);
+
             biomePipeline.UpdateMaterials(materialDiscreteMax8,materialDiscreteTripling,materialSmoothMax8,materialSmoothTripling);
             biomePipeline.UpdateBiomPipelineValues(planetSO.equatorTemperature,planetSO.poleTemperature,planetSO.temperatureNoiseScale,planetSO.temperatureNoiseStrength/*,delta*/);
             biomePipeline.ApplyTexturesToMesh(data.baseVertices, data.generatedMesh.normals, data.generatedMesh.triangles, planetSO.biomBlendType);

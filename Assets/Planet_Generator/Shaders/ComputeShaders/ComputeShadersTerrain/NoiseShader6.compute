@@ -117,25 +117,6 @@ float snoise(float3 v)
     return 105.0 * dot(m * m, float4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
 }
 
-/*
-float fractalNoise(float3 pos)
-{
-    float total = 0.0;
-    float frequency = 1.0;
-    float amplitude = 1.0;
-    float maxValue = 0.0;
-
-    for (int i = 0; i < octaves; i++)
-    {
-        total += snoise(pos * frequency) * amplitude;
-        maxValue += amplitude;
-
-        amplitude *= persistence;
-        frequency *= lacunarity;
-    }
-
-    return total / maxValue; // Normalize to [-1, 1] range
-}*/
 float ridgeNoise(float3 pos, int octaves, float lacunarity, float persistence)
 {
     float total = 0.0;
@@ -146,8 +127,8 @@ float ridgeNoise(float3 pos, int octaves, float lacunarity, float persistence)
     for (int i = 0; i < octaves; i++)
     {
         float n = snoise(pos * frequency);
-        n = 1.0 - abs(n); // Invert to create ridges
-        n *= n; // Sharpen the ridges
+        n = 1.0 - abs(n); 
+        n *= n; 
 
         total += n * amplitude;
         maxValue += amplitude;
@@ -187,24 +168,15 @@ void GenerateSphereNoise(uint id : SV_DispatchThreadID)
 
     float3 noisePos = pos + noiseOffset;
 
-    // Layer 1: large scale planet shape
     float base = fbm(noisePos * baseScale, baseOctaves, baseLacunarity, basePersistence);
 
-    // Layer 2: detail noise for cliffs and mountains
     float detail = fbm(noisePos * detailScale, detailOctaves, detailLacunarity, detailPersistence);
     
     float ridges = ridgeNoise(noisePos * ridgeScale, ridgeOctaves, ridgeLacunarity, ridgePersistence);
-
-    // Combine them
-  //  float n = base * baseMultiplier + detail * detailMultiplier + ridges * ridgeMultiplier;
-    
-    
-    
     
     float ridgeMask = saturate((base - ridgeMinBase) / (1.0 - ridgeMinBase));
     ridgeMask = pow(ridgeMask, ridgeStartPower);
 
-    // Random attenuation noise for ridges (to randomly reduce ridge height)
     float ridgeAttenuation = fbm(noisePos * ridgeAttenuationFrequency, ridgeAttenuationOctaves, 2.0, ridgeAttenuationPersistence); // Applying secondary noise for random attenuation
     ridgeAttenuation = saturate(ridgeAttenuation); // Ensure the value stays between 0 and 1
 

@@ -100,23 +100,29 @@ float snoise(float3 v)
 
 
 // Simple FBM
-float fbm(float3 pos, int octaves, float lacunarity, float persistence)
+float ridgeNoise(float3 pos, int octaves, float lacunarity, float persistence)
 {
     float total = 0.0;
-    float amplitude = 1.0;
+    float amplitude = 0.5;
     float frequency = 1.0;
     float maxValue = 0.0;
 
     for (int i = 0; i < octaves; i++)
     {
-        total += snoise(pos * frequency) * amplitude;
+        float n = snoise(pos * frequency);
+        n = 1.0 - abs(n);
+        n *= n;
+
+        total += n * amplitude;
         maxValue += amplitude;
+
         amplitude *= persistence;
         frequency *= lacunarity;
     }
 
     return total / maxValue;
 }
+
 
 [numthreads(512, 1, 1)]
 void GenerateSphereNoiseOcean(uint id : SV_DispatchThreadID)
@@ -127,7 +133,7 @@ void GenerateSphereNoiseOcean(uint id : SV_DispatchThreadID)
     float3 pos = vertices[id];
     float3 noisePos = pos * detailScale + noiseOffset;
 
-    float detail = fbm(noisePos, detailOctaves, detailLacunarity, detailPersistence);
+    float detail = ridgeNoise(noisePos, detailOctaves, detailLacunarity, detailPersistence);
 
-    heights[id] += detail * detailStrength * heightMultiplier;
+    heights[id] +=  detail * detailStrength * heightMultiplier;
 }
