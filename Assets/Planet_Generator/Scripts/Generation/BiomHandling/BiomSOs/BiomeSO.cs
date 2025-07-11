@@ -18,6 +18,7 @@ public class BiomeSO : ScriptableObject
 
     [Range(1f, 2f)] public float blenddistance = 1f;
 
+    //represent the Attributes for faster calculations
     [HideInInspector] public ushort heightMask;
     [HideInInspector] public ushort tempMask;
     [HideInInspector] public ushort slopeMask;

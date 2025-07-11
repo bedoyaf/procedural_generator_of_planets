@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using static UnityEngine.Rendering.DebugUI;
 
+/// <summary>
+/// Scriptable object that defines values for Biome parameters
+/// </summary>
 [CreateAssetMenu(fileName = "BiomeClassifier", menuName = "Planet Generation/Biome Classifier")]
 public class BiomeClassifierSO : ScriptableObject
 {
@@ -18,38 +21,11 @@ public class BiomeClassifierSO : ScriptableObject
     [SerializeField] public List<FloatRange> slopeRanges = new();
 
 
-    public void Awake()
-    {
-        if (heights.Count > 0) PopulateLists(heights, heightRanges, "height");
-        if (temperatures.Count > 0) PopulateLists(temperatures, temperaturesRanges, "temperature");
-        if (slopes.Count > 0) PopulateLists(slopes, slopeRanges, "slope");
-    }
-
-    private void OnValidate()
-    {
-        PopulateLists(heights, heightRanges, "height");
-        PopulateLists(temperatures, temperaturesRanges, "temperature");
-        PopulateLists(slopes, slopeRanges, "slope");
-    }
-
-    private void PopulateLists<TAttribute>(List<TAttribute> primaryList, List<FloatRange> rangeList, string typeName) where TAttribute : BiomeAtrributeAbstract
-    {
-
-
-        for (int i = 0; i < primaryList.Count; i++)
-        {
-            if (primaryList[i] == null)
-            {
-                Debug.LogWarning($"Null {typeName} attribute at index {i}. Skipping.");
-                continue;
-            }
-
-            FloatRange range = (i < rangeList.Count) ? rangeList[i] : new FloatRange();
-
-        }
-    }
-
-
+    /// <summary>
+    /// Simple function to  get the types center
+    /// </summary>
+    /// <param name="type">the type to identify the center</param>
+    /// <returns>center value of the current attribute</returns>
     public float GetTypeCenter(BiomeAttributeHeight type)
     {
         int index = heights.IndexOf(type);
@@ -60,6 +36,11 @@ public class BiomeClassifierSO : ScriptableObject
         return (heightRanges[index].max + heightRanges[index].min) * 0.5f;
     }
 
+    /// <summary>
+    /// Simple function to  get the types center
+    /// </summary>
+    /// <param name="type">the type to identify the center</param>
+    /// <returns>center value of the current attribute</returns>
     public float GetTypeCenter(BiomeAttributeTemperatures type)
     {
         int index = temperatures.IndexOf(type);
@@ -69,6 +50,12 @@ public class BiomeClassifierSO : ScriptableObject
         }
         return (temperaturesRanges[index].max + temperaturesRanges[index].min) * 0.5f;
     }
+
+    /// <summary>
+    /// Simple function to  get the types center
+    /// </summary>
+    /// <param name="type">the type to identify the center</param>
+    /// <returns>center value of the current attribute</returns>
     public float GetTypeCenter(BiomeAttributeSlope type)
     {
         int index = slopes.IndexOf(type);
@@ -79,6 +66,11 @@ public class BiomeClassifierSO : ScriptableObject
         return (slopeRanges[index].max + slopeRanges[index].min) * 0.5f;
     }
 
+    /// <summary>
+    /// Simple function to  get the types range
+    /// </summary>
+    /// <param name="type">the type to identify the range</param>
+    /// <returns>range value of the current attribute</returns>
     public float GetTypeRange(BiomeAttributeHeight type)
     {
         int index = heights.IndexOf(type);
@@ -89,6 +81,11 @@ public class BiomeClassifierSO : ScriptableObject
         return (heightRanges[index].max - heightRanges[index].min) * 0.5f;
     }
 
+    /// <summary>
+    /// Simple function to  get the types range
+    /// </summary>
+    /// <param name="type">the type to identify the range</param>
+    /// <returns>range value of the current attribute</returns>
     public float GetTypeRange(BiomeAttributeTemperatures type)
     {
         int index = temperatures.IndexOf(type);
@@ -98,6 +95,12 @@ public class BiomeClassifierSO : ScriptableObject
         }
         return (temperaturesRanges[index].max - temperaturesRanges[index].min) * 0.5f;
     }
+
+    /// <summary>
+    /// Simple function to  get the types range
+    /// </summary>
+    /// <param name="type">the type to identify the range</param>
+    /// <returns>range value of the current attribute</returns>
     public float GetTypeRange(BiomeAttributeSlope type)
     {
         int index = slopes.IndexOf(type);
@@ -108,29 +111,44 @@ public class BiomeClassifierSO : ScriptableObject
         return (slopeRanges[index].max - slopeRanges[index].min) * 0.5f;
     }
 
+    /// <summary>
+    /// checks in what interval lies the value that corresponds to the correct type
+    /// </summary>
+    /// <param name="height">the value that we check</param>
+    /// <returns>the corresponding type</returns>
     public BiomeAttributeHeight GetHeightType(float height)
     {
         for (int i = 0;i< heightRanges.Count;i++)
         {
-            if (heightRanges[i].max > height && heightRanges[i].min < height) return heights[i];
+            if (heightRanges[i].Contains(height)) return heights[i];
         }
         return heights[0];
     }
 
+    /// <summary>
+    /// checks in what interval lies the value that corresponds to the correct type
+    /// </summary>
+    /// <param name="temp">the value that we check</param>
+    /// <returns>the corresponding type</returns>
     public BiomeAttributeTemperatures GetTempType(float temp)
     {
         for (int i = 0; i < temperaturesRanges.Count;i++)
         {
-            if (temperaturesRanges[i].max > temp && heightRanges[i].min < temp) return temperatures[i];
+            if (temperaturesRanges[i].Contains(temp)) return temperatures[i];
         }
         return temperatures[0];
     }
 
+    /// <summary>
+    /// checks in what interval lies the value that corresponds to the correct type
+    /// </summary>
+    /// <param name="slope">the value that we check</param>
+    /// <returns>the corresponding type</returns>
     public BiomeAttributeSlope GetSlopeType(float slope)
     {
         for (int i = 0; i < slopeRanges.Count;i++)
         {
-            if (slopeRanges[i].max > slope && slopeRanges[i].min < slope) return slopes[i];
+            if (slopeRanges[i].Contains(slope)) return slopes[i];
         }
         return slopes[0];
     }
@@ -152,13 +170,3 @@ public class BiomeClassifierSO : ScriptableObject
 
 
 }
-
-[System.Serializable]
-public struct FloatRange
-{
-    public float min, max;
-
-    public bool Contains(float value) => value >= min && value <= max;
-
-}
-

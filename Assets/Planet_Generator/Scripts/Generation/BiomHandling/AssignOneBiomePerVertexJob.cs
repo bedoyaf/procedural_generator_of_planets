@@ -5,21 +5,30 @@ using Unity.Mathematics;
 using UnityEngine;
 using static BiomePipeline;
 
+/// <summary>
+/// Paralel struct that find a biom for each vertex thanks to IJOBParalellelFOr
+/// </summary>
 [BurstCompile]
 struct AssignOneBiomePerVertexJob : IJobParallelFor
 {
+    //All non reference data to use in the assigment
     [ReadOnly] public NativeArray<float> heights;
     [ReadOnly] public NativeArray<Vector3> baseVertices;
     [ReadOnly] public NativeArray<Vector3> normals;
-    [ReadOnly] public BiomeClassifierData classifierData;
-    [ReadOnly] public NativeArray<BiomeData> biomeCollection;
+    [ReadOnly] public BiomeUtils.BiomeClassifierData classifierData;
+    [ReadOnly] public NativeArray<BiomeUtils.BiomeData> biomeCollection;
     public float temperatureNoiseScale;
     public float temperatureNoiseStrength;
     public float equatorTemperature;
     public float poleTemperature;
-
+    //output
     [WriteOnly] public NativeArray<int> biomeIndices;
 
+
+    /// <summary>
+    /// Goes through each vertex and finds the biom
+    /// </summary>
+    /// <param name="i">biome index</param>
     public void Execute(int i)
     {
         float height = heights[i];
@@ -40,7 +49,7 @@ struct AssignOneBiomePerVertexJob : IJobParallelFor
         int chosenBiom = 0;
         for (int b = 0; b < biomeCollection.Length; b++)
         {
-            BiomeData bd = biomeCollection[b];
+            BiomeUtils.BiomeData bd = biomeCollection[b];
             if ((bd.heightMask & hMask) != 0 &&
                  (bd.tempMask & tMask) != 0 &&
                  (bd.slopeMask & sMask) != 0)
@@ -55,11 +64,15 @@ struct AssignOneBiomePerVertexJob : IJobParallelFor
 
     int GetTypeIndex(float v, NativeArray<FloatRange> ranges)
     {
-        for (int r = 0; r < ranges.Length; r++)
-            if (v >= ranges[r].min && v <= ranges[r].max) return r;
+        for (int r = 0; r < ranges.Length; r++) if (ranges[r].Contains(v)) return r;
         return 0;
     }
 
+    /// <summary>
+    /// Same as in the main biome script calulates temperature based on distance from the equator.
+    /// </summary>
+    /// <param name="worldPosition">the vertex position</param>
+    /// <returns>The temperature value</returns>
     float CalculateTemperature(Vector3 worldPosition)
     {
         Vector3 normalized = worldPosition.normalized;
