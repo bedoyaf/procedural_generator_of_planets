@@ -7,7 +7,7 @@ using UnityEngine;
 /// Scriptable object that allows the customization and setup of the spheres values and terrain algorithms
 /// </summary>
 [System.Serializable]
-public class PlanetMeshSettings
+public class SphereMeshSettings
 {
     //   public string name = "Planet";
     //   public bool generateCollider = false;

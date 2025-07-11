@@ -171,9 +171,13 @@ public class CraterLayerSO : TerrainLayerSO
 
     public void ReleaseBuffers()
     {
-        craterBuffer?.Release();
-        craterBuffer = null;
-        cachedOriginalPositions = null; // Clear cache
-        Debug.Log($"Released crater buffer for layer '{this.name}'.");
+        if (craterBuffer != null)
+        {
+            craterBuffer?.Release();
+            craterBuffer = null;
+            cachedOriginalPositions = null; // Clear cache
+            Debug.Log($"Released crater buffer for layer '{this.name}'.");
+        }
+        cachedOriginalPositions = null;
     }
 }

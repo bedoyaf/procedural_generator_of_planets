@@ -12,8 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23897497f1b897b408153c98892f58eb, type: 3}
   m_Name: RockLower
   m_EditorClassIdentifier: 
-  biomeName: RockyLand
-  biomeColor: {r: 0.2735849, g: 0.2735849, b: 0.2735849, a: 0}
   biomeTexture: {fileID: 2800000, guid: 500930db22d232f4893e560a429f1663, type: 3}
   supportedHeights:
   - {fileID: 11400000, guid: dc7a08c73699b2c428e0edbb1bbd0d49, type: 2}
@@ -23,9 +21,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 557bf38705d89c14ebb3df8331d72dc4, type: 2}
   heightAffinity: 1
   slopeAffinity: 1
-  temperatureAffinity: 1
   blenddistance: 1.1
-  priority: 1
   heightMask: 0
   tempMask: 0
   slopeMask: 0

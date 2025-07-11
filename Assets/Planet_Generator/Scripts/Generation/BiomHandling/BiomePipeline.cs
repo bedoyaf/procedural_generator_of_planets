@@ -147,7 +147,7 @@ public class BiomePipeline
             }
             else
             {
-                material = materialSmoothMax8;
+                material = materialDiscreteMax8;
             }
         }
         else
@@ -194,35 +194,21 @@ public class BiomePipeline
             }
             else
             {
-                Debug.Log("trulimero");
                 UpdateCurrentMeshToNewBiomesMax8Discrete(biomesPerVertex);
             }
         }
         else if (biomeBlendType == BiomeBlendType.Continuous)
         {
-              var biomIndiciesWeightScores = GetTop4BiomForEachVertex(deformedVerticies, normals);
-
-            meshFilter.sharedMesh = BuildNewMeshContinuous(deformedVerticies,normals,biomIndiciesWeightScores.Item3);
-
-          /*  float min = 0;
-            float max = 0;  
-            foreach(var h in heights)
+            Debug.Log("trulimero");
+            var biomIndicesWeightScores = GetTop4BiomForEachVertex(deformedVerticies, normals);
+            if(hasMoreThan8Biomes)
             {
-                if(h < min) min = h;
-                if (h > max) max = h;
+                meshFilter.sharedMesh = BuildNewMeshContinuous(deformedVerticies, normals, biomIndicesWeightScores.Item3);
             }
-
-
-            List<Vector2> uv2 = new List<Vector2>(vertices.Length);
-
-            for (int i = 0; i < vertices.Length; i++)
+            else
             {
-            //    float slope = CalculateSlopeFromNormal(normals[i], vertices[i].normalized);
-                //float temp = CalculateTemperature(vertices[i]);
-                uv2.Add(new Vector2((heights[i]-min)/(max-min), 0)); // X = temp, Y ignored
+                UpdateCurrentMeshToNewBiomesMax8Continuous(biomIndicesWeightScores.Item1,biomIndicesWeightScores.Item2);
             }
-
-            meshFilter.mesh.SetUVs(1, uv2); // TEXCOORD1 in shader*/
 
         }
 
@@ -334,6 +320,38 @@ public class BiomePipeline
 
         biomesPerVertex.Dispose();
     }
+
+    private void UpdateCurrentMeshToNewBiomesMax8Continuous(List<Vector4> biomeIndiciesPerVertices, List<Vector4> biomeWeightsPerVertices)
+    {
+        Vector4[] biomeWeights0 = new Vector4[biomeIndiciesPerVertices.Count];
+        Vector4[] biomeWeights1 = new Vector4[biomeIndiciesPerVertices.Count];
+
+        for (int i = 0; i < biomeIndiciesPerVertices.Count; i++)
+        {
+            biomeWeights0[i] = Vector4.zero;
+            biomeWeights1[i] = Vector4.zero;
+            for (int j = 0;j<4;j++)
+            {
+                int biom = (int)biomeIndiciesPerVertices[i][j]; // délka 8
+                if (biom == -1) continue;
+                float weight = biomeWeightsPerVertices[i][j];
+
+               // if (i%1000==0&&biom == 0) Debug.Log("weight "+weight);
+
+                if (biom > 3)
+                {
+                    biomeWeights1[i][biom - 4] = weight;
+                }
+                else
+                {
+                    biomeWeights0[i][biom] = weight;
+                }
+            }
+        }
+        meshFilter.sharedMesh.SetUVs(2, biomeWeights0);
+        meshFilter.sharedMesh.SetUVs(3, biomeWeights1);
+    }
+
     private Mesh BuildNewMeshDiscrete(Vector3[] vertices, Vector3[] normals, NativeArray<int> biomesPerVertex)
     {
         int finalVertCount = triangles.Length;
@@ -434,8 +452,6 @@ public class BiomePipeline
             {
                 var biome = biomeCollection.biomes[j];
 
-       //         var supportedHeight = biome.supportedHeights[0];
-
                 float bestHeightScore = 0;
                 foreach(var h in biome.supportedHeights)
                 {
@@ -456,7 +472,7 @@ public class BiomePipeline
                     if (slopeScoreCur> bestSlopeScore) bestSlopeScore = slopeScoreCur;
                 }
                 // float slopeScore = bestSlopeScore;
-                float slopeScore = Mathf.Pow(bestSlopeScore, 4)*0;
+                float slopeScore = Mathf.Pow(bestSlopeScore, 2);
 
                 float bestTempScore = 0;
                 foreach (var t in biome.supportedTemperatures)
@@ -468,20 +484,7 @@ public class BiomePipeline
                 }
                 float tempScore = bestTempScore;
 
-             /*   if(tempScore==0)
-                {
-                    foreach (var t in biome.supportedTemperatures)
-                    {
-                        float Center = biomeClassifier.GetTypeCenter(t);
-                        float Range = biomeClassifier.GetTypeRange(t);
-                        float tempScoreCur = Mathf.Clamp01(1f - Mathf.Abs(temperature - Center) / (Range * (biome.blenddistance) + 1e-5f));
-                        Debug.Log($"{tempScoreCur} = Mathf.Clamp01(1f - Mathf.Abs({temperature} - {Center}) / ({Range} * ({biome.blenddistance} ) + 1e-5f));");
-                    }
-                }*/
-
-                float finalScore = (heightScore * biome.heightAffinity + slopeScore * biome.slopeAffinity)*  tempScore;
-
-             //    if (i % 10000 == 0) Debug.Log("rizz " + heightScore + ": " + tempRange + " " + slopeRange + " " + tempCenter + " " + slopeCenter);
+                float finalScore = (4*heightScore * biome.heightAffinity + slopeScore * biome.slopeAffinity)*  tempScore;
 
                 if (finalScore > 0)
                 {
@@ -490,48 +493,17 @@ public class BiomePipeline
             }
 
 
-
-            /*    int topIndex = 0;
-                float topWeight = 0;
-                foreach(var s in scores)
-                {
-                    if (s.Value>topWeight)
-                    {
-                        topWeight = s.Value;
-                        topIndex = s.Key;
-                    }
-                }
-                foreach(var k in scores.Keys.ToList())
-                {
-                    scores[k] = 0;
-                }
-                scores[topIndex]=1;
-            */
-       /*     bool ohio = true;
-           foreach(var s in scores.Keys)
-            {
-                if(s!=0)
-                {
-                    break;
-                    ohio = false;
-                }
-            }
-           if(ohio)
-            {
-                Debug.Log("nìco je plnì nulové");
-            }*/
-
             vertexBiomeScores[i] = scores;
 
             var top4 = scores.OrderByDescending(kv => kv.Value).Take(4).Select(kv => (kv.Key, kv.Value)).ToList();
-            while (top4.Count < 4) { top4.Add((0, 0.0f)); }
 
+            while (top4.Count < 4) {
+                  top4.Add((-1, 0.0f));
+            }
             float totalWeight = top4.Sum(s => s.Item2) + 1e-6f;
+
             perVertexIndices.Add(new Vector4(top4[0].Item1, top4[1].Item1, top4[2].Item1, top4[3].Item1));
             perVertexWeights.Add(new Vector4(top4[0].Item2 / totalWeight, top4[1].Item2 / totalWeight, top4[2].Item2 / totalWeight, top4[3].Item2 / totalWeight));
-
-
-         //    if (i % 100 == 0 && top4[0].Item1==0) Debug.Log($"váhy {top4[0].Item2/totalWeight} {top4[1].Item2/totalWeight} {top4[2].Item2/totalWeight} {top4[3].Item2/totalWeight}");
         }
         return (perVertexIndices, perVertexWeights, vertexBiomeScores);
     }
@@ -666,8 +638,6 @@ public class BiomePipeline
     }
 
 
-
-
     private Texture2DArray GenerateBiomeTextureArray(BiomeCollectionSO biomeCollection)
     {
         int textureSize = 512; // adjust based on your source textures
@@ -732,11 +702,6 @@ public class BiomePipeline
         return mask;
     }
 
-
-
-
-
-
     BiomeClassifierData ConvertClassifierToData(BiomeClassifierSO classifier)
     {
         var data = new BiomeClassifierData
@@ -755,7 +720,7 @@ public class BiomePipeline
     }
 
 
-    [Serializable]
+   // [Serializable]
     public struct BiomeData
     {
         public uint heightMask;   // bit 0 = Plains, bit 1 = Hills, …
@@ -780,9 +745,4 @@ public class BiomePipeline
     }
 
 
-}
-
-public enum BiomeBlendType{
-    Discrete,
-    Continuous
 }

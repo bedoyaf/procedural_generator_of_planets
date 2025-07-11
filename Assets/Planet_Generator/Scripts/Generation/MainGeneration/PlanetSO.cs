@@ -7,7 +7,7 @@ using UnityEngine;
 public class PlanetSO : ScriptableObject
 {
     public int seed=0;
-    public PlanetMeshSettings meshSettings;
+    public SphereMeshSettings meshSettings;
     public BiomeCollectionSO biomeCollection;
     public BiomeClassifierSO biomeClassifier;
 

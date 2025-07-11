@@ -17,11 +17,12 @@ Shader "Custom/TriplanarContinuousTripling"
             #pragma vertex vert
             #pragma fragment frag
             #pragma target 3.5
-            #include "UnityCG.cginc"
-            #include "Lighting.cginc"
+            
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
             float _Scale;
-            UNITY_DECLARE_TEX2DARRAY(_Biomes);
+            TEXTURE2D_ARRAY(_Biomes);
+            SAMPLER(sampler_Biomes);
 
             struct appdata
             {
@@ -34,16 +35,20 @@ Shader "Custom/TriplanarContinuousTripling"
             struct v2f
             {
                 float4 pos : SV_POSITION;
-                float3 worldNormal : TEXCOORD0;
-                nointerpolation float4 biomeIndices : TEXCOORD1;
-                float4 biomeWeights : TEXCOORD2;
-                float3 localPos : TEXCOORD3;
+                float3 worldPos    : TEXCOORD0;
+                float3 worldNormal : TEXCOORD1;
+                nointerpolation float4 biomeIndices : TEXCOORD2;
+                float4 biomeWeights : TEXCOORD3;
+                float3 localPos : TEXCOORD4;
             };
 
             v2f vert(appdata v)
             {
+           //     o.worldNormal = TransformObjectToWorldNormal(v.normal);
                 v2f o;
-                o.pos = UnityObjectToClipPos(v.vertex);
+                 float3 worldPos = TransformObjectToWorld(v.vertex.xyz);
+                o.worldPos = worldPos;
+                o.pos = TransformWorldToHClip(worldPos);
                 o.localPos = v.vertex.xyz; // lokální (object space) pozice
                 o.worldNormal = normalize(mul((float3x3)unity_ObjectToWorld, v.normal));
                 o.biomeIndices = v.biomeIndices;
@@ -61,11 +66,11 @@ Shader "Custom/TriplanarContinuousTripling"
                 float3 blendWeights = saturate(abs(normal));
                 blendWeights /= max(dot(blendWeights, 1.0), 1e-5);
 
-                float4 xTex = UNITY_SAMPLE_TEX2DARRAY(_Biomes, float3(uvw.yz, index));
-                float4 yTex = UNITY_SAMPLE_TEX2DARRAY(_Biomes, float3(uvw.xz, index));
-                float4 zTex = UNITY_SAMPLE_TEX2DARRAY(_Biomes, float3(uvw.xy, index));
+                float4 x = SAMPLE_TEXTURE2D_ARRAY(_Biomes, sampler_Biomes, uvw.yz, index);
+                float4 y = SAMPLE_TEXTURE2D_ARRAY(_Biomes, sampler_Biomes, uvw.xz, index);
+                float4 z = SAMPLE_TEXTURE2D_ARRAY(_Biomes, sampler_Biomes, uvw.xy, index);
 
-                return xTex * blendWeights.x + yTex * blendWeights.y + zTex * blendWeights.z;
+                return x * blendWeights.x + y * blendWeights.y + z * blendWeights.z;
             }
 
             float4 frag(v2f i) : SV_Target
@@ -73,29 +78,59 @@ Shader "Custom/TriplanarContinuousTripling"
                 float3 uvw = triplanarUV(i.localPos);
                 float3 normal = normalize(i.worldNormal);
 
-                int index0 = (int)i.biomeIndices.x;
-                int index1 = (int)i.biomeIndices.y;
-                int index2 = (int)i.biomeIndices.z;
-                int index3 = (int)i.biomeIndices.w;
+                int indices[4] = {
+                    (int)i.biomeIndices.x,
+                    (int)i.biomeIndices.y,
+                    (int)i.biomeIndices.z,
+                    (int)i.biomeIndices.w
+                };
 
-                float weight0 = i.biomeWeights.x;
-                float weight1 = i.biomeWeights.y;
-                float weight2 = i.biomeWeights.z;
-                float weight3 = i.biomeWeights.w;
+                float weights[4] = {
+                    i.biomeWeights.x,
+                    i.biomeWeights.y,
+                    i.biomeWeights.z,
+                    i.biomeWeights.w
+                };
 
-                float4 color0 = SampleBiome(uvw, normal, index0) * weight0;
-                float4 color1 = SampleBiome(uvw, normal, index1) * weight1;
-                float4 color2 = SampleBiome(uvw, normal, index2) * weight2;
-                float4 color3 = SampleBiome(uvw, normal, index3) * weight3;
+                float4 finalColor = float4(0, 0, 0, 0);
 
-                float4 finalColor = color0 + color1 + color2 + color3;
+                for (int k = 0; k < 4; ++k)
+                {
+                    int index = indices[k];
+                    float weight = weights[k];
+
+                    if (index >= 0 && weight > 0.0001)
+                    {
+                        finalColor += SampleBiome(uvw, normal, index) * weight;
+                    }
+                }
 
                 // Jednoduché osvìtlení (Lambert)
-                float3 lightDir = normalize(_WorldSpaceLightPos0.xyz);
-                float NdotL = saturate(dot(normal, lightDir));
-                float3 litColor = finalColor.rgb * _LightColor0.rgb * NdotL;
+                                InputData inputData;
+                inputData.positionWS = i.worldPos;
+                inputData.normalWS = normal;
+                inputData.viewDirectionWS = normalize(_WorldSpaceCameraPos - i.worldPos);
+                inputData.shadowCoord = TransformWorldToShadowCoord(i.worldPos);
+                inputData.fogCoord = ComputeFogFactor(i.pos.z);
+                inputData.vertexLighting = float3(0, 0, 0); // optional
+                inputData.bakedGI = float3(0, 0, 0);        // optional
+                inputData.normalizedScreenSpaceUV = float2(0, 0);
+                inputData.shadowMask = 1;
 
-                return float4(litColor, 1.0);
+                SurfaceData surfaceData;
+                surfaceData.albedo = finalColor.rgb;
+                surfaceData.alpha = 1.0;
+                surfaceData.normalTS = float3(0, 0, 1);
+                surfaceData.metallic = 0.0;
+                surfaceData.specular = float3(0.2, 0.2, 0.2); // Blinn-Phong expects this
+                surfaceData.smoothness = 0.5;
+                surfaceData.occlusion = 1.0;
+                surfaceData.emission = float3(0, 0, 0);
+                surfaceData.clearCoatMask = 0;
+                surfaceData.clearCoatSmoothness = 0;
+
+                float4 litColor = UniversalFragmentBlinnPhong(inputData, surfaceData);
+                return litColor;
             }
 
             ENDHLSL

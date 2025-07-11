@@ -10,7 +10,7 @@ public class BiomeClassifierSO : ScriptableObject
     [Header("Height Types")]
 
    [SerializeField] public List<BiomeAttributeHeight> heights;
-    [SerializeField] public List<BiomeAttributeTemp>  temperatures;
+    [SerializeField] public List<BiomeAttributeTemperatures>  temperatures;
     [SerializeField] public List<BiomeAttributeSlope> slopes;
 
     [SerializeField] public List<FloatRange> heightRanges = new();
@@ -60,7 +60,7 @@ public class BiomeClassifierSO : ScriptableObject
         return (heightRanges[index].max + heightRanges[index].min) * 0.5f;
     }
 
-    public float GetTypeCenter(BiomeAttributeTemp type)
+    public float GetTypeCenter(BiomeAttributeTemperatures type)
     {
         int index = temperatures.IndexOf(type);
         if (index == -1)
@@ -89,7 +89,7 @@ public class BiomeClassifierSO : ScriptableObject
         return (heightRanges[index].max - heightRanges[index].min) * 0.5f;
     }
 
-    public float GetTypeRange(BiomeAttributeTemp type)
+    public float GetTypeRange(BiomeAttributeTemperatures type)
     {
         int index = temperatures.IndexOf(type);
         if (index == -1)
@@ -117,7 +117,7 @@ public class BiomeClassifierSO : ScriptableObject
         return heights[0];
     }
 
-    public BiomeAttributeTemp GetTempType(float temp)
+    public BiomeAttributeTemperatures GetTempType(float temp)
     {
         for (int i = 0; i < temperaturesRanges.Count;i++)
         {
@@ -140,7 +140,7 @@ public class BiomeClassifierSO : ScriptableObject
         return heights.IndexOf(attribute);
     }
 
-    public int GetAttributeIndex(BiomeAttributeTemp attribute)
+    public int GetAttributeIndex(BiomeAttributeTemperatures attribute)
     {
         return temperatures.IndexOf(attribute);
     }

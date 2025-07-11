@@ -22,7 +22,7 @@ MonoBehaviour:
   biomeCollection: {fileID: 11400000, guid: e11f9117bbe0653438d643f1543e86a7, type: 2}
   biomeClassifier: {fileID: 11400000, guid: 9def40f43272a2044982306e0ea6d3c9, type: 2}
   generateBioms: 1
-  biomBlendType: 0
+  biomBlendType: 1
   equatorTemperature: 1
   poleTemperature: 0
   temperatureNoiseScale: 1

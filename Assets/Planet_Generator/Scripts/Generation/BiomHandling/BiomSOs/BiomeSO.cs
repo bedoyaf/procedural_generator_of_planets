@@ -10,7 +10,7 @@ public class BiomeSO : ScriptableObject
     public Texture2D biomeTexture;
 
     public List<BiomeAttributeHeight> supportedHeights;
-    public List<BiomeAttributeTemp> supportedTemperatures;
+    public List<BiomeAttributeTemperatures> supportedTemperatures;
     public List<BiomeAttributeSlope> supportedSlopes;
 
     [Range(0f, 1f)] public float heightAffinity = 1f;

@@ -1,7 +1,7 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "FractalLayerDetail", menuName = "Planet Generation/FractalLayerDetail", order = 103)]
-public class FractalNoiseLayerSOSurfaceRoughness : TerrainLayerSO
+[CreateAssetMenu(fileName = "FractalLayerDetail", menuName = "Planet Generation/Fractal Layer Detail", order = 103)]
+public class FractalLayerDetail : TerrainLayerSO
 {
     [Header("Small-Scale Ocean Detail Settings")]
     public float detailScale = 12.0f;

@@ -1,4 +1,4 @@
-#pragma kernel ComputeCrater
+#pragma kernel CSMain
 
 // Structured Buffer to hold vertex positions
 
@@ -39,7 +39,7 @@ float smoothMax(float a, float b, float k)
 
 
 [numthreads(512, 1, 1)] 
-void ComputeCrater(uint id : SV_DispatchThreadID)
+void CSMain(uint id : SV_DispatchThreadID)
 {
     if (id >= numVertices)
         return;

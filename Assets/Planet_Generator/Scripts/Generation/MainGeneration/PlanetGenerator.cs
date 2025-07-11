@@ -53,7 +53,7 @@ public class PlanetGenerator : MonoBehaviour
 
     // --- Ocean ---
    // private PlanetMeshSettings planetSettings=null;
-    [SerializeField] public PlanetMeshSettings waterSettings;
+    [SerializeField] public SphereMeshSettings waterSettings;
 
     [SerializeField] private GameObject waterGameObject;
     [SerializeField] private Material waterMaterial;
@@ -172,7 +172,7 @@ public class PlanetGenerator : MonoBehaviour
     }
 
 
-    private bool GenerateSphereData(PlanetMeshSettings settings, PlanetData data)
+    private bool GenerateSphereData(SphereMeshSettings settings, PlanetData data)
     {
        // if(sphereMeshGenerator==null)
         data.meshDataGenerated = sphereMeshGenerator.Generate(sphereAlgorithm, settings.resolution);
@@ -239,7 +239,7 @@ public class PlanetGenerator : MonoBehaviour
     }
 
     [ContextMenu("Generate Terrain Only")]
-    public void GenerateTerrain(PlanetMeshSettings settings,PlanetData data)
+    public void GenerateTerrain(SphereMeshSettings settings,PlanetData data)
     {
         // 1. Check Prerequisites
         if (!data.meshDataGenerated)
@@ -294,7 +294,7 @@ public class PlanetGenerator : MonoBehaviour
 
 
     // Renamed from ApplyProcessedDataToMesh for clarity
-    private void ApplyDataToMesh(bool useBaseHeights, PlanetMeshSettings settings, PlanetData data)
+    private void ApplyDataToMesh(bool useBaseHeights, SphereMeshSettings settings, PlanetData data)
     {
         if (!data.meshDataGenerated || data.generatedMesh == null)
         {
@@ -368,7 +368,7 @@ public class PlanetGenerator : MonoBehaviour
         }
     }
 
-    private void ReleaseResources(PlanetMeshSettings settings,PlanetData data)
+    private void ReleaseResources(SphereMeshSettings settings,PlanetData data)
     {
         // Dispose the processor to release its compute buffers
         terrainPipelineProcessor?.Dispose(); // Safely call Dispose if not null
