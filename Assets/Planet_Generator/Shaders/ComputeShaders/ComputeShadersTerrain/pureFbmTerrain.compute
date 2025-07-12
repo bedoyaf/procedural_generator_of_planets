@@ -12,7 +12,7 @@ float lacunarity;
 float persistence;
 float3 noiseOffset;
 
-// Simplex noise helper functions
+// noise algorithms used from https://github.com/ashima/webgl-noise
 float3 mod289(float3 x)
 {
     return x - floor(x * (1.0 / 289.0)) * 289.0;

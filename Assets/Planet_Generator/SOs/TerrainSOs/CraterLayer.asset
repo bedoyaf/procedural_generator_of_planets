@@ -16,9 +16,10 @@ MonoBehaviour:
   computeShader: {fileID: 7200000, guid: 6bcae5e53b6b4614984a297ee9aac033, type: 3}
   kernelName: ComputeCrater
   kernelHandle: 0
-  numCraters: 8
-  craterRadiusRange: {x: 0.05, y: 0.1}
-  floorHeightRange: {x: -0.5, y: -0.2}
-  rimWidthRange: {x: 0.1, y: 0.3}
-  rimSteepnessRange: {x: 1, y: 3}
+  userOffset: 37
+  numCraters: 7
+  craterRadiusRange: {x: 0.2, y: 0.36}
+  floorHeightRange: {x: -0.4, y: -0.3}
+  rimWidthRange: {x: 0.2, y: 0.3}
+  rimSteepnessRange: {x: 2, y: 3}
   smoothness: 0.3

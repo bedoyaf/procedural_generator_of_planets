@@ -16,19 +16,17 @@ MonoBehaviour:
   computeShader: {fileID: 7200000, guid: f01f4b7e81d6dbd4b905742e0c6dcdeb, type: 3}
   kernelName: GenerateSphereNoise
   kernelHandle: 0
-  heightMultiplier: 0.1
+  heightMultiplier: 1
   baseScale: 1
   baseOctaves: 8
   baseLacunarity: 2
   basePersistence: 0.5
   baseMultiplier: 1
-  baseNoiseScale: 1
   detailScale: 4.1
   detailOctaves: 1
   detailLacunarity: 3.87
   detailPersistence: 0.169
   detailMultiplier: 0.01
-  detailNoiseScale: 0.04
   ridgeScale: 3.1
   ridgeMultiplier: 1.47
   ridgeOctaves: 8

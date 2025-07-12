@@ -149,7 +149,7 @@ public static class BiomeUtils
     /// <returns>biome data in value type so can be used in paralel calculations</returns>
     public static NativeArray<BiomeData> PrepareBiomes(BiomeCollectionSO biomeCollection, BiomeClassifierSO biomeClassifier)
     {
-        NativeArray<BiomeData> arr = new NativeArray<BiomeData>(biomeCollection.biomes.Count, Allocator.Persistent);
+        NativeArray<BiomeData> arr = new NativeArray<BiomeData>(biomeCollection.biomes.Count, Allocator.TempJob);
         for (int i = 0; i < biomeCollection.biomes.Count; i++)
         {
             var biome = biomeCollection.biomes[i];

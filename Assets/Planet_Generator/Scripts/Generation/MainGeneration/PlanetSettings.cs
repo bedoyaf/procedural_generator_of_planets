@@ -9,9 +9,6 @@ using UnityEngine;
 [System.Serializable]
 public class SphereMeshSettings
 {
-    //   public string name = "Planet";
-    //   public bool generateCollider = false;
-//    public Material material;
     [Header("Sphere Mesh Settings")]
     [Range(0, 300)] public int resolution = 10;
     [Range(0.1f, 100)] public float radius = 1;
@@ -20,4 +17,5 @@ public class SphereMeshSettings
     [SerializeField] public List<TerrainLayerSO> terrainLayers = new List<TerrainLayerSO>();
 
     [HideInInspector] public bool isWaterSphere = false;
+
 }

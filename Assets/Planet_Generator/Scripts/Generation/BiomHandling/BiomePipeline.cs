@@ -8,7 +8,6 @@ using System.Linq;
 using UnityEngine.UIElements;
 using System.Drawing;
 using Unity.Mathematics.Geometry;
-using static SphereMeshOptimal;
 using Unity.VisualScripting;
 using Unity.Collections;
 using NUnit.Framework;
@@ -23,6 +22,7 @@ public class BiomePipeline
     private float poleTemperature = 0.0f;
     private float temperatureNoiseScale = 1.0f;
     private float temperatureNoiseStrength = 0.2f;
+    private float TextureScale = 1;
 
     [SerializeField] private Material materialDiscreteMax8;
     [SerializeField] private Material materialDiscreteTripling;
@@ -50,7 +50,6 @@ public class BiomePipeline
     /// </summary>
     public void Initialize(MeshRenderer meshRenderer, MeshFilter meshFilter, BiomeClassifierSO biomeClassifier, BiomeCollectionSO biomeCollection)
     {
-   //     meshRenderer.material = material;
         this.meshRenderer = meshRenderer;
         this.meshFilter = meshFilter;
         this.biomeClassifier = biomeClassifier;
@@ -85,13 +84,15 @@ public class BiomePipeline
         float equatorTemperature, 
         float poleTemperature, 
         float temperatureNoiseScale, 
-        float temperatureNoiseStrength
+        float temperatureNoiseStrength,
+        float textureScale
         )
     {
         this.equatorTemperature = equatorTemperature;
         this.poleTemperature =  poleTemperature;
         this.temperatureNoiseScale = temperatureNoiseScale;
         this.temperatureNoiseStrength = temperatureNoiseStrength;
+        this.TextureScale = textureScale;
     }
 
 
@@ -105,18 +106,6 @@ public class BiomePipeline
     public void ApplyTexturesToMesh(Vector3[] vertices, Vector3[] normals, int[] triangles, BiomeBlendType biomeBlendType)
     {
         Texture2DArray biomeTextureArray = BiomeUtils.GenerateBiomeTextureArray(biomeCollection);
-
-        Debug.Log($"Biome texture array: {biomeTextureArray}");
-
-        if (biomeTextureArray == null)
-        {
-            Debug.LogError("Biome Texture2DArray is NULL!");
-        }
-        else
-        {
-            Debug.Log($"Biome Texture2DArray: size={biomeTextureArray.depth}, resolution={biomeTextureArray.width}x{biomeTextureArray.height}, format={biomeTextureArray.format}");
-        }
-
 
         Material material = null;
         bool hasMoreThan8Biomes = false;
@@ -159,20 +148,12 @@ public class BiomePipeline
         RegeratedMesh = false;
 
         this.triangles = triangles;
-        //  baseVertices = vertices;
 
-        int numVertices = meshFilter.sharedMesh.vertices.Length;//baseVertices.Length;
+        int numVertices = meshFilter.sharedMesh.vertices.Length;
 
-
-        //Diskretni zmrdovina 
         DateTime before = DateTime.Now;
 
         Vector3[] deformedVerticies = meshFilter.sharedMesh.vertices;
-
-     //   NativeArray<int> biomesPerVertex = GetBiomeForEachVertexParalel(vertices, normals);
-
-
-        
 
         material.SetTexture("_Biomes", biomeTextureArray);
 
@@ -206,12 +187,11 @@ public class BiomePipeline
 
         }
 
-
+        material.SetFloat("_Scale", TextureScale);
 
         DateTime after = DateTime.Now;
         TimeSpan duration = after.Subtract(before);
         Debug.Log("Biom creation Duration in milliseconds: " + duration.Milliseconds);
-
 
         meshRenderer.sharedMaterial = material;
     }
@@ -289,6 +269,10 @@ public class BiomePipeline
         return newMesh;
     }
 
+    /// <summary>
+    /// Updates the mesh withe the biomes for discrete solution with max of 8 biomes
+    /// </summary>
+    /// <param name="biomesPerVertex">biome indices for each vertex</param>
     private void UpdateCurrentMeshToNewBiomesMax8Discrete(NativeArray<int> biomesPerVertex)
     {
         Vector4[] biomeWeights0 = new Vector4[biomesPerVertex.Length];
@@ -315,6 +299,11 @@ public class BiomePipeline
         biomesPerVertex.Dispose();
     }
 
+    /// <summary>
+    /// Updates the mesh with the correct weights for the continuous blending max 8 biomes
+    /// </summary>
+    /// <param name="biomeIndiciesPerVertices">svriptable objects containing the compute shaders that will get executed</param>
+    /// <param name="biomeWeightsPerVertices">vertecies in a spherical shape</param>
     private void UpdateCurrentMeshToNewBiomesMax8Continuous(List<Vector4> biomeIndiciesPerVertices, List<Vector4> biomeWeightsPerVertices)
     {
         Vector4[] biomeWeights0 = new Vector4[biomeIndiciesPerVertices.Count];
@@ -346,6 +335,13 @@ public class BiomePipeline
         meshFilter.sharedMesh.SetUVs(3, biomeWeights1);
     }
 
+    /// <summary>
+    /// For the discrete implementation of more than 8 biomes it creates the new mesh with triple the verticies in paralel enviroment IJobParallelFor
+    /// </summary>
+    /// <param name="layers">svriptable objects containing the compute shaders that will get executed</param>
+    /// <param name="baseVertices">vertecies in a spherical shape</param>
+    /// <param name="seed">the seed for the random generation</param>
+    /// <returns>arry of floats representing the new heights</returns>
     private Mesh BuildNewMeshDiscrete(Vector3[] vertices, Vector3[] normals, NativeArray<int> biomesPerVertex)
     {
         int finalVertCount = triangles.Length;
@@ -387,10 +383,6 @@ public class BiomePipeline
         JobHandle handle2 = job2.Schedule(triangles.Length, 64);
         handle2.Complete();
 
-        DateTime before2 = DateTime.Now;
-
-
-
         RegeratedMesh = true;
         Mesh newMesh = new Mesh();
         newMesh.indexFormat = vertsNA.Length > 65535 ?
@@ -402,9 +394,6 @@ public class BiomePipeline
         newMesh.SetTriangles(trisNA.ToArray(), 0);
         newMesh.SetUVs(2, idxNA);
         newMesh.SetUVs(3, wNA);
-        //  newMesh.RecalculateBounds();
-
-    //    meshFilter.mesh = newMesh;
 
         vertsNA.Dispose();
         normsNA.Dispose();
@@ -420,14 +409,12 @@ public class BiomePipeline
         return newMesh;
     }
 
-    
-
     /// <summary>
     /// Determind the top 4 most influential bioms for each vertex and their weights
     /// </summary>
     /// <param name="vertices">the position of the vertices</param>
     /// <param name="normals">normals of the verticies</param>
-    ///  <param name="numVertices">the number of vertices</param>
+    /// <returns>3 structures, list of 4 indicies for the vertices, list of 4 weights for the vertices, and scores for each vertex</returns>
     private (List<Vector4>,List<Vector4>, Dictionary<int, float>[]) GetTop4BiomForEachVertex(Vector3[] vertices, Vector3[] normals)
     {
         var perVertexIndices = new List<Vector4>(vertices.Length);
@@ -502,6 +489,12 @@ public class BiomePipeline
         return (perVertexIndices, perVertexWeights, vertexBiomeScores);
     }
 
+    /// <summary>
+    /// Calculates a biome for each vertex, one per vertex for the discrete implementation using IJobParallelFor so its parallel
+    /// </summary>
+    /// <param name="vertices">svriptable objects containing the compute shaders that will get executed</param>
+    /// <param name="normals">vertecies in a spherical shape</param>
+    /// <returns>the indices for each biome, ina nativeArray for future paralel calculations</returns>
     private NativeArray<int> GetBiomeForEachVertexParalel(Vector3[] vertices, Vector3[] normals)
     {
         NativeArray<int> biomesPerVertex = new NativeArray<int>(vertices.Length, Allocator.TempJob);
@@ -556,6 +549,11 @@ public class BiomePipeline
         return biomesPerVertex;
     }
 
+    /// <summary>
+    /// Determins the temperature on the vertex based on the distance from the equator
+    /// </summary>
+    /// <param name="worldPosition">svriptable objects containing the compute shaders that will get executed</param>
+    /// <returns>the temprature for the vertex</returns>
     private float CalculateTemperature(Vector3 worldPosition)
     {
         Vector3 normalized = worldPosition.normalized;

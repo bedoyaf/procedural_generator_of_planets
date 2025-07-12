@@ -16,4 +16,5 @@ public class PlanetData
     public int numVertices;
     public bool meshDataGenerated = false; // tracks if the sphere itself is generated
     public bool pipelineInitialized = false; // Tracks if terrain can be generated
+    public TerrainPipelineProcessor terrainPipelineProcessor = new TerrainPipelineProcessor();
 }

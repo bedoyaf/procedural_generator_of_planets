@@ -2,6 +2,9 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
+/// <summary>
+/// editor that helps to show relevant contents of planet generator, heavily created by chat gpt
+/// </summary>
 [CustomEditor(typeof(PlanetGenerator))]
 public class PlanetGeneratorEditor : Editor
 {
@@ -18,7 +21,6 @@ public class PlanetGeneratorEditor : Editor
     private bool showWaterSettingsFoldout = false;
     private bool showMaterialSettingsFoldout = false;
 
-    // Tato list bude opìt potøebná pro samostatnou sekci Terrain Layers
     private List<bool> terrainLayerFoldouts = new List<bool>();
 
     private void OnEnable()
@@ -32,11 +34,9 @@ public class PlanetGeneratorEditor : Editor
         materialSmoothMax8Prop = serializedObject.FindProperty("materialSmoothMax8");
         materialSmoothTriplingProp = serializedObject.FindProperty("materialSmoothTripling");
 
-        // Inicializace foldoutù pro samostatnou sekci Terrain Layers
         PlanetGenerator generator = (PlanetGenerator)target;
         if (generator != null && generator.planetSO != null && generator.planetSO.meshSettings != null)
         {
-            // Ponecháváme inicializaci zde, protože je potøeba pro samostatnou sekci
             while (terrainLayerFoldouts.Count < generator.planetSO.meshSettings.terrainLayers.Count)
                 terrainLayerFoldouts.Add(false);
         }
@@ -48,12 +48,10 @@ public class PlanetGeneratorEditor : Editor
 
         PlanetGenerator generator = (PlanetGenerator)target;
 
-        // Vykreslíme samotný PlanetSO Object Field, aby ho bylo možné pøiøadit
         EditorGUILayout.PropertyField(planetSOProp, true);
 
         EditorGUILayout.Space(10);
 
-        // Vykreslení ostatních fieldù PlanetGeneratoru, které nejsou v našich foldoutech
         SerializedProperty iterator = serializedObject.GetIterator();
         bool enterChildren = true;
         while (iterator.NextVisible(enterChildren))
@@ -78,7 +76,6 @@ public class PlanetGeneratorEditor : Editor
 
         EditorGUILayout.Space(10);
 
-        // Vykreslení OBSAHU PlanetSO vlastností pod foldoutem (vèetnì meshSettings)
         if (planetSOProp != null && planetSOProp.objectReferenceValue != null)
         {
             showPlanetSOSettingsFoldout = EditorGUILayout.Foldout(showPlanetSOSettingsFoldout, "PlanetSO Details", true);
@@ -106,7 +103,6 @@ public class PlanetGeneratorEditor : Editor
 
         EditorGUILayout.Space(10);
 
-        // Vykreslení Water Settings pod foldoutem
         showWaterSettingsFoldout = EditorGUILayout.Foldout(showWaterSettingsFoldout, "Water Settings", true);
         if (showWaterSettingsFoldout)
         {
@@ -119,7 +115,6 @@ public class PlanetGeneratorEditor : Editor
 
         EditorGUILayout.Space(10);
 
-        // Vykreslení Material Settings pod foldoutem
         showMaterialSettingsFoldout = EditorGUILayout.Foldout(showMaterialSettingsFoldout, "Material Settings", true);
         if (showMaterialSettingsFoldout)
         {
@@ -133,8 +128,6 @@ public class PlanetGeneratorEditor : Editor
 
         EditorGUILayout.Space(10);
 
-        // --- ZDE JE VRÁCENA SAMOSTATNÁ SEKCE TERRAIN LAYERS ---
-        // Draw Terrain Layers Section
         EditorGUILayout.LabelField("Terrain Layers", EditorStyles.boldLabel);
 
         if (generator.planetSO != null && generator.planetSO.meshSettings != null && generator.planetSO.meshSettings.terrainLayers != null)
@@ -173,13 +166,11 @@ public class PlanetGeneratorEditor : Editor
             EditorGUILayout.HelpBox("Assign a PlanetSO and ensure its Mesh Settings are configured to see Terrain Layers.", MessageType.Info);
         }
         EditorGUILayout.Space();
-        // --- KONEC VRÁCENÉ SEKCE ---
 
         EditorGUILayout.Space();
 
-        // Buttons
+        if (GUILayout.Button("Reset All")) generator.ResetAll();
         if (GUILayout.Button("Generate Sphere")) generator.GenerateSphereMesh();
-        if (GUILayout.Button("Apply Terrain")) generator.GenerateTerrain(generator.planetSO.meshSettings, generator.planetData);
         if (GUILayout.Button("Generate Sphere and Terrain")) generator.GeneratePlanetAndTerrain();
         if (GUILayout.Button("Generate Sphere and Terrain and Water")) generator.GeneratePlanetAndTerrainWater();
 

@@ -7,36 +7,35 @@ uint numVertices;
 float3 noiseOffset;
 float heightMultiplier;
 
-// --- Continent noise ---
+// Continent noise 
 float continentScale;
 int continentOctaves;
 float continentLacunarity;
 float continentPersistence;
 float continentStrength;
 
-// --- Ocean flattening ---
-uniform float oceanFloorDepth; // How deep the ocean floor can go
-uniform float oceanFloorSmoothing; // Controls smoothness of ocean floor
-uniform float oceanDepthMultiplier; // Multiplies depth for below-ocean areas
+// Ocean flattening 
+uniform float oceanFloorDepth;
+uniform float oceanFloorSmoothing; 
+uniform float oceanDepthMultiplier; 
 
-// --- Ridge noise for mountains ---
+// Ridge noise for mountains 
 float mountainScale;
 int mountainOctaves;
 float mountainLacunarity;
 float mountainPersistence;
 float mountainStrength;
-//float mountainMaskMin;
-//float mountainMaskPower;
 
-//ridge mask
+// Ridge mask
 float ridgeMaskScale;
 int ridgeMaskOctaves;
 float ridgeMaskLacunarity;
 float ridgeMaskPersistence;
-float ridgeMaskThreshold; // e.g. 0.4
+float ridgeMaskThreshold; 
 float ridgeMaskFalloff;
 
-
+//noise algorithms used from https://github.com/ashima/webgl-noise
+//Smooth max used from Sebastian Lague https://github.com/SebLague/Solar-System/tree/Episode_02
 float smoothMin(float a, float b, float k)
 {
     float h = max(k - abs(a - b), 0) / k;
@@ -131,33 +130,6 @@ float fbm(float3 pos, int octaves, float lacunarity, float persistence)
     return total / maxValue;
 }
 
-/*
-float smoothRidgeNoise(float3 pos, int octaves, float lacunarity, float persistence)
-{
-    float total = 0.0;
-    float amplitude = 0.5;
-    float frequency = 1.0;
-    float maxValue = 0.0;
-
-    for (int i = 0; i < octaves; i++)
-    {
-        float n = snoise(pos * frequency);
-
-        // Instead of harsh abs() ridging, use a smooth bump
-        n = (1.0 - abs(n)) * 2.0 - 1.0; // Bring into range [-1, 1]
-        n = saturate(n); // Clamp to [0, 1] for ridges
-        n = n * n * (3.0 - 2.0 * n); // Smoothstep falloff for organic feel
-
-        total += n * amplitude;
-        maxValue += amplitude;
-
-        amplitude *= persistence;
-        frequency *= lacunarity;
-    }
-
-    return total / maxValue;
-}*/
-//
 float ridgeNoise(float3 pos, int octaves, float lacunarity, float persistence)
 {
     float total = 0.0, amp = 0.5, freq = 1.0, maxV = 0.0;
@@ -192,28 +164,14 @@ void CSMain(uint id : SV_DispatchThreadID)
     continent = smoothMax(continent, oceanMask, oceanFloorSmoothing);
     continent *= (continent < 0) ? 1 + oceanDepthMultiplier : 1;
 
-    // Mountains masked by continent height
-   // float ridge = smoothRidgeNoise(noisePos * mountainScale, mountainOctaves, mountainLacunarity, mountainPersistence);
+    // Mountains
     float ridge = ridgeNoise(noisePos * mountainScale,
                          mountainOctaves,
                          mountainLacunarity,
                          mountainPersistence);
-    
-    
+    // To not generate mountains in water
     float landMask = smoothstep(0.0, 0.3, continent);
- /*   float ridgeMask = fbm(pos * ridgeMaskScale, ridgeMaskOctaves, ridgeMaskLacunarity, ridgeMaskPersistence);
-    ridgeMask = ridgeMask * 0.5 + 0.5;
-    
-    float landMask = smoothstep(0.0, 0.3, continent);
-// Soft threshold to create a smooth transition
-    ridgeMask = saturate(ridgeMask )*ridgeMaskFalloff;
-   
-    ridgeMask = pow(ridgeMask, 0.5);*/
-    
- //   float ridgeMask2 = pow(saturate((continent - 0.4) / (1.0 - 0.4)), 3);
- //   float safeLand = smoothMax(continent, 0.25, 0.05); // trochu zvedni pevninu
-  //  float ridgeStrengthSkibid = smoothstep(0.0, 1.0, safeLand); 
-
+    // 
     float ridgeMask = saturate((continent - 6.8) / (1.0 - 6.8));
     ridgeMask = pow(ridgeMask, 0.53); 
 
@@ -223,20 +181,9 @@ void CSMain(uint id : SV_DispatchThreadID)
     ridgeAtt = saturate(ridgeAtt);
     ridgeMask *= ridgeAtt * ridgeMaskScale;
 
-    
- //  heights[id] += ridgeMask;
-    
-   // float maskedRidges = smoothMax(0.0, ridge * mountainStrength * continent, 0.01);
     float maskedRidges = ridge * mountainStrength * ridgeMask* landMask;
-
-
- //   float maskedRidges =  (continent > 0.0) ? ridge * mountainStrength : 0.0;//ridge * ridgeMask * mountainStrength;
-    
-    
-    
-
+    //
     float height = continent * continentStrength + maskedRidges;
-    
-
-   heights[id] += height * heightMultiplier * 0.1;
+    //final calculation
+    heights[id] += height * heightMultiplier * 0.1;
 }

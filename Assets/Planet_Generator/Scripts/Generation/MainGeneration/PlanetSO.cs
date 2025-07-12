@@ -11,6 +11,8 @@ public class PlanetSO : ScriptableObject
     public BiomeCollectionSO biomeCollection;
     public BiomeClassifierSO biomeClassifier;
 
+    public float TextureScale = 1.0f;
+
     public bool generateBioms = true;
 
     [Header("Bioms")]

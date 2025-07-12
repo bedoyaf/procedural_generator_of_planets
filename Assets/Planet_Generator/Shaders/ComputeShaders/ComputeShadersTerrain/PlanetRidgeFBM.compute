@@ -26,14 +26,14 @@ float ridgeMultiplier;
 int ridgeOctaves;
 float ridgeLacunarity;
 float ridgePersistence;
-float ridgeMinBase; // Base minimum value for ridge mask
-float ridgeStartPower; // Exponent to control sharpness of the ridge mask
-float ridgeAttenuationScale; // Controls the scaling of ridge attenuation noise
-float ridgeAttenuationFrequency; // Controls the frequency of ridge attenuation noise
-float ridgeAttenuationOctaves; // Controls the number of octaves for ridge attenuation noise
-float ridgeAttenuationPersistence; // Controls the persistence for ridge attenuation noise
+float ridgeMinBase; 
+float ridgeStartPower; 
+float ridgeAttenuationScale; 
+float ridgeAttenuationFrequency; 
+float ridgeAttenuationOctaves;
+float ridgeAttenuationPersistence; 
 
-// Simplex noise helper functions
+//noise algorithms used from https://github.com/ashima/webgl-noise
 float3 mod289(float3 x)
 {
     return x - floor(x * (1.0 / 289.0)) * 289.0;
@@ -163,31 +163,25 @@ void CSMain(uint id : SV_DispatchThreadID)
         return;
 
     float3 pos = vertices[id];
-
+    
     float3 noisePos = pos + noiseOffset;
-
+    //for continents
     float base = fbm(noisePos * baseScale, baseOctaves, baseLacunarity, basePersistence);
-
+    //adds roughness
     float detail = fbm(noisePos * detailScale, detailOctaves, detailLacunarity, detailPersistence);
-    
+    //ridges for mountains
     float ridges = ridgeNoise(noisePos * ridgeScale, ridgeOctaves, ridgeLacunarity, ridgePersistence);
-    
+    // makes sure ridges spawn above water
+  
     float ridgeMask = saturate((base - ridgeMinBase) / (1.0 - ridgeMinBase));
     ridgeMask = pow(ridgeMask, ridgeStartPower);
-
+    //randomly flatterns the ridges
     float ridgeAttenuation = fbm(noisePos * ridgeAttenuationFrequency, ridgeAttenuationOctaves, 2.0, ridgeAttenuationPersistence); 
     ridgeAttenuation = saturate(ridgeAttenuation); 
-
+    
     float maskedRidges = ridges * ridgeMask * ridgeAttenuation * ridgeAttenuationScale;
-
-    
-    
-    
-    
-    
-//    float n = maskedRidges * ridgeMultiplier;
-
+    //combines all the algorithm values
     float n = base * baseMultiplier + detail * detailMultiplier + maskedRidges * ridgeMultiplier;
-
-    heights[id] += n * heightMultiplier;
+    //final calculation
+    heights[id] += n * heightMultiplier *0.1;
 }

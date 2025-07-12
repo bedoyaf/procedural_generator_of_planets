@@ -56,4 +56,6 @@ public abstract class TerrainLayerSO : ScriptableObject
         int threadGroups = Mathf.Max(1, Mathf.CeilToInt(numVertices / 512.0f));
         computeShader.Dispatch(kernelHandle, threadGroups, 1, 1);
     }
+
+    public abstract void ReleaseAnySpecificBuffers();
 }

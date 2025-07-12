@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99662d98b7b5a6f4fa8418ecf48c8b94, type: 3}
+  m_Name: AsteroidBiomeClassifier
+  m_EditorClassIdentifier: 
+  heights:
+  - {fileID: 11400000, guid: dc7a08c73699b2c428e0edbb1bbd0d49, type: 2}
+  temperatures:
+  - {fileID: 11400000, guid: aa33bd860d9c4da438341bd141665e9a, type: 2}
+  slopes:
+  - {fileID: 11400000, guid: 54406f697109fdb459f296ff1285e167, type: 2}
+  heightRanges:
+  - min: -1
+    max: 1
+  temperaturesRanges:
+  - min: 0
+    max: 1
+  slopeRanges:
+  - min: 0
+    max: 90

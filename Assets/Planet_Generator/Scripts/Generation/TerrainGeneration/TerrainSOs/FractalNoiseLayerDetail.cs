@@ -5,7 +5,6 @@ public class FractalLayerDetail : TerrainLayerSO
 {
     [Header("Small-Scale Ocean Detail Settings")]
     public float detailScale = 12.0f;
-    public float detailStrength = 0.02f;
     public float detailLacunarity = 2.2f;
     public float detailPersistence = 0.4f;
     public int detailOctaves = 2;
@@ -19,26 +18,26 @@ public class FractalLayerDetail : TerrainLayerSO
             return;
         }
 
-
-
         computeShader.SetBuffer(kernelHandle, "vertices", positionBuffer);
         computeShader.SetBuffer(kernelHandle, "heights", heightBuffer);
         computeShader.SetInt("numVertices", numVertices);
 
-        // Set detail noise parameters
         computeShader.SetFloat("detailScale", detailScale);
-        computeShader.SetFloat("detailStrength", detailStrength);
         computeShader.SetFloat("detailLacunarity", detailLacunarity);
         computeShader.SetFloat("detailPersistence", detailPersistence);
         computeShader.SetInt("detailOctaves", detailOctaves);
         computeShader.SetFloat("heightMultiplier", heightMultiplier);
 
-        // Random offset to avoid repetition across layers
         Vector3 offset = new Vector3(
             Random.Range(-1000f, 1000f),
             Random.Range(-1000f, 1000f),
             Random.Range(-1000f, 1000f)
         );
         computeShader.SetVector("noiseOffset", offset);
+    }
+
+    public override void ReleaseAnySpecificBuffers()
+    {
+
     }
 }

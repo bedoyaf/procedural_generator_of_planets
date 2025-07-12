@@ -18,10 +18,7 @@ public class ContinentsMountainsMaskedLayer : TerrainLayerSO
     [Range(0f, 1f)][SerializeField] private float ridgePersistence = 0.5f;
     [Range(0f, 2f)][SerializeField] private float ridgeMultiplier = 0.6f;
 
-    [Header("Ridge Masking from Base")]
-    //  [Range(0f, 1f)][SerializeField] private float ridgeMinBase = 0.4f;
-    //  [Range(0.1f, 5f)][SerializeField] private float ridgeStartPower = 2.5f;
-
+    [Header("Ridge Masking")]
     [Range(0.01f, 3f)][SerializeField] float ridgeMaskScale = 0.3f;
     [Range(1, 6)][SerializeField] int ridgeMaskOctaves = 4;
     [Range(1.5f, 3f)][SerializeField] float ridgeMaskLacunarity = 2.0f;
@@ -99,5 +96,8 @@ public class ContinentsMountainsMaskedLayer : TerrainLayerSO
 
     }
 
+    public override void ReleaseAnySpecificBuffers()
+    {
 
+    }
 }

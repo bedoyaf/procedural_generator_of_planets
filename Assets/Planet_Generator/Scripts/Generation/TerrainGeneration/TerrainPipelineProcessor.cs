@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using static UnityEditor.Experimental.GraphView.GraphView;
 
 /// <summary>
 /// Main script for running terrain generation, goes through compute shaders
@@ -32,7 +33,7 @@ public class TerrainPipelineProcessor : IDisposable
         }
 
         numVertices = vertexCount;
-        Debug.Log($"Initializing Compute Buffers for {numVertices} vertices.");
+      //  Debug.Log($"Initializing Compute Buffers for {numVertices} vertices.");
 
         try
         {
@@ -111,7 +112,15 @@ public class TerrainPipelineProcessor : IDisposable
                 else if (layer == null) { Debug.LogWarning($"Skipping layer '{layer.name}' - Compute Shader is null.", layer); }
             }
 
-            heightBuffer.GetData(currentHeights); 
+            heightBuffer.GetData(currentHeights);
+
+
+            //release data in layers
+            foreach (var layer in layers)
+            {
+                layer.ReleaseAnySpecificBuffers();
+            }
+            ReleaseBuffers();
 
             Debug.Log("Terrain Generation Pipeline Finished.");
             return currentHeights; 
@@ -129,9 +138,8 @@ public class TerrainPipelineProcessor : IDisposable
         positionBuffer = null;
         heightBuffer?.Release();
         heightBuffer = null;
-
         numVertices = 0;
-        currentHeights = null;
+      //  currentHeights = null;
     }
 
     public void Dispose()

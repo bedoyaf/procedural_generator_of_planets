@@ -9,8 +9,6 @@ using System.Collections.Generic;
 /// </remarks>
 public class SphereMeshGenerator
 {
-    public enum SphereAlgorithm { Nothing = 0, SebastianLeague = 1, Optimal = 2 }
-
     public Vector3[] BaseVertices { get; private set; }
     public int[] Triangles { get; private set; }
     public int NumVertices { get; private set; }
@@ -23,15 +21,13 @@ public class SphereMeshGenerator
     /// <param name="algorithm">enum that determins what sphere mesh algoritm will be used</param>
     /// <param name="resolution">determins the LOD in the sphere</param>
     /// <returns>returns a bool representing the success of generation</returns>
-    public bool Generate(SphereAlgorithm algorithm, int resolution) // Use float radius internally if needed by algos
+    public bool Generate( int resolution) // Use float radius internally if needed by algos
     {
-        Debug.Log($"Generating Sphere Data: Algorithm={algorithm}, Resolution={resolution}");
-        if (algorithm == SphereAlgorithm.Nothing) return false;
+   //     Debug.Log($"Generating Sphere Data: Resolution={resolution}");
 
         currentSphereMeshGenerator = null; // Reset previous generator
 
-        if (algorithm == SphereAlgorithm.SebastianLeague) currentSphereMeshGenerator = new SphereMesh(resolution);
-        else if (algorithm == SphereAlgorithm.Optimal) currentSphereMeshGenerator = new SphereMeshOptimal(resolution);
+        currentSphereMeshGenerator = new SphereMesh(resolution);
 
         if (currentSphereMeshGenerator == null)
         {

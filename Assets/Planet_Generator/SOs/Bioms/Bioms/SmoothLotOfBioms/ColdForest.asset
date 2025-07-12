@@ -20,9 +20,8 @@ MonoBehaviour:
   supportedSlopes:
   - {fileID: 11400000, guid: 54406f697109fdb459f296ff1285e167, type: 2}
   heightAffinity: 1
-  slopeAffinity: 1
-  temperatureAffinity: 1
-  blenddistance: 1.2
+  slopeAffinity: 0
+  blenddistance: 1.1
   heightMask: 0
   tempMask: 0
   slopeMask: 0

@@ -21,9 +21,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 557bf38705d89c14ebb3df8331d72dc4, type: 2}
   - {fileID: 11400000, guid: 54406f697109fdb459f296ff1285e167, type: 2}
   heightAffinity: 1
-  slopeAffinity: 1
-  temperatureAffinity: 1
-  blenddistance: 1.2
+  slopeAffinity: 0.25
+  blenddistance: 1.1
   heightMask: 0
   tempMask: 0
   slopeMask: 0

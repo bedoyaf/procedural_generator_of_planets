@@ -2,6 +2,9 @@ using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
 
+/// <summary>
+/// editor that helps to show relevant contents of planetSO, heavily created by chat gpt
+/// </summary>
 [CustomEditor(typeof(PlanetSO))]
 public class PlanetSOEditor : Editor
 {
@@ -16,7 +19,6 @@ public class PlanetSOEditor : Editor
         meshSettingsProp = serializedObject.FindProperty("meshSettings");
         planet = (PlanetSO)target;
 
-        // Init foldouts if needed
         if (planet.meshSettings != null)
         {
             int count = planet.meshSettings.terrainLayers.Count;
@@ -29,13 +31,11 @@ public class PlanetSOEditor : Editor
     {
         serializedObject.Update();
 
-        // Draw everything except meshSettings manually
         SerializedProperty prop = serializedObject.GetIterator();
         bool enterChildren = true;
         while (prop.NextVisible(enterChildren))
         {
             enterChildren = false;
-            // Pøeskoèíme meshSettings, abychom ho vykreslili ruènì
             if (prop.name == "meshSettings") continue;
 
             EditorGUILayout.PropertyField(prop, true);
@@ -43,7 +43,6 @@ public class PlanetSOEditor : Editor
 
         EditorGUILayout.Space(10);
 
-        // Draw custom meshSettings foldout
         if (meshSettingsProp != null)
         {
             showMeshSettings = EditorGUILayout.Foldout(showMeshSettings, "Mesh Settings", true);
@@ -51,18 +50,14 @@ public class PlanetSOEditor : Editor
             {
                 EditorGUI.indentLevel++;
 
-                // --- ZDE JE KLÍÈOVÁ ZMÌNA ---
-                // Vykreslíme dìti (fieldy) meshSettingsProp ruènì
                 SerializedProperty currentProperty = meshSettingsProp.Copy();
-                // true znamená, že vstoupíme do dìtí (fieldù) meshSettingsProp
-                // false znamená, že nechceme procházet další sourozenecké property, které následují po meshSettings
+
                 bool canEnterChildren = true;
                 while (currentProperty.NextVisible(canEnterChildren) && currentProperty.depth == meshSettingsProp.depth + 1)
                 {
-                    canEnterChildren = false; // Po prvním vstupu už nechceme automaticky vstupovat do dìtí
+                    canEnterChildren = false;
                     EditorGUILayout.PropertyField(currentProperty, true);
                 }
-                // --- KONEC KLÍÈOVÉ ZMÌNY ---
 
                 EditorGUI.indentLevel--;
             }
@@ -70,12 +65,10 @@ public class PlanetSOEditor : Editor
 
         EditorGUILayout.Space(10);
 
-        // Show terrain layers from biomeCollection
         if (planet.meshSettings != null && planet.meshSettings.terrainLayers != null)
         {
             EditorGUILayout.LabelField("Terrain Layers", EditorStyles.boldLabel);
 
-            // Ensure correct size
             while (foldouts.Count < planet.meshSettings.terrainLayers.Count)
                 foldouts.Add(false);
 
@@ -83,7 +76,6 @@ public class PlanetSOEditor : Editor
             {
                 EditorGUILayout.BeginVertical("box");
 
-                // Editable object field
                 planet.meshSettings.terrainLayers[i] = (TerrainLayerSO)EditorGUILayout.ObjectField(
                     $"Layer {i}",
                     planet.meshSettings.terrainLayers[i],

@@ -28,9 +28,9 @@ public class ContinentsMountainsLayer : TerrainLayerSO
     [Range(1f, 4f)][SerializeField] private float ridgeLacunarity = 2f;
     [Range(0f, 1f)][SerializeField] private float ridgePersistence = 0.5f;
     [Header("Ridge Attenuation")]
-    [SerializeField, Range(-10f, 10f)] private float ridgeMinBase = 0.4f; // Ridges start appearing above this base noise value
+    [SerializeField, Range(-10f, 10f)] private float ridgeMinBase = 0.4f; 
 
-    [SerializeField, Range(0.1f, 5f)] private float ridgeStartPower = 2.5f; // Controls how sharply ridges fade in
+    [SerializeField, Range(0.1f, 5f)] private float ridgeStartPower = 2.5f; 
 
     [SerializeField, Range(0f, 10f)]
     private float ridgeAttenuationScale = 1f;
@@ -43,11 +43,6 @@ public class ContinentsMountainsLayer : TerrainLayerSO
 
     [SerializeField, Range(0f, 1f)]
     private float ridgeAttenuationPersistence = 0.5f;
-
-
-    // Seeded offset (or randomized)
-    //  [SerializeField] private Vector3 noiseOffset = Vector3.zero;
-
 
     public override void SetShaderParameters( ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices)
     {
@@ -81,7 +76,7 @@ public class ContinentsMountainsLayer : TerrainLayerSO
         // Height multiplier
         computeShader.SetFloat("heightMultiplier", heightMultiplier);
 
-        computeShader.SetFloat("ridgeScale", ridgeScale); // Tune as needed
+        computeShader.SetFloat("ridgeScale", ridgeScale);
         computeShader.SetFloat("ridgeMultiplier", ridgeMultiplier);
         computeShader.SetInt("ridgeOctaves", ridgeOctaves);
         computeShader.SetFloat("ridgeLacunarity", ridgeLacunarity);
@@ -94,15 +89,16 @@ public class ContinentsMountainsLayer : TerrainLayerSO
         computeShader.SetFloat("ridgeAttenuationOctaves", ridgeAttenuationOctaves);
         computeShader.SetFloat("ridgeAttenuationPersistence", ridgeAttenuationPersistence);
 
-
-        // Noise offset (random or seeded)
         Vector3 randomOffset = new Vector3(
             UnityEngine.Random.Range(-1000f, 1000f),
             UnityEngine.Random.Range(-1000f, 1000f),
             UnityEngine.Random.Range(-1000f, 1000f)
         );
-        computeShader.SetVector("noiseOffset", randomOffset); // assume set in the inspector or by code
+        computeShader.SetVector("noiseOffset", randomOffset); 
     }
 
+    public override void ReleaseAnySpecificBuffers()
+    {
 
+    }
 }

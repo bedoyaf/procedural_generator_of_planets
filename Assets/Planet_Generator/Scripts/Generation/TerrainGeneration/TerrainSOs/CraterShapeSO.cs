@@ -1,7 +1,7 @@
 using UnityEngine;
 using Unity.Mathematics;
-using System.Collections.Generic; // Required for List
-using System.Runtime.InteropServices; // Required for StructLayout
+using System.Collections.Generic; 
+using System.Runtime.InteropServices; 
 
 [CreateAssetMenu(fileName = "CraterLayer", menuName = "Planet Generation/Crater Layer", order = 101)]
 public class CraterLayerSO : TerrainLayerSO
@@ -16,6 +16,7 @@ public class CraterLayerSO : TerrainLayerSO
     }
 
     [Header("Crater Settings")]
+    [Range(1,100)] public ushort userOffset = 0;
     public int numCraters = 10;
     public Vector2 craterRadiusRange = new Vector2(0.05f, 0.2f);
     public Vector2 floorHeightRange = new Vector2(-0.5f, -0.2f); // Represents depth/displacement
@@ -30,12 +31,13 @@ public class CraterLayerSO : TerrainLayerSO
     private Vector3[] cachedOriginalPositions;
 
     // Need a way to know when to regenerate crater positions (e.g., seed change)
-    private int lastUsedSeed = -1;
+  //  private int lastUsedSeed = -1;
     private int lastNumVertices = -1;
 
 
     public override void SetShaderParameters( ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices)
     {
+        ReleaseBuffers();
         if (!layerEnabled || computeShader == null || kernelHandle < 0) return;
 
         // --- Regenerate Craters if Needed ---
@@ -45,8 +47,8 @@ public class CraterLayerSO : TerrainLayerSO
         // or having the PlanetGenerator manage crater generation.
         // For now, let's assume we can cache it somehow (or get it passed).
         // **THIS PART NEEDS REFINEMENT BASED ON HOW YOU MANAGE SEED/VERTICES**
-        int currentSeed = UnityEngine.Random.state.GetHashCode(); // Or use your specific seed management
-        if (craterBuffer == null || craterList.Count != numCraters || lastUsedSeed != currentSeed || lastNumVertices != numVertices)
+        //int currentSeed = UnityEngine.Random.seed;
+        if (craterBuffer == null || craterList.Count != numCraters || lastNumVertices != numVertices)
         {
             // Need original positions - This is a design challenge for SOs.
             // We'll simulate getting them here. In reality, PlanetGenerator needs
@@ -54,8 +56,7 @@ public class CraterLayerSO : TerrainLayerSO
             Vector3[] originalPositions = GetOriginalPositions(positionBuffer, numVertices); // **Helper needed**
             if (originalPositions != null)
             {
-                GenerateCraterData(originalPositions, numVertices, currentSeed);
-                lastUsedSeed = currentSeed;
+                GenerateCraterData(originalPositions, numVertices);
                 lastNumVertices = numVertices;
             }
             else
@@ -97,24 +98,15 @@ public class CraterLayerSO : TerrainLayerSO
         {
             return cachedOriginalPositions;
         }
-        // Attempt to read from buffer - ONLY works if buffer contains unmodified positions
-        // This might be unreliable depending on the pipeline order.
-        // It's safer for PlanetGenerator to provide the base mesh vertices.
         Debug.LogWarning("Attempting to read original positions from Compute Buffer. This might be unreliable.");
         Vector3[] positions = new Vector3[numVertices];
         positionBuffer.GetData(positions);
         cachedOriginalPositions = positions;
         return positions;
-
-        // --- SAFER APPROACH ---
-        // public override void SetShaderParameters(..., Vector3[] originalVertices) {
-        //     // Use originalVertices passed in
-        // }
-        // PlanetGenerator would need to supply this array.
     }
 
 
-    private void GenerateCraterData(Vector3[] originalVertices, int numVertices, int seed)
+    private void GenerateCraterData(Vector3[] originalVertices, int numVertices)
     {
         if (originalVertices == null || originalVertices.Length != numVertices)
         {
@@ -122,16 +114,20 @@ public class CraterLayerSO : TerrainLayerSO
             return;
         }
 
-   //     UnityEngine.Random.State previousState = UnityEngine.Random.state; // Save current random state
-   //     UnityEngine.Random.InitState(seed); // Use the provided seed for reproducibility
+        //     UnityEngine.Random.State previousState = UnityEngine.Random.state; // Save current random state
+        //     UnityEngine.Random.InitState(seed); // Use the provided seed for reproducibility
+
+        Debug.Log(userOffset);
+        uint combinedSeed = (uint)UnityEngine.Random.Range(int.MinValue, int.MaxValue) * userOffset;
+        var random = new Unity.Mathematics.Random(combinedSeed);
 
         craterList.Clear();
         for (int i = 0; i < numCraters; i++)
         {
-            int randomIndex = UnityEngine.Random.Range(0, numVertices);
+            int randomIndex = random.NextInt(0, numVertices);//UnityEngine.Random.Range(0, numVertices);
             Vector3 randomCenter = originalVertices[randomIndex].normalized/* * radius*/; // Place on sphere surface
 
-            float randomRadius = UnityEngine.Random.Range(craterRadiusRange.x, craterRadiusRange.y);
+            float randomRadius = random.NextFloat(craterRadiusRange.x, craterRadiusRange.y);// UnityEngine.Random.Range(craterRadiusRange.x, craterRadiusRange.y);
             // Depth is essentially floorHeight in the shader context now
             // float randomDepth = UnityEngine.Random.Range(floorHeightRange.x, floorHeightRange.y);
 
@@ -145,7 +141,10 @@ public class CraterLayerSO : TerrainLayerSO
 
         // Create or update crater buffer
         if (craterBuffer != null)
+        {
             craterBuffer.Release();
+            craterBuffer = null;
+        }
 
         if (craterList.Count > 0)
         {
@@ -179,5 +178,10 @@ public class CraterLayerSO : TerrainLayerSO
             Debug.Log($"Released crater buffer for layer '{this.name}'.");
         }
         cachedOriginalPositions = null;
+    }
+
+    public override void ReleaseAnySpecificBuffers()
+    {
+        ReleaseBuffers();
     }
 }

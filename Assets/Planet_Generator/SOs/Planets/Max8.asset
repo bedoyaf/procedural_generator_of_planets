@@ -21,6 +21,7 @@ MonoBehaviour:
     isWaterSphere: 0
   biomeCollection: {fileID: 11400000, guid: 053724142764ef4449f994390ab8655e, type: 2}
   biomeClassifier: {fileID: 11400000, guid: e2fd8182ccba1674e83ce183558dbfbd, type: 2}
+  TextureScale: 34.82
   generateBioms: 1
   biomBlendType: 0
   equatorTemperature: 1
