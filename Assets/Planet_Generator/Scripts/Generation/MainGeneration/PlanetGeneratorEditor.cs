@@ -19,7 +19,6 @@ public class PlanetGeneratorEditor : Editor
 
     private bool showPlanetSOSettingsFoldout = false;
     private bool showWaterSettingsFoldout = false;
-    private bool showMaterialSettingsFoldout = false;
 
     private List<bool> terrainLayerFoldouts = new List<bool>();
 
@@ -29,10 +28,6 @@ public class PlanetGeneratorEditor : Editor
         waterSettingsProp = serializedObject.FindProperty("waterSettings");
         waterGameObjectProp = serializedObject.FindProperty("waterGameObject");
         waterMaterialProp = serializedObject.FindProperty("waterMaterial");
-        materialDiscreteMax8Prop = serializedObject.FindProperty("materialDiscreteMax8");
-        materialDiscreteTriplingProp = serializedObject.FindProperty("materialDiscreteTripling");
-        materialSmoothMax8Prop = serializedObject.FindProperty("materialSmoothMax8");
-        materialSmoothTriplingProp = serializedObject.FindProperty("materialSmoothTripling");
 
         PlanetGenerator generator = (PlanetGenerator)target;
         if (generator != null && generator.planetSO != null && generator.planetSO.meshSettings != null)
@@ -109,20 +104,6 @@ public class PlanetGeneratorEditor : Editor
             EditorGUI.indentLevel++;
             EditorGUILayout.PropertyField(waterSettingsProp, true);
             EditorGUILayout.PropertyField(waterGameObjectProp, true);
-            EditorGUILayout.PropertyField(waterMaterialProp, true);
-            EditorGUI.indentLevel--;
-        }
-
-        EditorGUILayout.Space(10);
-
-        showMaterialSettingsFoldout = EditorGUILayout.Foldout(showMaterialSettingsFoldout, "Material Settings", true);
-        if (showMaterialSettingsFoldout)
-        {
-            EditorGUI.indentLevel++;
-            EditorGUILayout.PropertyField(materialDiscreteMax8Prop, true);
-            EditorGUILayout.PropertyField(materialDiscreteTriplingProp, true);
-            EditorGUILayout.PropertyField(materialSmoothMax8Prop, true);
-            EditorGUILayout.PropertyField(materialSmoothTriplingProp, true);
             EditorGUI.indentLevel--;
         }
 

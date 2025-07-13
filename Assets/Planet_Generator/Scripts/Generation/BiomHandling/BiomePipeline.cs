@@ -15,6 +15,9 @@ using Unity.Burst;
 using Unity.Jobs;
 using NUnit.Framework.Internal;
 using Unity.Profiling;
+using UnityEditor.SceneManagement;
+using UnityEditor;
+using UnityEngine.SceneManagement;
 
 public class BiomePipeline
 {         
@@ -24,10 +27,9 @@ public class BiomePipeline
     private float temperatureNoiseStrength = 0.2f;
     private float TextureScale = 1;
 
-    [SerializeField] private Material materialDiscreteMax8;
-    [SerializeField] private Material materialDiscreteTripling;
-    [SerializeField] private Material materialSmoothMax8;
-    [SerializeField] private Material materialSmoothTripling;
+    private Material materialDiscreteMax8;
+    private Material materialDiscreteTripling;
+    private Material materialContinuousTripling;
 
     private BiomeCollectionSO biomeCollection;
     private BiomeClassifierSO biomeClassifier;
@@ -67,14 +69,12 @@ public class BiomePipeline
     public void UpdateMaterials(
         Material materialDiscreteMax8,
         Material materialDiscreteTripling,
-        Material materialSmoothMax8,
-        Material materialSmoothTripling
+        Material materialContinuousTripling
     )
     {
         this.materialDiscreteMax8 = materialDiscreteMax8;
         this.materialDiscreteTripling = materialDiscreteTripling;
-        this.materialSmoothMax8 = materialSmoothMax8;
-        this.materialSmoothTripling = materialSmoothTripling;
+        this.materialContinuousTripling = materialContinuousTripling;
     }
 
     /// <summary>
@@ -126,7 +126,7 @@ public class BiomePipeline
             if (biomeCollection.biomes.Count > 8)
             {
                 hasMoreThan8Biomes = true;
-                material = materialSmoothTripling;
+                material = materialContinuousTripling;
             }
             else
             {
@@ -194,6 +194,7 @@ public class BiomePipeline
         Debug.Log("Biom creation Duration in milliseconds: " + duration.Milliseconds);
 
         meshRenderer.sharedMaterial = material;
+
     }
 
     private Mesh BuildNewMeshContinuous(Vector3[] vertices, Vector3[] normals, Dictionary<int, float>[] biomIndiciesWeightScores)

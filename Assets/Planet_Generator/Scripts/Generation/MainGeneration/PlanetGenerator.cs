@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using Unity.VisualScripting;
+using UnityEditor.SceneManagement;
+using UnityEditor;
+using UnityEngine.SceneManagement;
+using System.IO;
 
 [RequireComponent(typeof(MeshFilter))]
 public class PlanetGenerator : MonoBehaviour
@@ -25,13 +29,12 @@ public class PlanetGenerator : MonoBehaviour
     [SerializeField] public SphereMeshSettings waterSettings;
 
     [SerializeField] private GameObject waterGameObject;
-    [SerializeField] private Material waterMaterial;
+  /*  [SerializeField] */private Material waterMaterial;
 
 
-    [SerializeField] private Material materialDiscreteMax8;
-    [SerializeField] private Material materialDiscreteTripling;
-    [SerializeField] private Material materialSmoothMax8;
-    [SerializeField] private Material materialSmoothTripling;
+    private Material materialMax8;
+    private Material materialDiscreteTripling;
+    private Material materialContinuousTripling;
 
  //   [SerializeField, Range(0,1)] private float waterIceLineStart = 0.82f;
  //   [SerializeField, Range(0, 1)] private float waterIceLineEnd = 0.87f;
@@ -39,9 +42,29 @@ public class PlanetGenerator : MonoBehaviour
     public PlanetData planetData = new PlanetData();
     public PlanetData waterSphereData = new PlanetData();
 
+    private const string MATERIALFOLDER = "Assets/Planet_Generator/Materials";
+    private const string MATERIALMAX8NAME = "materialBiomeMax8";
+    private const string MATERIALDISCRETETRIPLING = "materialDiscreteTripling";
+    private const string MATERIALSMOOTHTRIPLINGNAME = "materialContinuousTripling";
+
+    private const string MATERIALWATERNAME = "WATER";
+
     void Update()
     {
-       UpdateSeed();
+        UpdateSeed();
+        AssignMaterial(ref materialMax8,MATERIALMAX8NAME);
+        AssignMaterial(ref materialDiscreteTripling, MATERIALDISCRETETRIPLING);
+        AssignMaterial(ref materialContinuousTripling, MATERIALSMOOTHTRIPLINGNAME);
+        AssignMaterial(ref waterMaterial, MATERIALWATERNAME);
+    }
+
+    void UpdateAllRelevantProperties()
+    {
+        UpdateSeed();
+        AssignMaterial(ref materialMax8, MATERIALMAX8NAME);
+        AssignMaterial(ref materialDiscreteTripling, MATERIALDISCRETETRIPLING);
+        AssignMaterial(ref materialContinuousTripling, MATERIALSMOOTHTRIPLINGNAME);
+        AssignMaterial(ref waterMaterial, MATERIALWATERNAME);
     }
 
     private void UpdateSeed()
@@ -56,7 +79,7 @@ public class PlanetGenerator : MonoBehaviour
     [ContextMenu("Generate Planet (Mesh + Terrain)")]
     public void GeneratePlanetAndTerrain()
     {
-        UpdateSeed();
+        UpdateAllRelevantProperties();
         planetData.meshFilter = GetComponent<MeshFilter>();
         if (biomePipeline.RegeratedMesh) ResetMesh();
         // Generate sphere data first
@@ -64,12 +87,13 @@ public class PlanetGenerator : MonoBehaviour
         {
             GenerateTerrain(planetSO.meshSettings,planetData);
         }
+        BakeAndSave();
     }
 
     [ContextMenu("Generate Planet with water (Mesh + Terrain)")]
     public void GeneratePlanetAndTerrainWater()
     {
-        UpdateSeed();
+        UpdateAllRelevantProperties();
         planetData.meshFilter = GetComponent<MeshFilter>();
         DateTime before = DateTime.Now;
 
@@ -148,6 +172,7 @@ public class PlanetGenerator : MonoBehaviour
             data.processedHeights = new float[data.numVertices]; // Heights are calculated later
 
             biomePipeline.UpdateBiomPipeline( data.processedHeights);
+            Debug.Log(materialMax8);
 
             // Initialize the terrain pipeline processor with the correct vertex count
             if (data.terrainPipelineProcessor == null) data.terrainPipelineProcessor = new TerrainPipelineProcessor();
@@ -296,7 +321,7 @@ public class PlanetGenerator : MonoBehaviour
         {
             biomePipeline.Initialize(GetComponent<MeshRenderer>(), GetComponent<MeshFilter>(), planetSO.biomeClassifier, planetSO.biomeCollection);
 
-            biomePipeline.UpdateMaterials(materialDiscreteMax8,materialDiscreteTripling,materialSmoothMax8,materialSmoothTripling);
+            biomePipeline.UpdateMaterials(materialMax8,materialDiscreteTripling,materialContinuousTripling);
             biomePipeline.UpdateBiomPipelineValues(planetSO.equatorTemperature,planetSO.poleTemperature,planetSO.temperatureNoiseScale,planetSO.temperatureNoiseStrength, planetSO.TextureScale);
             biomePipeline.ApplyTexturesToMesh(data.baseVertices, data.generatedMesh.normals, data.generatedMesh.triangles, planetSO.biomBlendType);
         }
@@ -374,4 +399,74 @@ public class PlanetGenerator : MonoBehaviour
 
         Debug.Log("PlanetGenerator has been fully reset.");
     }
+
+
+
+    [ContextMenu("Bake Biome Texture Array And Save Material")]
+    void BakeAndSave()
+    {
+#if UNITY_EDITOR
+        // 1) Vygeneruj Text2DArray
+        var texArr = BiomeUtils.GenerateBiomeTextureArray(planetSO.biomeCollection);
+
+        // 2) Zvol si folder a jméno
+        string folder = "Assets/Planet_Generator/Generated";
+        if (!AssetDatabase.IsValidFolder(folder))
+            AssetDatabase.CreateFolder("Assets/Planet_Generator", "Generated");
+
+        string fileName = $"{name}_biomes.asset";
+        string path = Path.Combine(folder, fileName);
+
+        // 3) Uprav interní jméno assetu, aby odpovídalo souboru
+        texArr.name = Path.GetFileNameWithoutExtension(fileName);
+
+        // 4) Vytvoø nebo aktualizuj asset
+        var existing = AssetDatabase.LoadAssetAtPath<Texture2DArray>(path);
+        if (existing == null)
+        {
+            AssetDatabase.CreateAsset(texArr, path);
+            AssetDatabase.ImportAsset(path);
+        }
+        else
+        {
+            // Pokud už existuje, jen mu pøekopíruj obsah
+            EditorUtility.CopySerialized(texArr, existing);
+            texArr = existing;
+        }
+        EditorUtility.SetDirty(texArr);
+
+        // 5) Aplikuj na materiál
+        var mat = materialMax8;
+        mat.SetTexture("_Biomes", texArr);
+        EditorUtility.SetDirty(mat);
+
+        // 6) Ulož vše
+        AssetDatabase.SaveAssets();
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+        Debug.Log($"Biome array baked to {path} and applied to {mat.name}");
+#endif
+    }
+
+    private void AssignMaterial(ref Material field, string name)
+    {
+        if (field != null) return;
+
+        var guids = AssetDatabase.FindAssets($"t:Material {name}", new[] { MATERIALFOLDER });
+        if (guids.Length > 0)
+        {
+            var path = AssetDatabase.GUIDToAssetPath(guids[0]);
+            field = AssetDatabase.LoadAssetAtPath<Material>(path);
+            EditorUtility.SetDirty(this);
+            if(field==null)
+            {
+                Debug.LogError($"[PlanetGenerator] Material '{name}' got loaded as null", this);
+            }
+
+        }
+        else
+        {
+            Debug.LogWarning($"[PlanetGenerator] Material '{name}' not found in project.", this);
+        }
+    }
+
 }

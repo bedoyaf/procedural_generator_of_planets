@@ -7,6 +7,12 @@ public class ContinentsMountainsLayer : TerrainLayerSO
     [Header("Fractal Noise Settings")]
     [Range(0f, 10f)][SerializeField] private float heightMultiplier = 1f;
 
+    [Header("Noise offsets")]
+    [SerializeField] Vector3 baseNoiseOffset = Vector3.zero;
+    [SerializeField] Vector3 ridgeNoiseOffset = Vector3.zero;
+    [SerializeField] Vector3 ridgeAttunationNoiseOffset = Vector3.zero;
+
+
     [Header("Base")]
     [Range(0.01f, 10f)][SerializeField] private float baseScale = 1f;
     [Range(1, 8)][SerializeField] private int baseOctaves = 4;
@@ -94,7 +100,19 @@ public class ContinentsMountainsLayer : TerrainLayerSO
             UnityEngine.Random.Range(-1000f, 1000f),
             UnityEngine.Random.Range(-1000f, 1000f)
         );
-        computeShader.SetVector("noiseOffset", randomOffset); 
+        computeShader.SetVector("baseNoiseOffset", randomOffset + baseNoiseOffset);
+        Vector3 randomOffset2 = new Vector3(
+            UnityEngine.Random.Range(-1000f, 1000f),
+            UnityEngine.Random.Range(-1000f, 1000f),
+            UnityEngine.Random.Range(-1000f, 1000f)
+        );
+        computeShader.SetVector("ridgeNoiseOffset", randomOffset2 + ridgeNoiseOffset);
+        Vector3 randomOffset3 = new Vector3(
+            UnityEngine.Random.Range(-1000f, 1000f),
+            UnityEngine.Random.Range(-1000f, 1000f),
+            UnityEngine.Random.Range(-1000f, 1000f)
+        );
+        computeShader.SetVector("ridgeAttunationNoiseOffset", randomOffset3+ ridgeAttunationNoiseOffset);
     }
 
     public override void ReleaseAnySpecificBuffers()

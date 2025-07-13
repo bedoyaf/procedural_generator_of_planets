@@ -19,5 +19,5 @@ MonoBehaviour:
   detailScale: 49.8
   detailLacunarity: 9.6
   detailPersistence: 5
-  detailOctaves: 6
-  heightMultiplier: 0.02
+  detailOctaves: 3
+  heightMultiplier: 0.01

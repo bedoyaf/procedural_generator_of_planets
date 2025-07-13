@@ -6,18 +6,21 @@ RWStructuredBuffer<float> heights;
 
 uint numVertices;
 float heightMultiplier;
+
 int detailOctaves;
 float detailLacunarity;
 float detailPersistence;
-float3 noiseOffset;
-float baseScale;
 float detailScale;
+float detailMultiplier;
 
+float3 baseNoiseOffset;
+float3 ridgeNoiseOffset;
+float3 ridgeAttunationNoiseOffset;
+
+float baseScale;
 int baseOctaves;
 float baseLacunarity;
 float basePersistence;
-
-float detailMultiplier;
 float baseMultiplier;
 
 
@@ -26,8 +29,10 @@ float ridgeMultiplier;
 int ridgeOctaves;
 float ridgeLacunarity;
 float ridgePersistence;
+
 float ridgeMinBase; 
-float ridgeStartPower; 
+float ridgeStartPower;
+
 float ridgeAttenuationScale; 
 float ridgeAttenuationFrequency; 
 float ridgeAttenuationOctaves;
@@ -164,19 +169,21 @@ void CSMain(uint id : SV_DispatchThreadID)
 
     float3 pos = vertices[id];
     
-    float3 noisePos = pos + noiseOffset;
+    float3 baseNoisePos = pos + baseNoiseOffset;
+    float3 ridgeNoisePos = pos + ridgeNoiseOffset;
+    float3 ridgeAttunationNoisePos = pos + ridgeAttunationNoiseOffset;
     //for continents
-    float base = fbm(noisePos * baseScale, baseOctaves, baseLacunarity, basePersistence);
+    float base = fbm(baseNoiseOffset * baseScale, baseOctaves, baseLacunarity, basePersistence);
     //adds roughness
-    float detail = fbm(noisePos * detailScale, detailOctaves, detailLacunarity, detailPersistence);
+    float detail = fbm(baseNoisePos * detailScale, detailOctaves, detailLacunarity, detailPersistence);
     //ridges for mountains
-    float ridges = ridgeNoise(noisePos * ridgeScale, ridgeOctaves, ridgeLacunarity, ridgePersistence);
+    float ridges = ridgeNoise(ridgeNoisePos * ridgeScale, ridgeOctaves, ridgeLacunarity, ridgePersistence);
     // makes sure ridges spawn above water
   
     float ridgeMask = saturate((base - ridgeMinBase) / (1.0 - ridgeMinBase));
     ridgeMask = pow(ridgeMask, ridgeStartPower);
     //randomly flatterns the ridges
-    float ridgeAttenuation = fbm(noisePos * ridgeAttenuationFrequency, ridgeAttenuationOctaves, 2.0, ridgeAttenuationPersistence); 
+    float ridgeAttenuation = fbm(ridgeAttunationNoisePos * ridgeAttenuationFrequency, ridgeAttenuationOctaves, 2.0, ridgeAttenuationPersistence); 
     ridgeAttenuation = saturate(ridgeAttenuation); 
     
     float maskedRidges = ridges * ridgeMask * ridgeAttenuation * ridgeAttenuationScale;
