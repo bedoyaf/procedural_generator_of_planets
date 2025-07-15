@@ -48,7 +48,7 @@ public class PlanetSOEditor : Editor
         {
             enterChildren = false;
 
-            if (prop.name == "m_Script") // <- skript nechceme upravovat
+            if (prop.name == "m_Script")
             {
                 GUI.enabled = false;
                 EditorGUILayout.PropertyField(prop, true);

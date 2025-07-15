@@ -1,8 +1,5 @@
 #pragma kernel CSMain
 
-// Structured Buffer to hold vertex positions
-
-// Crater definition
 struct Crater
 {
     float3 center;
@@ -10,7 +7,6 @@ struct Crater
     float depth;
 };
 
-// Buffer for craters
 StructuredBuffer<float3> vertices;
 
 RWStructuredBuffer<float> heights;
@@ -24,7 +20,6 @@ float smoothness;
 float rimSteepness;
 float rimWidth;
 
-
 float smoothMin(float a, float b, float k)
 {
     float h = max(k - abs(a - b), 0) / k;
@@ -35,8 +30,6 @@ float smoothMax(float a, float b, float k)
 {
     return -smoothMin(-a, -b, k);
 }
-
-
 
 [numthreads(512, 1, 1)] 
 void CSMain(uint id : SV_DispatchThreadID)
@@ -51,6 +44,7 @@ void CSMain(uint id : SV_DispatchThreadID)
     float maxCraterHeight = 0;
     bool hasEffect = false;
     
+    //algorithm heavily inspired by Sebastian Lague https://github.com/SebLague/Solar-System/tree/Episode_02
     for (uint i = 0; i < numCraters; i++)
     {
         float x = length(vertexPos - craters[i].center) / craters[i].radius;
@@ -70,9 +64,7 @@ void CSMain(uint id : SV_DispatchThreadID)
         }
 
     }
-    
     heights[id] +=  craterHeight;
-    
 }
 
 

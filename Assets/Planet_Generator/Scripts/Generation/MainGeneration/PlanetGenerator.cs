@@ -24,37 +24,28 @@ public class PlanetGenerator : MonoBehaviour
     private BiomePipeline biomePipeline = new BiomePipeline();
 
     [Header("References")]
-  
-    // --- Ocean ---
-  //  [SerializeField] public SphereMeshSettings waterSettings;
-
     [SerializeField] private GameObject waterGameObject;
-  /*  [SerializeField] */private Material waterMaterial;
+    private Material waterMaterial;
 
 
     private Material materialMax8;
     private Material materialDiscreteTripling;
     private Material materialContinuousTripling;
 
-    public PlanetData planetData = new PlanetData();
-    public PlanetData waterSphereData = new PlanetData();
+    private PlanetData planetData = new PlanetData();
+    private PlanetData waterSphereData = new PlanetData();
 
+    //paths for materials, so they dont have to be setup manualy through inspektor
     private const string MATERIALFOLDER = "Assets/Planet_Generator/Materials";
     private const string MATERIALMAX8NAME = "materialBiomeMax8";
     private const string MATERIALDISCRETETRIPLING = "materialDiscreteTripling";
     private const string MATERIALSMOOTHTRIPLINGNAME = "materialContinuousTripling";
-
     private const string MATERIALWATERNAME = "WATER";
 
-   /* void Update()
-    {
-        UpdateSeed();
-        AssignMaterial(ref materialMax8,MATERIALMAX8NAME);
-        AssignMaterial(ref materialDiscreteTripling, MATERIALDISCRETETRIPLING);
-        AssignMaterial(ref materialContinuousTripling, MATERIALSMOOTHTRIPLINGNAME);
-        AssignMaterial(ref waterMaterial, MATERIALWATERNAME);
-    }*/
 
+    /// <summary>
+    /// Sets up all the relevant properties for the generation of the planet
+    /// </summary>
     private void UpdateAllRelevantProperties()
     {
         UpdateSeed();
@@ -76,11 +67,14 @@ public class PlanetGenerator : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// The main function for generating the planet, accessible through a button
+    /// </summary>
     [ContextMenu("Generate Planet")]
     public void GeneratePlanet()
     {
         UpdateAllRelevantProperties();
-        planetData.meshFilter = GetComponent<MeshFilter>();
+
         if (biomePipeline.RegeratedMesh) ResetMesh();
 
         if (GenerateSphereData(planetSO.meshSettings, planetData))
@@ -92,7 +86,9 @@ public class PlanetGenerator : MonoBehaviour
         BakeAndSave();
     }
 
-
+    /// <summary>
+    /// Sets up and generates the WaterSphere, similar to planet generation
+    /// </summary>
     private void GenerateWaterSphere()
     {
         planetSO.waterSettings.isWaterSphere = true;
@@ -125,10 +121,14 @@ public class PlanetGenerator : MonoBehaviour
         }
     }
 
-
+    /// <summary>
+    /// Generates the base mesh, and sets up the rest
+    /// </summary>
+    /// <param name="settings">users settings for the mesh</param>
+    /// <param name="data">the stored data for that mesh</param>
+    /// <returns>generation success</returns>
     private bool GenerateSphereData(SphereMeshSettings settings, PlanetData data)
     {
-       // if(sphereMeshGenerator==null)
         data.meshDataGenerated = sphereMeshGenerator.Generate( settings.resolution);
 
         if (data.meshDataGenerated)
@@ -136,16 +136,11 @@ public class PlanetGenerator : MonoBehaviour
             data.baseVertices = sphereMeshGenerator.BaseVertices;
             data.numVertices = sphereMeshGenerator.NumVertices;
 
-
-
-
-            // Initialize CPU arrays for final vertices/heights
             data.processedVertices = new Vector3[data.numVertices];
-            data.processedHeights = new float[data.numVertices]; // Heights are calculated later
+            data.processedHeights = new float[data.numVertices]; 
 
             biomePipeline.UpdateBiomPipeline( data.processedHeights);
 
-            // Initialize the terrain pipeline processor with the correct vertex count
             if (data.terrainPipelineProcessor == null) data.terrainPipelineProcessor = new TerrainPipelineProcessor();
             data.pipelineInitialized = data.terrainPipelineProcessor.Initialize(data.numVertices);
             if (!data.pipelineInitialized)
@@ -162,6 +157,7 @@ public class PlanetGenerator : MonoBehaviour
             }
             data.generatedMesh.Clear(); 
 
+            //standart Unity meshes have limited indices
             data.generatedMesh.indexFormat = data.numVertices > 65535 ?
                UnityEngine.Rendering.IndexFormat.UInt32 :
                UnityEngine.Rendering.IndexFormat.UInt16;
@@ -186,16 +182,20 @@ public class PlanetGenerator : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Generates the new vertex heights by calling the terrainPipeline
+    /// </summary>
+    /// <param name="settings">users settings for the mesh</param>
+    /// <param name="data">the stored data for that mesh</param>
     public void GenerateTerrain(SphereMeshSettings settings,PlanetData data)
     {
-        // 1. Check Prerequisites
         if (!data.meshDataGenerated)
         {
             Debug.LogWarning("Sphere mesh data not generated yet. Generating data first.");
-            if (!GenerateSphereData(settings,data)) // Attempt to generate data
+            if (!GenerateSphereData(settings,data)) 
             {
                 Debug.LogError("Cannot generate terrain because sphere data generation failed.");
-                return; // Stop if data generation failed
+                return;
             }
         }
         if (!data.pipelineInitialized)
@@ -211,30 +211,34 @@ public class PlanetGenerator : MonoBehaviour
             data.processedHeights = finalHeights;
             biomePipeline.UpdateBiomPipeline(data.processedHeights);
 
-            ApplyDataToMesh(false, settings, data); 
+            ApplyDataToMesh( settings, data); 
         }
         else
         {
             Debug.LogError("Terrain pipeline processing failed. Mesh not updated with terrain.");
+            return;
         }
     }
 
     private void ResetMesh()
     {
-         if(planetData.meshFilter!=null)planetData.meshFilter.sharedMesh = null;
-
- //       MeshFilter meshFilter;
+        if(planetData.meshFilter!=null)planetData.meshFilter.sharedMesh = null;
 
         planetData.generatedMesh=null;
-        planetData.baseVertices=null;      // Raw unit sphere vertices
-        planetData.processedHeights=null;    // Final height multipliers from GPU
-        planetData.processedVertices=null; // Final world-space vertices for mesh
+        planetData.baseVertices=null;     
+        planetData.processedHeights=null;   
+        planetData.processedVertices=null;
         planetData.numVertices = 0;
-        planetData.meshDataGenerated = false; // Tracks if sphere data exists
-        planetData.pipelineInitialized = false; // Tracks if processor is ready
+        planetData.meshDataGenerated = false;
+        planetData.pipelineInitialized = false;
     }
 
-    private void ApplyDataToMesh(bool useBaseHeights, SphereMeshSettings settings, PlanetData data)
+    /// <summary>
+    /// Calculates the new data for the mesh based on the settings and data, including calling the setup of biomes or water
+    /// </summary>
+    /// <param name="settings">users settings for the mesh</param>
+    /// <param name="data">the stored data for that mesh</param>
+    private void ApplyDataToMesh( SphereMeshSettings settings, PlanetData data)
     {
         if (!data.meshDataGenerated || data.generatedMesh == null)
         {
@@ -242,47 +246,30 @@ public class PlanetGenerator : MonoBehaviour
             return;
         }
 
-        if (useBaseHeights)
+        if (data.processedHeights == null || data.processedHeights.Length != data.numVertices)
         {
-            for (int i = 0; i < data.numVertices; i++)
-            {
-                data.processedVertices[i] = data.baseVertices[i].normalized * settings.radius;
-            }
-            Debug.Log("Applying base sphere shape to mesh.");
+            Debug.LogError("Cannot apply terrain heights, processedHeights data is invalid.");
+            return;
         }
-        else
-        {
-            if (data.processedHeights == null || data.processedHeights.Length != data.numVertices)
-            {
-                Debug.LogError("Cannot apply terrain heights, processedHeights data is invalid.");
-                return;
-            }
-            for (int i = 0; i < data.numVertices; i++)
-            {                
-                data.processedVertices[i] = data.baseVertices[i].normalized *(data.processedHeights[i]*settings.radius+settings.radius);//* radius;
+        for (int i = 0; i < data.numVertices; i++)
+        {                
+            data.processedVertices[i] = data.baseVertices[i].normalized *(data.processedHeights[i]*settings.radius+settings.radius);
 
-                if (float.IsNaN(data.processedVertices[i].x) || float.IsInfinity(data.processedVertices[i].x))
-                {
-                    Debug.LogWarning($"Invalid vertex position calculated at index {i}. Clamping height.");
-                    data.processedVertices[i] = data.baseVertices[i].normalized * settings.radius; // Reset to base
-                }
+            if (float.IsNaN(data.processedVertices[i].x) || float.IsInfinity(data.processedVertices[i].x))
+            {
+                Debug.LogWarning($"Invalid vertex position calculated at index {i}. Clamping height.");
+                data.processedVertices[i] = data.baseVertices[i].normalized * settings.radius; 
             }
         }
-
-        // --- Update Mesh ---
+        //update mesh
         data.generatedMesh.vertices = data.processedVertices;
+        if (data.generatedMesh.GetTopology(0) != MeshTopology.Triangles)
+        {
+            data.generatedMesh.triangles = sphereMeshGenerator.Triangles;
+        }
+        data.generatedMesh.RecalculateNormals();
 
-            // Set triangles if not in wireframe mode (or if wireframe failed)
-            // Ensure triangles are set if switching from wireframe
-            if (data.generatedMesh.GetTopology(0) != MeshTopology.Triangles)
-            {
-                data.generatedMesh.triangles = sphereMeshGenerator.Triangles;
-            }
-            data.generatedMesh.RecalculateNormals();
-            // Optional: generatedMesh.RecalculateTangents();
-        
-
-        data.generatedMesh.RecalculateBounds(); // Crucial!
+        data.generatedMesh.RecalculateBounds(); 
         data.meshFilter.sharedMesh = data.generatedMesh;
         Debug.Log("Mesh updated.");
 
@@ -325,17 +312,22 @@ public class PlanetGenerator : MonoBehaviour
         Debug.Log("Compute resources released by PlanetGenerator.");
     }
 
+    /// <summary>
+    /// Just makes sure everything is disabled safely
+    /// </summary>
     void OnDisable()
     {
         ReleaseResources(planetSO.meshSettings, planetData);
         ReleaseResources(planetSO.waterSettings, waterSphereData);
     }
 
+    /// <summary>
+    /// Just makes sure everything is destroyed safely
+    /// </summary>
     void OnDestroy()
     {
         ReleaseResources(planetSO.meshSettings, planetData);
         ReleaseResources(planetSO.waterSettings, waterSphereData);
-        // Destroy the mesh asset if it's not needed elsewhere
         if (planetData.generatedMesh != null)
         {
             if (Application.isPlaying) Destroy(planetData.generatedMesh);
@@ -348,6 +340,9 @@ public class PlanetGenerator : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Resets all values, for emergancy purposes for user, accessible through a button
+    /// </summary>
     [ContextMenu("Reset All")]
     public void ResetAll()
     {

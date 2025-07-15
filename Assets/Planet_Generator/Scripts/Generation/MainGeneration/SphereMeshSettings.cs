@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
-
 /// <summary>
 /// Scriptable object that allows the customization and setup of the spheres values and terrain algorithms
 /// </summary>

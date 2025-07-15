@@ -23,8 +23,6 @@ public class SphereMeshGenerator
     /// <returns>returns a bool representing the success of generation</returns>
     public bool Generate( int resolution) // Use float radius internally if needed by algos
     {
-   //     Debug.Log($"Generating Sphere Data: Resolution={resolution}");
-
         currentSphereMeshGenerator = null; // Reset previous generator
 
         currentSphereMeshGenerator = new SphereMesh(resolution);

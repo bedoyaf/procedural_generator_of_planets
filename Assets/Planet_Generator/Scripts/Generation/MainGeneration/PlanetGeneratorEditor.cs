@@ -12,7 +12,6 @@ public class PlanetGeneratorEditor : Editor
     private SerializedProperty waterGameObjectProp;
 
     private bool showPlanetSOSettingsFoldout = false;
-  //  private bool showWaterSettingsFoldout = false;
 
     private List<bool> terrainLayerFoldouts = new List<bool>();
 

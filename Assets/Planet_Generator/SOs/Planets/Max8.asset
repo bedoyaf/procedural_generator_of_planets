@@ -17,8 +17,7 @@ MonoBehaviour:
     resolution: 300
     radius: 6.7
     terrainLayers:
-    - {fileID: 11400000, guid: e722fb34daa24e845b5d09457dcec2dd, type: 2}
-    - {fileID: 11400000, guid: bb05afc9fcc67c745a481ab51ee0a696, type: 2}
+    - {fileID: 11400000, guid: a6bc6a5413fc28e44a0b28c6f5475245, type: 2}
     isWaterSphere: 0
   biomeCollection: {fileID: 11400000, guid: 053724142764ef4449f994390ab8655e, type: 2}
   biomeClassifier: {fileID: 11400000, guid: e2fd8182ccba1674e83ce183558dbfbd, type: 2}
