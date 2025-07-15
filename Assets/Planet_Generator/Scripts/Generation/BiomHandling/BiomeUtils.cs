@@ -164,4 +164,60 @@ public static class BiomeUtils
     }
 
 
+    public static bool AreBiomesValid(BiomeCollectionSO biomeCollectionSO, BiomeClassifierSO biomeClassifier)
+    {
+        if (!AreBiomeTexturesSet(biomeCollectionSO)) return false;
+        if (!AreSupportedBiomeAttributesValid(biomeCollectionSO, biomeClassifier)) return false;
+        return true;
+    }
+
+    private static bool AreSupportedBiomeAttributesValid(BiomeCollectionSO biomeCollectionSO, BiomeClassifierSO biomeClassifier)
+    {
+        foreach (var biome in biomeCollectionSO.biomes)
+        {
+            foreach (var att in biome.supportedHeights)
+            {
+                if (!biomeClassifier.heights.Contains(att))
+                {
+                    Debug.Log($"Invald height attribute {att} in biome {biome}");
+                    return false;
+                }
+            }
+            foreach (var att in biome.supportedSlopes)
+            {
+                if (!biomeClassifier.slopes.Contains(att))
+                {
+                    Debug.Log($"Invald slope attribute {att} in biome {biome}");
+                    return false;
+                }
+            }
+            foreach (var att in biome.supportedTemperatures)
+            {
+                if (!biomeClassifier.temperatures.Contains(att))
+                {
+                    Debug.Log($"Invald temperature attribute {att} in biome {biome}");
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static bool AreBiomeTexturesSet(BiomeCollectionSO biomeCollection)
+    {
+        foreach(var biome in biomeCollection.biomes)
+        {
+            if(biome == null)
+            {
+                Debug.Log($"Biom missing in collection");
+                return false;
+            }
+            if (biome.biomeTexture == null)
+            {
+                Debug.Log($"Biome {biome} missing texture" );
+                return false;
+            }
+        }
+        return true;
+    }
 }

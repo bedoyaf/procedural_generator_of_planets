@@ -24,10 +24,21 @@ MonoBehaviour:
     isWaterSphere: 0
   biomeCollection: {fileID: 11400000, guid: 1dee0a8486a7940438094c3771d34d51, type: 2}
   biomeClassifier: {fileID: 11400000, guid: a0899f69bb7218f49bd038aa076ee615, type: 2}
+  biomeBlendType: 0
   TextureScale: 1
-  generateBioms: 1
-  biomBlendType: 0
-  equatorTemperature: 1
-  poleTemperature: 0
   temperatureNoiseScale: 1
   temperatureNoiseStrength: 0.2
+  hasWater: 0
+  waterSettings:
+    resolution: 100
+    radius: 1
+    terrainLayers: []
+    isWaterSphere: 0
+  waterIceLineStart: 0.82
+  waterIceLineEnd: 0.87
+  waterColor:
+    serializedVersion: 2
+    rgba: 2583691152
+  IceColor:
+    serializedVersion: 2
+    rgba: 4294967295

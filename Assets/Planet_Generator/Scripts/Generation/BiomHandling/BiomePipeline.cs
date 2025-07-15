@@ -18,11 +18,12 @@ using Unity.Profiling;
 using UnityEditor.SceneManagement;
 using UnityEditor;
 using UnityEngine.SceneManagement;
+using static UnityEditor.Searcher.SearcherWindow.Alignment;
 
 public class BiomePipeline
 {         
-    private float equatorTemperature = 1.0f;
-    private float poleTemperature = 0.0f;
+    private const float EQUATORTEMPERATURE = 1.0f;
+    private const float POLETEMPERATURE = 0.0f;
     private float temperatureNoiseScale = 1.0f;
     private float temperatureNoiseStrength = 0.2f;
     private float TextureScale = 1;
@@ -30,6 +31,9 @@ public class BiomePipeline
     private Material materialDiscreteMax8;
     private Material materialDiscreteTripling;
     private Material materialContinuousTripling;
+
+    private Material splatingMaterial;
+
 
     private BiomeCollectionSO biomeCollection;
     private BiomeClassifierSO biomeClassifier;
@@ -69,27 +73,25 @@ public class BiomePipeline
     public void UpdateMaterials(
         Material materialDiscreteMax8,
         Material materialDiscreteTripling,
-        Material materialContinuousTripling
+        Material materialContinuousTripling,
+        Material splatingMaterial
     )
     {
         this.materialDiscreteMax8 = materialDiscreteMax8;
         this.materialDiscreteTripling = materialDiscreteTripling;
         this.materialContinuousTripling = materialContinuousTripling;
+        this.splatingMaterial = splatingMaterial;
     }
 
     /// <summary>
     /// Functions for updating the values from the serialized fields in the main script
     /// </summary>
     public void UpdateBiomPipelineValues( 
-        float equatorTemperature, 
-        float poleTemperature, 
         float temperatureNoiseScale, 
         float temperatureNoiseStrength,
         float textureScale
         )
     {
-        this.equatorTemperature = equatorTemperature;
-        this.poleTemperature =  poleTemperature;
         this.temperatureNoiseScale = temperatureNoiseScale;
         this.temperatureNoiseStrength = temperatureNoiseStrength;
         this.TextureScale = textureScale;
@@ -105,6 +107,18 @@ public class BiomePipeline
     /// <param name="biomeBlendType">enum that determins what algorithm will be used for biomes</param>
     public void ApplyTexturesToMesh(Vector3[] vertices, Vector3[] normals, int[] triangles, BiomeBlendType biomeBlendType)
     {
+        if(!BiomeUtils.AreBiomesValid(biomeCollection, biomeClassifier))
+        {
+            Debug.Log("Biome generation abandoned");
+            return;
+        }
+        if(biomeClassifier == null || biomeCollection==null)
+        {
+            Debug.Log("Missing BiomeClassifierSO or BiomeCollection");
+            Debug.Log("Biome generation abandoned");
+            return;
+        }
+
         Texture2DArray biomeTextureArray = BiomeUtils.GenerateBiomeTextureArray(biomeCollection);
 
         Material material = null;
@@ -132,6 +146,11 @@ public class BiomePipeline
             {
                 material = materialDiscreteMax8;
             }
+        }
+        else if(biomeBlendType == BiomeBlendType.Splat)
+        {
+            //SetUpSplatMap(vertices,mesh,);
+          //  return;
         }
         else
         {
@@ -174,7 +193,6 @@ public class BiomePipeline
         }
         else if (biomeBlendType == BiomeBlendType.Continuous)
         {
-            Debug.Log("trulimero");
             var biomIndicesWeightScores = GetTop4BiomForEachVertex(deformedVerticies, normals);
             if(hasMoreThan8Biomes)
             {
@@ -527,8 +545,8 @@ public class BiomePipeline
             normals = normalsNA,
             classifierData = biomeClassifierData,
             biomeCollection = biomData,
-            equatorTemperature = this.equatorTemperature,
-            poleTemperature = this.poleTemperature,
+            equatorTemperature = EQUATORTEMPERATURE,
+            poleTemperature = POLETEMPERATURE,
             temperatureNoiseScale = this.temperatureNoiseScale,
             temperatureNoiseStrength = this.temperatureNoiseStrength,
             biomeIndices = biomesPerVertex,
@@ -563,8 +581,8 @@ public class BiomePipeline
 
         float baseTemp = 0;
 
-        if (latitude < 0f) baseTemp = Mathf.Lerp(equatorTemperature, poleTemperature, -latitude);
-        else if (latitude >= 0f) baseTemp = Mathf.Lerp(equatorTemperature, poleTemperature, latitude);
+        if (latitude < 0f) baseTemp = Mathf.Lerp(EQUATORTEMPERATURE, POLETEMPERATURE, -latitude);
+        else if (latitude >= 0f) baseTemp = Mathf.Lerp(EQUATORTEMPERATURE, POLETEMPERATURE, latitude);
 
         float longitude = Mathf.Atan2(normalized.z, normalized.x) / (2f * Mathf.PI);
         float lat = Mathf.Asin(normalized.y) / Mathf.PI + 0.5f;
@@ -576,9 +594,178 @@ public class BiomePipeline
 
         float finalTemp = baseTemp + (noise - 0.5f) * 2f * temperatureNoiseStrength;
 
-        return Mathf.Clamp(finalTemp,poleTemperature, equatorTemperature);
+        return Mathf.Clamp(finalTemp,POLETEMPERATURE, EQUATORTEMPERATURE);
     }
 
+
+    //splatting
+    private void SetUpSplatMap(Vector3[] vertices, Mesh mesh, List<Vector4> perVertexIndices, List<Vector4> perVertexWeights, Material material, Texture2DArray biomeTextureArray)
+    {
+        Vector2[] uvs1 = new Vector2[vertices.Length];
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            Vector3 normalized = vertices[i].normalized;
+            float u = 0.5f + Mathf.Atan2(normalized.z, normalized.x) / (2f * Mathf.PI);
+            float v = 0.5f - Mathf.Asin(normalized.y) / Mathf.PI;
+            uvs1[i] = new Vector2(u, v);
+        }
+        mesh.uv = uvs1;
+
+
+
+        Vector3[] vertices1 = mesh.vertices;
+        Vector3[] normals1 = mesh.normals;
+        Vector2[] uvs = mesh.uv;
+        int[] triangles = mesh.triangles;
+
+        const int mapResolution = 2048;
+        var indexMap = new Texture2D(mapResolution, mapResolution, TextureFormat.RGBA32, false, true); 
+        indexMap.filterMode = FilterMode.Point;
+        indexMap.wrapMode = TextureWrapMode.Repeat;
+        var weightMap = new Texture2D(mapResolution, mapResolution, TextureFormat.RGBA32, true, true); 
+        weightMap.filterMode = FilterMode.Bilinear;
+        weightMap.wrapMode = TextureWrapMode.Repeat;
+        var indexMapColors = new Color32[mapResolution * mapResolution];
+        var weightMapColors = new UnityEngine.Color[mapResolution * mapResolution];
+
+        Action<Vector2, Vector2, Vector2, Vector4, Vector4, Vector4, Vector4, Vector4, Vector4> rasterizeTriangle =
+            (uv0, uv1, uv2, i0, i1, i2, w0, w1, w2) =>
+            {
+                var allBiomes = new Dictionary<int, (float w_v0, float w_v1, float w_v2)>();
+                Action<Vector4, Vector4> addBiomesForVertex = (indices, weights) => {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        int index = (int)indices[i];
+                        if (weights[i] > 0 && !allBiomes.ContainsKey(index))
+                        {
+                            allBiomes.Add(index, (0, 0, 0));
+                        }
+                    }
+                };
+
+                addBiomesForVertex(i0, w0);
+                addBiomesForVertex(i1, w1);
+                addBiomesForVertex(i2, w2);
+
+                var biomeList = allBiomes.Keys.ToList();
+                for (int i = 0; i < biomeList.Count; i++)
+                {
+                    int biomeIndex = biomeList[i];
+                    var currentWeights = allBiomes[biomeIndex];
+                    for (int j = 0; j < 4; j++)
+                    {
+                        if ((int)i0[j] == biomeIndex) currentWeights.w_v0 = w0[j];
+                        if ((int)i1[j] == biomeIndex) currentWeights.w_v1 = w1[j];
+                        if ((int)i2[j] == biomeIndex) currentWeights.w_v2 = w2[j];
+                    }
+                    allBiomes[biomeIndex] = currentWeights;
+                }
+
+                Vector2 p0 = new Vector2(uv0.x * (mapResolution - 1), uv0.y * (mapResolution - 1));
+                Vector2 p1 = new Vector2(uv1.x * (mapResolution - 1), uv1.y * (mapResolution - 1));
+                Vector2 p2 = new Vector2(uv2.x * (mapResolution - 1), uv2.y * (mapResolution - 1));
+
+                int xMin = (int)Mathf.Floor(Mathf.Min(p0.x, p1.x, p2.x));
+                int xMax = (int)Mathf.Ceil(Mathf.Max(p0.x, p1.x, p2.x));
+                int yMin = (int)Mathf.Floor(Mathf.Min(p0.y, p1.y, p2.y));
+                int yMax = (int)Mathf.Ceil(Mathf.Max(p0.y, p1.y, p2.y));
+
+                var perPixelScores = new List<(int index, float score)>();
+
+                for (int y = yMin; y <= yMax; y++)
+                {
+                    for (int x = xMin; x <= xMax; x++)
+                    {
+                        if (x < 0 || x >= mapResolution || y < 0 || y >= mapResolution) continue;
+
+                        Vector2 p = new Vector2(x, y);
+                        Vector3 bary = Barycentric(p, p0, p1, p2);
+
+                        if (bary.x >= -0.001f && bary.y >= -0.001f && bary.z >= -0.001f)
+                        {
+                            perPixelScores.Clear();
+                            foreach (var biomeIndex in biomeList)
+                            {
+                                var vWeights = allBiomes[biomeIndex];
+                                float interpolatedWeight = vWeights.w_v0 * bary.x + vWeights.w_v1 * bary.y + vWeights.w_v2 * bary.z;
+                                if (interpolatedWeight > 0.0001f)
+                                {
+                                    perPixelScores.Add((biomeIndex, interpolatedWeight));
+                                }
+                            }
+
+                            var top4 = perPixelScores.OrderByDescending(s => s.score).Take(4).ToList();
+                            while (top4.Count < 4) { top4.Add((0, 0.0f)); }
+
+                            var finalIndices = new Vector4(top4[0].index, top4[1].index, top4[2].index, top4[3].index);
+                            var finalWeights = new Vector4(top4[0].score, top4[1].score, top4[2].score, top4[3].score);
+
+                            int pixelIndex = y * mapResolution + x;
+                            indexMapColors[pixelIndex] = new Color32((byte)finalIndices.x, (byte)finalIndices.y, (byte)finalIndices.z, (byte)finalIndices.w);
+                            weightMapColors[pixelIndex] = new UnityEngine.Color(finalWeights.x, finalWeights.y, finalWeights.z, finalWeights.w);
+                        }
+                    }
+                }
+            };
+
+        for (int i = 0; i < triangles.Length; i += 3)
+        {
+            int v0 = triangles[i];
+            int v1 = triangles[i + 1];
+            int v2 = triangles[i + 2];
+
+            Vector2 uv0 = uvs[v0];
+            Vector2 uv1 = uvs[v1];
+            Vector2 uv2 = uvs[v2];
+
+            if (Mathf.Max(uv0.x, uv1.x, uv2.x) - Mathf.Min(uv0.x, uv1.x, uv2.x) > 0.8f)
+            {
+                continue;
+            }
+
+
+            rasterizeTriangle(uv0, uv1, uv2,
+                    perVertexIndices[v0], perVertexIndices[v1], perVertexIndices[v2],
+                    perVertexWeights[v0], perVertexWeights[v1], perVertexWeights[v2]);
+
+
+
+            indexMap.SetPixels32(indexMapColors);
+            indexMap.Apply(false); 
+
+            weightMap.SetPixels(weightMapColors);
+            weightMap.Apply(true); 
+
+            material.SetTexture("_Biomes", biomeTextureArray);
+            material.SetTexture("_IndexMap", indexMap);
+            material.SetTexture("_WeightMap", weightMap);
+            meshRenderer.sharedMaterial = material;
+        }
+        
+    }
+
+    private Vector3 Barycentric(Vector2 p, Vector2 a, Vector2 b, Vector2 c)
+    {
+        Vector2 v0 = b - a;
+        Vector2 v1 = c - a;
+        Vector2 v2 = p - a;
+
+        float d00 = Vector2.Dot(v0, v0);
+        float d01 = Vector2.Dot(v0, v1);
+        float d11 = Vector2.Dot(v1, v1);
+        float d20 = Vector2.Dot(v2, v0);
+        float d21 = Vector2.Dot(v2, v1);
+
+        float denom = d00 * d11 - d01 * d01;
+        if (Mathf.Abs(denom) < 1e-6f)
+            return new Vector3(-1, -1, -1); // Degenerate triangle
+
+        float v = (d11 * d20 - d01 * d21) / denom;
+        float w = (d00 * d21 - d01 * d20) / denom;
+        float u = 1.0f - v - w;
+
+        return new Vector3(u, v, w);
+    }
 
 
 }

@@ -4,7 +4,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "PureFractalLayer", menuName = "Planet Generation/Pure Fractal Layer", order = 103)]
 public class PureFractalLayerSO : TerrainLayerSO
 {
+
     [Header("Fractal Noise Settings")]
+    [SerializeField] Vector3 noiseOffset = Vector3.zero;
     [Range(0.1f, 4)] public float noiseScale = 1.0f;
     [Range(0.1f, 4)] public float heightMultiplier = 1.0f;
 
@@ -35,7 +37,7 @@ public class PureFractalLayerSO : TerrainLayerSO
         );
 
 
-        computeShader.SetVector("noiseOffset", randomOffset);
+        computeShader.SetVector("noiseOffset", (randomOffset+noiseOffset));
         computeShader.SetInt("octaves", octaves);
         computeShader.SetFloat("persistence", persistence);
         computeShader.SetFloat("lacunarity", lacunarity);

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c1fa35823ebb98459f23673c8f14401, type: 3}
+  m_Name: 8BiomeCollection
+  m_EditorClassIdentifier: 
+  biomes:
+  - {fileID: 11400000, guid: 1bd91bfc812843b469fc1b3aae1daa94, type: 2}
+  - {fileID: 11400000, guid: 5ac9520a134e75f46b272fde1eab58cb, type: 2}
+  - {fileID: 11400000, guid: 52564a275e3fa60499a20e7bb255db8e, type: 2}
+  - {fileID: 11400000, guid: d4c7bff9d3241b640add8a6e6cc13ef1, type: 2}
+  - {fileID: 11400000, guid: 9d50741dcee49a14fb9ea1922fcf6642, type: 2}
+  - {fileID: 11400000, guid: 2de661cfef89ef94db6624c76215a398, type: 2}
+  - {fileID: 11400000, guid: f1ba4e435a00b3d498c938f6a9be6e94, type: 2}
+  - {fileID: 11400000, guid: 8c2419b0757b6224d8decaaa6165c29e, type: 2}

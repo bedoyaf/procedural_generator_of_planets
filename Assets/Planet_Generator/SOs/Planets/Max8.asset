@@ -15,16 +15,29 @@ MonoBehaviour:
   seed: 0
   meshSettings:
     resolution: 300
-    radius: 1
+    radius: 6.7
     terrainLayers:
-    - {fileID: 11400000, guid: a6bc6a5413fc28e44a0b28c6f5475245, type: 2}
+    - {fileID: 11400000, guid: e722fb34daa24e845b5d09457dcec2dd, type: 2}
+    - {fileID: 11400000, guid: bb05afc9fcc67c745a481ab51ee0a696, type: 2}
     isWaterSphere: 0
   biomeCollection: {fileID: 11400000, guid: 053724142764ef4449f994390ab8655e, type: 2}
   biomeClassifier: {fileID: 11400000, guid: e2fd8182ccba1674e83ce183558dbfbd, type: 2}
+  biomeBlendType: 0
   TextureScale: 34.82
-  generateBioms: 1
-  biomBlendType: 0
-  equatorTemperature: 1
-  poleTemperature: 0
   temperatureNoiseScale: 1
   temperatureNoiseStrength: 0.2
+  hasWater: 1
+  waterSettings:
+    resolution: 300
+    radius: 6.7
+    terrainLayers:
+    - {fileID: 11400000, guid: 77831bb0088f6e946bb32453caefedc1, type: 2}
+    isWaterSphere: 1
+  waterIceLineStart: 0.82
+  waterIceLineEnd: 0.87
+  waterColor:
+    serializedVersion: 2
+    rgba: 2583691008
+  IceColor:
+    serializedVersion: 2
+    rgba: 4294967295

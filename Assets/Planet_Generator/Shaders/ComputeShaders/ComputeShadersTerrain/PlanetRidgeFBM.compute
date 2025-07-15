@@ -15,7 +15,7 @@ float detailMultiplier;
 
 float3 baseNoiseOffset;
 float3 ridgeNoiseOffset;
-float3 ridgeAttunationNoiseOffset;
+float3 ridgeAttenuationNoiseOffset;
 
 float baseScale;
 int baseOctaves;
@@ -171,9 +171,9 @@ void CSMain(uint id : SV_DispatchThreadID)
     
     float3 baseNoisePos = pos + baseNoiseOffset;
     float3 ridgeNoisePos = pos + ridgeNoiseOffset;
-    float3 ridgeAttunationNoisePos = pos + ridgeAttunationNoiseOffset;
+    float3 ridgeAttunationNoisePos = pos + ridgeAttenuationNoiseOffset;
     //for continents
-    float base = fbm(baseNoiseOffset * baseScale, baseOctaves, baseLacunarity, basePersistence);
+    float base = fbm(baseNoisePos * baseScale, baseOctaves, baseLacunarity, basePersistence);
     //adds roughness
     float detail = fbm(baseNoisePos * detailScale, detailOctaves, detailLacunarity, detailPersistence);
     //ridges for mountains

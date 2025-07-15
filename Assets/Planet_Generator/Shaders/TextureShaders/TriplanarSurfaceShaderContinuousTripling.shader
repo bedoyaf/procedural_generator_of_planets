@@ -44,12 +44,11 @@ Shader "Custom/TriplanarContinuousTripling"
 
             v2f vert(appdata v)
             {
-           //     o.worldNormal = TransformObjectToWorldNormal(v.normal);
                 v2f o;
-                 float3 worldPos = TransformObjectToWorld(v.vertex.xyz);
+                float3 worldPos = TransformObjectToWorld(v.vertex.xyz);
                 o.worldPos = worldPos;
                 o.pos = TransformWorldToHClip(worldPos);
-                o.localPos = v.vertex.xyz; // lokální (object space) pozice
+                o.localPos = v.vertex.xyz; 
                 o.worldNormal = normalize(mul((float3x3)unity_ObjectToWorld, v.normal));
                 o.biomeIndices = v.biomeIndices;
                 o.biomeWeights = v.biomeWeights;
@@ -105,15 +104,14 @@ Shader "Custom/TriplanarContinuousTripling"
                     }
                 }
 
-                // Jednoduché osvìtlení (Lambert)
                                 InputData inputData;
                 inputData.positionWS = i.worldPos;
                 inputData.normalWS = normal;
                 inputData.viewDirectionWS = normalize(_WorldSpaceCameraPos - i.worldPos);
                 inputData.shadowCoord = TransformWorldToShadowCoord(i.worldPos);
                 inputData.fogCoord = ComputeFogFactor(i.pos.z);
-                inputData.vertexLighting = float3(0, 0, 0); // optional
-                inputData.bakedGI = float3(0, 0, 0);        // optional
+                inputData.vertexLighting = float3(0, 0, 0); 
+                inputData.bakedGI = float3(0, 0, 0);        
                 inputData.normalizedScreenSpaceUV = float2(0, 0);
                 inputData.shadowMask = 1;
 

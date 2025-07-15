@@ -17,18 +17,21 @@ MonoBehaviour:
   kernelName: GenerateSphereNoise
   kernelHandle: 0
   heightMultiplier: 1
+  baseNoiseOffset: {x: 0, y: 0, z: 209.24}
+  ridgeNoiseOffset: {x: 3.12, y: 15.16, z: 0}
+  ridgeAttunationNoiseOffset: {x: 0, y: 0, z: 0}
   baseScale: 1
   baseOctaves: 8
   baseLacunarity: 2
   basePersistence: 0.5
   baseMultiplier: 1
-  detailScale: 4.1
+  detailScale: 38.9
   detailOctaves: 1
   detailLacunarity: 3.87
   detailPersistence: 0.169
   detailMultiplier: 0.01
   ridgeScale: 3.1
-  ridgeMultiplier: 1.47
+  ridgeMultiplier: 2.01
   ridgeOctaves: 8
   ridgeLacunarity: 2.59
   ridgePersistence: 0.147

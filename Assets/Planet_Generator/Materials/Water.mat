@@ -97,12 +97,15 @@ Material:
     - _ZWrite: 1
     - _heightEnd: 0.87
     - _heightStart: 0.82
+    - _radius: 6.7
     m_Colors:
     - _Base_Colour: {r: 0, g: 0.5803919, b: 1, a: 0.6039216}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _Ice: {r: 1, g: 1, b: 1, a: 1}
+    - _IceColor: {r: 1, g: 1, b: 1, a: 1}
     - _PlanetCenter: {r: 0, g: 0, b: 0, a: 0}
+    - _Wat_Color: {r: 0, g: 1, b: 1, a: 0.6}
     - _Water_Colour: {r: 0, g: 0.5790384, b: 1, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

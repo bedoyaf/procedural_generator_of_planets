@@ -9,25 +9,17 @@ using UnityEngine;
 public class PlanetGeneratorEditor : Editor
 {
     private SerializedProperty planetSOProp;
-    private SerializedProperty waterSettingsProp;
     private SerializedProperty waterGameObjectProp;
-    private SerializedProperty waterMaterialProp;
-    private SerializedProperty materialDiscreteMax8Prop;
-    private SerializedProperty materialDiscreteTriplingProp;
-    private SerializedProperty materialSmoothMax8Prop;
-    private SerializedProperty materialSmoothTriplingProp;
 
     private bool showPlanetSOSettingsFoldout = false;
-    private bool showWaterSettingsFoldout = false;
+  //  private bool showWaterSettingsFoldout = false;
 
     private List<bool> terrainLayerFoldouts = new List<bool>();
 
     private void OnEnable()
     {
         planetSOProp = serializedObject.FindProperty("planetSO");
-        waterSettingsProp = serializedObject.FindProperty("waterSettings");
         waterGameObjectProp = serializedObject.FindProperty("waterGameObject");
-        waterMaterialProp = serializedObject.FindProperty("waterMaterial");
 
         PlanetGenerator generator = (PlanetGenerator)target;
         if (generator != null && generator.planetSO != null && generator.planetSO.meshSettings != null)
@@ -57,11 +49,8 @@ public class PlanetGeneratorEditor : Editor
                 iterator.name == "planetSO" ||
                 iterator.name == "waterSettings" ||
                 iterator.name == "waterGameObject" ||
-                iterator.name == "waterMaterial" ||
-                iterator.name == "materialDiscreteMax8" ||
-                iterator.name == "materialDiscreteTripling" ||
-                iterator.name == "materialSmoothMax8" ||
-                iterator.name == "materialSmoothTripling")
+                iterator.name == "waterIceLineStart"||
+                iterator.name == "waterIceLineEnd")
             {
                 continue;
             }
@@ -80,11 +69,16 @@ public class PlanetGeneratorEditor : Editor
                 SerializedObject nestedPlanetSO = new SerializedObject(planetSOProp.objectReferenceValue);
                 SerializedProperty currentProp = nestedPlanetSO.GetIterator();
 
+                bool hasWater = false;
+                SerializedProperty hasWaterProp = nestedPlanetSO.FindProperty("hasWater");
+                if (hasWaterProp != null) hasWater = hasWaterProp.boolValue;
+
                 if (currentProp.NextVisible(true))
                 {
                     do
                     {
                         if (currentProp.name == "m_Script") continue;
+                        if ((currentProp.name == "waterSettings" || currentProp.name == "waterIceLineStart" || currentProp.name == "waterIceLineEnd" || currentProp.name == "waterColor"||currentProp.name == "IceColor") && !hasWater) continue;
 
                         EditorGUILayout.PropertyField(currentProp, true);
                     }
@@ -98,14 +92,7 @@ public class PlanetGeneratorEditor : Editor
 
         EditorGUILayout.Space(10);
 
-        showWaterSettingsFoldout = EditorGUILayout.Foldout(showWaterSettingsFoldout, "Water Settings", true);
-        if (showWaterSettingsFoldout)
-        {
-            EditorGUI.indentLevel++;
-            EditorGUILayout.PropertyField(waterSettingsProp, true);
-            EditorGUILayout.PropertyField(waterGameObjectProp, true);
-            EditorGUI.indentLevel--;
-        }
+        EditorGUILayout.PropertyField(waterGameObjectProp, true);
 
         EditorGUILayout.Space(10);
 
@@ -151,9 +138,9 @@ public class PlanetGeneratorEditor : Editor
         EditorGUILayout.Space();
 
         if (GUILayout.Button("Reset All")) generator.ResetAll();
-        if (GUILayout.Button("Generate Sphere")) generator.GenerateSphereMesh();
-        if (GUILayout.Button("Generate Sphere and Terrain")) generator.GeneratePlanetAndTerrain();
-        if (GUILayout.Button("Generate Sphere and Terrain and Water")) generator.GeneratePlanetAndTerrainWater();
+    //    if (GUILayout.Button("Generate Sphere")) generator.GenerateSphereMesh();
+        if (GUILayout.Button("Generate Planet")) generator.GeneratePlanet();
+     //   if (GUILayout.Button("Generate Sphere and Terrain and Water")) generator.GeneratePlanetAndTerrainWater();
 
         if (GUI.changed)
         {

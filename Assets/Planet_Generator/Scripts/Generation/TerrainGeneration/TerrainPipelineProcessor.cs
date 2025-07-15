@@ -83,8 +83,6 @@ public class TerrainPipelineProcessor : IDisposable
             return initialHeightsCopy;
         }
 
-
-        Debug.Log("Starting Terrain Generation Pipeline...");
         UnityEngine.Random.InitState(seed); 
 
         try

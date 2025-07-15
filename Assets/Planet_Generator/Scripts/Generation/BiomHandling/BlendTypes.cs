@@ -3,5 +3,6 @@ using UnityEngine;
 public enum BiomeBlendType
 {
     Discrete,
-    Continuous
+    Continuous,
+    Splat
 }

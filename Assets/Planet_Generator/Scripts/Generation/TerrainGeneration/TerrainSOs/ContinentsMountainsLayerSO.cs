@@ -112,7 +112,7 @@ public class ContinentsMountainsLayer : TerrainLayerSO
             UnityEngine.Random.Range(-1000f, 1000f),
             UnityEngine.Random.Range(-1000f, 1000f)
         );
-        computeShader.SetVector("ridgeAttunationNoiseOffset", randomOffset3+ ridgeAttunationNoiseOffset);
+        computeShader.SetVector("ridgeAttenuationNoiseOffset", randomOffset3+ ridgeAttunationNoiseOffset);
     }
 
     public override void ReleaseAnySpecificBuffers()

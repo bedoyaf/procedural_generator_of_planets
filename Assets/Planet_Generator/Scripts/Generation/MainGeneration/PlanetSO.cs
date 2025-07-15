@@ -11,22 +11,22 @@ public class PlanetSO : ScriptableObject
     public BiomeCollectionSO biomeCollection;
     public BiomeClassifierSO biomeClassifier;
 
-    public float TextureScale = 1.0f;
-
-    public bool generateBioms = true;
-
     [Header("Bioms")]
-    [SerializeField] public BiomeBlendType biomBlendType = BiomeBlendType.Discrete;
+    [SerializeField] public BiomeBlendType biomeBlendType = BiomeBlendType.Discrete;
+    [SerializeField] public float TextureScale = 1.0f;
     [Header("Temperature Settings")]
-    [Tooltip("Temperature equator")]
-    [SerializeField, Range(0f, 1f)] public float equatorTemperature = 1.0f;
-
-    [Tooltip("Temperature at the poles")]
-    [SerializeField, Range(0f, 1f)] public float poleTemperature = 0.0f;
-
     [Tooltip("Scale of noise.")]
     [SerializeField] public float temperatureNoiseScale = 1.0f;
 
     [Tooltip("Strength of noise.")]
     [SerializeField] public float temperatureNoiseStrength = 0.2f;
+
+    [SerializeField] public bool hasWater;
+
+    [SerializeField] public SphereMeshSettings waterSettings;
+
+    [Range(0, 1)] public float waterIceLineStart = 0.82f;
+    [Range(0, 1)] public float waterIceLineEnd = 0.87f;
+    [SerializeField] public Color32 waterColor = new Color32(144,255,255,153);
+    [SerializeField] public Color32 IceColor = new Color32(255, 255, 255, 255); 
 }

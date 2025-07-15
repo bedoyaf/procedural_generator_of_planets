@@ -1,14 +1,16 @@
+using NUnit.Framework;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "FractalLayerDetail", menuName = "Planet Generation/Fractal Layer Detail", order = 103)]
 public class FractalLayerDetail : TerrainLayerSO
 {
     [Header("Small-Scale Ocean Detail Settings")]
-    public float detailScale = 12.0f;
-    public float detailLacunarity = 2.2f;
-    public float detailPersistence = 0.4f;
-    public int detailOctaves = 2;
-    public float heightMultiplier = 1.0f;
+    [SerializeField] Vector3 noiseOffset = Vector3.zero;
+    [SerializeField,UnityEngine.Range(0.1f,100)] private float detailScale = 12.0f;
+    [SerializeField, UnityEngine.Range(0.1f, 20)] private float detailLacunarity = 10f;
+    [SerializeField, UnityEngine.Range(0.1f, 20)] private float detailPersistence = 5f;
+    [SerializeField, UnityEngine.Range(1, 10)] private int detailOctaves = 3;
+    [SerializeField, UnityEngine.Range(0, 3)] private float heightMultiplier = 0.01f;
 
     public override void SetShaderParameters( ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices)
     {
@@ -33,7 +35,7 @@ public class FractalLayerDetail : TerrainLayerSO
             Random.Range(-1000f, 1000f),
             Random.Range(-1000f, 1000f)
         );
-        computeShader.SetVector("noiseOffset", offset);
+        computeShader.SetVector("noiseOffset", (offset+noiseOffset));
     }
 
     public override void ReleaseAnySpecificBuffers()

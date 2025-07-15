@@ -5,6 +5,7 @@ using UnityEngine;
 public class ContinentsMountainsMaskedLayer : TerrainLayerSO
 {
     [Header("Continent (Base) Noise")]
+    [SerializeField] Vector3 baseNoiseOffset = Vector3.zero;
     [Range(0.01f, 10f)][SerializeField] private float baseScale = 1f;
     [Range(1, 8)][SerializeField] private int baseOctaves = 4;
     [Range(1f, 4f)][SerializeField] private float baseLacunarity = 2f;
@@ -12,6 +13,7 @@ public class ContinentsMountainsMaskedLayer : TerrainLayerSO
     [Range(0f, 2f)][SerializeField] private float baseMultiplier = 1f;
 
     [Header("Ridge Noise (Mountains)")]
+    [SerializeField] Vector3 ridgeNoiseOffset = Vector3.zero;
     [Range(0.01f, 10f)][SerializeField] private float ridgeScale = 1.5f;
     [Range(1, 8)][SerializeField] private int ridgeOctaves = 4;
     [Range(1f, 4f)][SerializeField] private float ridgeLacunarity = 2f;
@@ -19,12 +21,14 @@ public class ContinentsMountainsMaskedLayer : TerrainLayerSO
     [Range(0f, 2f)][SerializeField] private float ridgeMultiplier = 0.6f;
 
     [Header("Ridge Masking")]
+    [SerializeField] Vector3 ridgeMaskingNoiseOffset = Vector3.zero;
     [Range(0.01f, 3f)][SerializeField] float ridgeMaskScale = 0.3f;
     [Range(1, 6)][SerializeField] int ridgeMaskOctaves = 4;
     [Range(1.5f, 3f)][SerializeField] float ridgeMaskLacunarity = 2.0f;
     [Range(0.3f, 0.8f)][SerializeField] float ridgeMaskPersistence = 0.5f;
     [Range(0.2f, 0.8f)][SerializeField] float ridgeMaskThreshold = 0.4f;     // e.g. 0.4
     [Range(0.01f, 0.2f)][SerializeField] float ridgeMaskFalloff = 0.1f;
+    [Range(0, 10f), SerializeField] private float ridgeMaskMultiplier = 1;
 
     [Header("Oceans")]
     [SerializeField, Range(0f, 1f)]
@@ -82,9 +86,22 @@ public class ContinentsMountainsMaskedLayer : TerrainLayerSO
             UnityEngine.Random.Range(-1000f, 1000f),
             UnityEngine.Random.Range(-1000f, 1000f)
         );
-        computeShader.SetVector("noiseOffset", randomOffset);
+        computeShader.SetVector("baseNoiseOffset", (randomOffset+baseNoiseOffset));
+        Vector3 randomOffset2 = new Vector3(
+            UnityEngine.Random.Range(-1000f, 1000f),
+            UnityEngine.Random.Range(-1000f, 1000f),
+            UnityEngine.Random.Range(-1000f, 1000f)
+        );
+        computeShader.SetVector("ridgeNoiseOffset", (randomOffset+ ridgeNoiseOffset));
+        
+        Vector3 randomOffset3 = new Vector3(
+            UnityEngine.Random.Range(-1000f, 1000f),
+            UnityEngine.Random.Range(-1000f, 1000f),
+            UnityEngine.Random.Range(-1000f, 1000f)
+        );
+        computeShader.SetVector("maskNoiseOffset", (randomOffset+ ridgeMaskingNoiseOffset));
 
-
+        computeShader.SetFloat("ridgeMaskMultiplier", ridgeMaskMultiplier);
         computeShader.SetFloat("ridgeMaskScale", ridgeMaskScale);
         computeShader.SetInt("ridgeMaskOctaves", ridgeMaskOctaves);
         computeShader.SetFloat("ridgeMaskLacunarity", ridgeMaskLacunarity);
