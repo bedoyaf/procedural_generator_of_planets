@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c1fa35823ebb98459f23673c8f14401, type: 3}
+  m_Name: AlienPlanetBiomeCollection
+  m_EditorClassIdentifier: 
+  biomes:
+  - {fileID: 11400000, guid: c5f55c06c77a931448c67071eec7619f, type: 2}
+  - {fileID: 11400000, guid: 6edf0a4eb587dda449ac1ce10f426faa, type: 2}
+  - {fileID: 11400000, guid: 9f27f3bae03f7884392bbb155feff052, type: 2}
+  - {fileID: 11400000, guid: 456ea44e915495444899eb329a56394d, type: 2}
+  - {fileID: 11400000, guid: 217f6240eddc4ff45baaee41185f5054, type: 2}
+  - {fileID: 11400000, guid: a1c26a279d141924b96ff421c90f7577, type: 2}
+  - {fileID: 11400000, guid: 0ea4e7409a943af4f934575559007e50, type: 2}
+  - {fileID: 11400000, guid: 1a9515814c4f6c540b0329443b7ed94a, type: 2}
+  - {fileID: 11400000, guid: 39851fce00627b547821c49fc12c77a0, type: 2}

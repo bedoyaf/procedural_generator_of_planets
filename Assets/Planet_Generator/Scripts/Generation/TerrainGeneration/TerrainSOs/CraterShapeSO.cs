@@ -1,12 +1,14 @@
 using UnityEngine;
 using Unity.Mathematics;
 using System.Collections.Generic; 
-using System.Runtime.InteropServices; 
+using System.Runtime.InteropServices;
 
+/// <summary>
+/// Layer from TerrainLayerSO, focused on creating craters on the planet
+/// </summary>
 [CreateAssetMenu(fileName = "CraterLayer", menuName = "Planet Generation/Crater Layer", order = 101)]
 public class CraterLayerSO : TerrainLayerSO
 {
-  //  [StructLayout(LayoutKind.Sequential, Size = 20)] 
     private struct CraterData 
     {
         public float3 center;
@@ -27,6 +29,12 @@ public class CraterLayerSO : TerrainLayerSO
     private List<CraterData> craterList = new List<CraterData>();
 
 
+    /// <summary>
+    /// Sets up the shader with the buffers and serialized fields
+    /// </summary>
+    /// <param name="positionBuffer">buffer of the mesh positions</param>
+    /// <param name="heightBuffer">buffer of the heights(start at 0)</param>
+    /// <param name="numVertices">the number of vertices in the mesh</param>
     public override void SetShaderParameters( ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices)
     {
         ReleaseBuffers();
@@ -67,7 +75,11 @@ public class CraterLayerSO : TerrainLayerSO
 
     }
 
-
+    /// <summary>
+    /// it creates the craters for the shader by generating the struct for it
+    /// </summary>
+    /// <param name="originalVertices">the mesh vertices</param>
+    /// <param name="numVertices">number of vertices in the mesh</param>
     private void GenerateCraterData(Vector3[] originalVertices, int numVertices)
     {
         if (originalVertices == null || originalVertices.Length != numVertices)
@@ -121,16 +133,17 @@ public class CraterLayerSO : TerrainLayerSO
         ReleaseBuffers();
     }
 
+    /// <summary>
+    /// Crater buffer release
+    /// </summary>
     public void ReleaseBuffers()
     {
         if (craterBuffer != null)
         {
             craterBuffer?.Release();
-            craterBuffer = null;
-       //     cachedOriginalPositions = null; 
-            Debug.Log($"Released crater buffer for layer '{this.name}'.");
+            craterBuffer = null; 
+        //    Debug.Log($"Released crater buffer for layer '{this.name}'.");
         }
-     //   cachedOriginalPositions = null;
     }
 
     public override void ReleaseAnySpecificBuffers()

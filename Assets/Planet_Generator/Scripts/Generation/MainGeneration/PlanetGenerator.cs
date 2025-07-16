@@ -12,26 +12,22 @@ using System.IO;
 public class PlanetGenerator : MonoBehaviour
 {
     [Header("Setup")]
-    public PlanetSO planetSO;
+    [SerializeField] public PlanetSO planetSO;
     private int currentlyUsedSeed = -1;
 
-    [Header("Sphere Mesh Settings")]
-
-    [Header("Generation Pipeline")]
     private SphereMeshGenerator sphereMeshGenerator = new SphereMeshGenerator();
 
-    [Header("BiomStuff")]
     private BiomePipeline biomePipeline = new BiomePipeline();
 
     [Header("References")]
     [SerializeField] private GameObject waterGameObject;
-    private Material waterMaterial;
 
-
+    //Materials
     private Material materialMax8;
     private Material materialDiscreteTripling;
     private Material materialContinuousTripling;
-
+    private Material waterMaterial;
+    //Planet Data stores relevant data for the sphere
     private PlanetData planetData = new PlanetData();
     private PlanetData waterSphereData = new PlanetData();
 
@@ -41,13 +37,16 @@ public class PlanetGenerator : MonoBehaviour
     private const string MATERIALDISCRETETRIPLING = "materialDiscreteTripling";
     private const string MATERIALSMOOTHTRIPLINGNAME = "materialContinuousTripling";
     private const string MATERIALWATERNAME = "WATER";
-
+    [SerializeField, HideInInspector] private List<string> bakedAssetPaths = new List<string>();
 
     /// <summary>
     /// Sets up all the relevant properties for the generation of the planet
     /// </summary>
     private void UpdateAllRelevantProperties()
     {
+#if UNITY_EDITOR
+        ResetSavedMaterialsTextures();
+#endif
         UpdateSeed();
         AssignMaterial(ref materialMax8, MATERIALMAX8NAME);
         AssignMaterial(ref materialDiscreteTripling, MATERIALDISCRETETRIPLING);
@@ -73,17 +72,26 @@ public class PlanetGenerator : MonoBehaviour
     [ContextMenu("Generate Planet")]
     public void GeneratePlanet()
     {
-        UpdateAllRelevantProperties();
-
-        if (biomePipeline.RegeratedMesh) ResetMesh();
-
-        if (GenerateSphereData(planetSO.meshSettings, planetData))
+        try
         {
-            GenerateTerrain(planetSO.meshSettings,planetData);
+            UpdateAllRelevantProperties();
+
+            if (biomePipeline.RegeratedMesh) ResetMesh();
+
+            GenerateSphereData(planetSO.meshSettings, planetData);
+            GenerateTerrain(planetSO.meshSettings, planetData);
+            
+            if (planetSO.hasWater) GenerateWaterSphere();
+            else DestroyImmediate(waterGameObject);
+            BakeAndSave();
+            Debug.Log("Planet Generation process finished");
         }
-        if (planetSO.hasWater) GenerateWaterSphere();
-        else DestroyImmediate(waterGameObject);
-        BakeAndSave();
+        catch (Exception ex)
+        {
+        //    Debug.LogError($"Planet Generation failed: {ex.Message}");
+            Debug.LogException(ex);
+            ResetMesh();
+        }
     }
 
     /// <summary>
@@ -115,10 +123,9 @@ public class PlanetGenerator : MonoBehaviour
         waterSphereData.gameobject = waterGameObject;
         waterSphereData.meshFilter = waterGameObject.GetComponent<MeshFilter>();
 
-        if (GenerateSphereData(planetSO.waterSettings, waterSphereData))
-        {
-            GenerateTerrain(planetSO.waterSettings, waterSphereData);
-        }
+        GenerateSphereData(planetSO.waterSettings, waterSphereData);
+        
+        GenerateTerrain(planetSO.waterSettings, waterSphereData);
     }
 
     /// <summary>
@@ -127,7 +134,7 @@ public class PlanetGenerator : MonoBehaviour
     /// <param name="settings">users settings for the mesh</param>
     /// <param name="data">the stored data for that mesh</param>
     /// <returns>generation success</returns>
-    private bool GenerateSphereData(SphereMeshSettings settings, PlanetData data)
+    private void GenerateSphereData(SphereMeshSettings settings, PlanetData data)
     {
         data.meshDataGenerated = sphereMeshGenerator.Generate( settings.resolution);
 
@@ -145,9 +152,8 @@ public class PlanetGenerator : MonoBehaviour
             data.pipelineInitialized = data.terrainPipelineProcessor.Initialize(data.numVertices);
             if (!data.pipelineInitialized)
             {
-                Debug.LogError("Failed to initialize terrain pipeline processor.");
-                planetData.meshDataGenerated = false; 
-                return false;
+                planetData.meshDataGenerated = false;
+                throw new InvalidOperationException("Failed to initialize terrain pipeline processor.");
             }
 
             if (data.generatedMesh == null)
@@ -166,8 +172,7 @@ public class PlanetGenerator : MonoBehaviour
 
             data.generatedMesh.triangles = sphereMeshGenerator.Triangles;
 
-            Debug.Log("Sphere data generated successfully.");
-            return true;
+         //   Debug.Log("Sphere data generated successfully.");
         }
         else
         {
@@ -177,8 +182,7 @@ public class PlanetGenerator : MonoBehaviour
             data.numVertices = 0;
             data.pipelineInitialized = false;
             if (data.generatedMesh != null) data.generatedMesh.Clear();
-            Debug.LogError("Sphere data generation failed.");
-            return false;
+            throw new InvalidOperationException("Sphere data generation failed.");
         }
     }
 
@@ -192,16 +196,11 @@ public class PlanetGenerator : MonoBehaviour
         if (!data.meshDataGenerated)
         {
             Debug.LogWarning("Sphere mesh data not generated yet. Generating data first.");
-            if (!GenerateSphereData(settings,data)) 
-            {
-                Debug.LogError("Cannot generate terrain because sphere data generation failed.");
-                return;
-            }
+            GenerateSphereData(settings, data);
         }
         if (!data.pipelineInitialized)
         {
-            Debug.LogError("Cannot generate terrain, pipeline processor not initialized.");
-            return;
+            throw new InvalidOperationException("Cannot generate terrain, pipeline processor not initialized.");
         }
 
         float[] finalHeights = data.terrainPipelineProcessor.ProcessTerrain(settings.terrainLayers, data.baseVertices, planetSO.seed);
@@ -215,22 +214,8 @@ public class PlanetGenerator : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Terrain pipeline processing failed. Mesh not updated with terrain.");
-            return;
+            throw new InvalidOperationException("Terrain pipeline processing failed. Mesh not updated with terrain.");
         }
-    }
-
-    private void ResetMesh()
-    {
-        if(planetData.meshFilter!=null)planetData.meshFilter.sharedMesh = null;
-
-        planetData.generatedMesh=null;
-        planetData.baseVertices=null;     
-        planetData.processedHeights=null;   
-        planetData.processedVertices=null;
-        planetData.numVertices = 0;
-        planetData.meshDataGenerated = false;
-        planetData.pipelineInitialized = false;
     }
 
     /// <summary>
@@ -242,14 +227,12 @@ public class PlanetGenerator : MonoBehaviour
     {
         if (!data.meshDataGenerated || data.generatedMesh == null)
         {
-            Debug.LogError("Cannot apply data to mesh, prerequisites not met (mesh data or mesh object missing).");
-            return;
+            throw new InvalidOperationException("Cannot apply data to mesh, missing relevant data");
         }
 
         if (data.processedHeights == null || data.processedHeights.Length != data.numVertices)
         {
-            Debug.LogError("Cannot apply terrain heights, processedHeights data is invalid.");
-            return;
+            throw new InvalidOperationException("Cannot apply terrain heights, processedHeights data is invalid");
         }
         for (int i = 0; i < data.numVertices; i++)
         {                
@@ -261,6 +244,7 @@ public class PlanetGenerator : MonoBehaviour
                 data.processedVertices[i] = data.baseVertices[i].normalized * settings.radius; 
             }
         }
+
         //update mesh
         data.generatedMesh.vertices = data.processedVertices;
         if (data.generatedMesh.GetTopology(0) != MeshTopology.Triangles)
@@ -271,9 +255,9 @@ public class PlanetGenerator : MonoBehaviour
 
         data.generatedMesh.RecalculateBounds(); 
         data.meshFilter.sharedMesh = data.generatedMesh;
-        Debug.Log("Mesh updated.");
+      //  Debug.Log("Mesh updated.");
 
-        if( !settings.isWaterSphere)
+        if( !settings.isWaterSphere) //sets up the biomes
         {
             biomePipeline.Initialize(data.meshRenderer, data.meshFilter, planetSO.biomeClassifier, planetSO.biomeCollection);
 
@@ -281,7 +265,7 @@ public class PlanetGenerator : MonoBehaviour
             biomePipeline.UpdateBiomPipelineValues(planetSO.temperatureNoiseScale,planetSO.temperatureNoiseStrength, planetSO.TextureScale);
             biomePipeline.ApplyTexturesToMesh(data.baseVertices, data.generatedMesh.normals, data.generatedMesh.triangles, planetSO.biomeBlendType);
         }
-        else if(settings.isWaterSphere)
+        else if(settings.isWaterSphere) //sets up the water sphere
         {
             data.meshRenderer.sharedMaterial = waterMaterial;
             waterMaterial.SetFloat("_heightStart", planetSO.waterIceLineStart);
@@ -294,6 +278,9 @@ public class PlanetGenerator : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// releases all buffers
+    /// </summary>
     private void ReleaseResources(SphereMeshSettings settings,PlanetData data)
     {
         data.terrainPipelineProcessor?.Dispose();
@@ -303,13 +290,10 @@ public class PlanetGenerator : MonoBehaviour
         {
             foreach (var layer in settings.terrainLayers)
             {
-                if (layer is CraterLayerSO craterLayer) 
-                {
-                    craterLayer.ReleaseBuffers(); 
-                }
+                layer.ReleaseAnySpecificBuffers();
             }
         }
-        Debug.Log("Compute resources released by PlanetGenerator.");
+      //  Debug.Log("Compute resources released by PlanetGenerator.");
     }
 
     /// <summary>
@@ -340,6 +324,19 @@ public class PlanetGenerator : MonoBehaviour
         }
     }
 
+    private void ResetMesh()
+    {
+        if (planetData.meshFilter != null) planetData.meshFilter.sharedMesh = null;
+
+        planetData.generatedMesh = null;
+        planetData.baseVertices = null;
+        planetData.processedHeights = null;
+        planetData.processedVertices = null;
+        planetData.numVertices = 0;
+        planetData.meshDataGenerated = false;
+        planetData.pipelineInitialized = false;
+    }
+
     /// <summary>
     /// Resets all values, for emergancy purposes for user, accessible through a button
     /// </summary>
@@ -366,12 +363,18 @@ public class PlanetGenerator : MonoBehaviour
             mf.sharedMesh.Clear();
         }
 
+#if UNITY_EDITOR
+        ResetSavedMaterialsTextures();
+#endif
+
         Debug.Log("PlanetGenerator has been fully reset.");
     }
 
 
-
-    [ContextMenu("Bake Biome Texture Array And Save Material")]
+    /// <summary>
+    /// Saves all the data for the materials, so they stay even after saving, does it by saving textures and material
+    /// created with help of chat gpt
+    /// </summary>
     void BakeAndSave()
     {
 #if UNITY_EDITOR
@@ -381,27 +384,26 @@ public class PlanetGenerator : MonoBehaviour
             return;
         }
 
-        // 1) Vygeneruj Text2DArray z biome kolekce
+        // vygeneruje Text2DArray z biome kolekce
         var texArr = BiomeUtils.GenerateBiomeTextureArray(planetSO.biomeCollection);
         if (texArr == null)
         {
-            Debug.LogError("Texture2DArray generation failed.", this);
-            return;
+            throw new InvalidOperationException("Texture2DArray generation failed.");
         }
 
-        // 2) Zajisti složku pro uložení assetù
+        // zajisti složku pro uložení assetù
         string folder = "Assets/Planet_Generator/Baked";
         if (!AssetDatabase.IsValidFolder(folder))
         {
             AssetDatabase.CreateFolder("Assets/Planet_Generator", "Baked");
         }
 
-        // 3) Cesty k assetùm
+        // cesty k assetùm
         string baseName = name.Replace(" ", "_");
         string texturePath = Path.Combine(folder, $"{baseName}_biomes.asset");
         string materialPath = Path.Combine(folder, $"{baseName}_material.mat");
 
-        // 4) Ulož nebo aktualizuj Texture2DArray asset
+        // ulož nebo aktualizuj Texture2DArray asset
         texArr.name = Path.GetFileNameWithoutExtension(texturePath);
         var existingTexArr = AssetDatabase.LoadAssetAtPath<Texture2DArray>(texturePath);
         if (existingTexArr == null)
@@ -416,34 +418,60 @@ public class PlanetGenerator : MonoBehaviour
         }
         EditorUtility.SetDirty(texArr);
 
-        // 5) Vytvoø instanci materiálu a pøiøaï texturové pole
+        // vytvoø instanci materiálu a pøiøaï texturové pole
         var renderer = GetComponent<MeshRenderer>();
         if (renderer == null)
         {
-            Debug.LogError("Missing MeshRenderer on this GameObject.", this);
-            return;
+            throw new InvalidOperationException("Missing MeshRenderer on this GameObject.");
         }
 
         Material newMat = new Material(renderer.sharedMaterial);
         newMat.name = $"{baseName}_Material";
         newMat.SetTexture("_Biomes", texArr);
 
-        // 6) Ulož materiál jako asset
+        // ulož materiál jako asset
         AssetDatabase.CreateAsset(newMat, materialPath);
         AssetDatabase.ImportAsset(materialPath);
         EditorUtility.SetDirty(newMat);
 
-        // 7) Aplikuj nový materiál na renderer
+        // aplikuj nový materiál na renderer
         renderer.sharedMaterial = newMat;
 
-        // 8) Oznaè scénu jako modifikovanou a ulož
+        bakedAssetPaths.Clear();
+        bakedAssetPaths.Add(texturePath);
+        bakedAssetPaths.Add(materialPath);
+
+        // oznaè scénu jako modifikovanou a ulož
         AssetDatabase.SaveAssets();
         EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
 
-        Debug.Log($"Baked Texture2DArray saved to '{texturePath}', material saved to '{materialPath}', and applied to '{renderer.gameObject.name}'", this);
+     //   Debug.Log($"Baked Texture2DArray saved to '{texturePath}', material saved to '{materialPath}', and applied to '{renderer.gameObject.name}'", this);
 #endif
     }
 
+    /// <summary>
+    /// Resets the saved materials and textures from the folder, reverts the baking
+    /// </summary>
+    private void ResetSavedMaterialsTextures()
+    {
+#if UNITY_EDITOR
+        foreach (var path in bakedAssetPaths)
+        {
+            if (AssetDatabase.DeleteAsset(path))
+                Debug.Log($"Deleted baked asset: {path}");
+        }
+        bakedAssetPaths.Clear();
+
+        AssetDatabase.SaveAssets();
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+#endif
+    }
+
+    /// <summary>
+    /// Loads all the relevant materials for the generation, requires folder to be in Assets, created with help of chatgpt
+    /// </summary>
+    /// <param name="field">refers to what field of material will be loaded</param>
+    /// <param name="name">the name of the material</param>
     private void AssignMaterial(ref Material field, string name)
     {
 #if UNITY_EDITOR
@@ -457,9 +485,8 @@ public class PlanetGenerator : MonoBehaviour
             EditorUtility.SetDirty(this);
             if(field==null)
             {
-                Debug.LogError($"[PlanetGenerator] Material '{name}' got loaded as null", this);
+                throw new InvalidOperationException($"[PlanetGenerator] Material got loaded as null");
             }
-
         }
         else
         {

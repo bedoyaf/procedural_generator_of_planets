@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a6a7eb2522c85041b46eb0ee919062e, type: 3}
+  m_Name: WeirdLayer
+  m_EditorClassIdentifier: 
+  layerEnabled: 1
+  computeShader: {fileID: 7200000, guid: 0b9960ce179ba5e4783ec5430caf6ca3, type: 3}
+  kernelName: CSMain
+  kernelHandle: 0
+  noiseOffset: {x: 0, y: 0, z: 0}
+  detailScale: 1
+  detailLacunarity: 2
+  detailPersistence: 5
+  detailOctaves: 3
+  heightMultiplier: 0.02

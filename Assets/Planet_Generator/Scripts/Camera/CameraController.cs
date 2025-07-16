@@ -1,6 +1,9 @@
 using UnityEditor;
 using UnityEngine;
-
+/// <summary>
+/// skript for the rotation of the camera around a target, useful for observing the sphere
+/// Created with help of chatgpt
+/// </summary>
 public class OrbitCamera : MonoBehaviour
 {
     public Transform target; // Planet
@@ -26,9 +29,8 @@ public class OrbitCamera : MonoBehaviour
     void Update()
     {
         if (target == null) return;
-
+        //Makes sure zooming only when mouse is in game
 #if UNITY_EDITOR
-        // Only zoom if Game view is focused
         if (EditorWindow.focusedWindow != null && EditorWindow.focusedWindow.titleContent.text != "Game")
             return;
 #endif
@@ -54,7 +56,6 @@ public class OrbitCamera : MonoBehaviour
         Vector3 offset = rotation * new Vector3(0, 0, -distance);
         transform.position = target.position + offset;
         transform.LookAt(target.position);
-
 
         Camera.main.depthTextureMode |= DepthTextureMode.Depth;
 

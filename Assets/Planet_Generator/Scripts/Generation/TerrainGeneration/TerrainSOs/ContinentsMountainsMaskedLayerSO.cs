@@ -1,16 +1,19 @@
 using Unity.Mathematics;
 using UnityEngine;
 
+/// <summary>
+/// Layer from TerrainLayerSO, focused on creating realisting earthlike terrain
+/// </summary>
 [CreateAssetMenu(fileName = "ContinentsMountainsMaskedLayer", menuName = "Planet Generation/Continents Mountains Masked Layer", order = 103)]
 public class ContinentsMountainsMaskedLayer : TerrainLayerSO
 {
     [Header("Continent (Base) Noise")]
     [SerializeField] Vector3 baseNoiseOffset = Vector3.zero;
     [Range(0.01f, 10f)][SerializeField] private float baseScale = 1f;
-    [Range(1, 8)][SerializeField] private int baseOctaves = 4;
-    [Range(1f, 4f)][SerializeField] private float baseLacunarity = 2f;
+    [Range(1, 8)][SerializeField] private int baseOctaves = 3;
+    [Range(1f, 4f)][SerializeField] private float baseLacunarity = 1.8f;
     [Range(0f, 1f)][SerializeField] private float basePersistence = 0.5f;
-    [Range(0f, 2f)][SerializeField] private float baseMultiplier = 1f;
+    [Range(0f, 2f)][SerializeField] private float baseMultiplier = 0.8f;
 
     [Header("Ridge Noise (Mountains)")]
     [SerializeField] Vector3 ridgeNoiseOffset = Vector3.zero;
@@ -46,6 +49,12 @@ public class ContinentsMountainsMaskedLayer : TerrainLayerSO
     [Range(0f, 10f)][SerializeField] private float heightMultiplier = 1f;
 
 
+    /// <summary>
+    /// Sets up the shader with the buffers and serialized fields
+    /// </summary>
+    /// <param name="positionBuffer">buffer of the mesh positions</param>
+    /// <param name="heightBuffer">buffer of the heights(start at 0)</param>
+    /// <param name="numVertices">the number of vertices in the mesh</param>
     public override void SetShaderParameters( ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices)
     {
         if (!layerEnabled || computeShader == null || kernelHandle < 0 || positionBuffer == null || heightBuffer == null)
@@ -69,9 +78,6 @@ public class ContinentsMountainsMaskedLayer : TerrainLayerSO
         computeShader.SetFloat("mountainLacunarity", ridgeLacunarity);
         computeShader.SetFloat("mountainPersistence", ridgePersistence);
         computeShader.SetFloat("mountainStrength", ridgeMultiplier);
-
-        //computeShader.SetFloat("mountainMaskMin", ridgeMinBase);
-        //computeShader.SetFloat("mountainMaskPower", ridgeStartPower);
 
         computeShader.SetFloat("oceanFloorDepth", oceanFloorDepth);
         computeShader.SetFloat("oceanFloorSmoothing", oceanFloorSmoothing);
@@ -113,8 +119,5 @@ public class ContinentsMountainsMaskedLayer : TerrainLayerSO
 
     }
 
-    public override void ReleaseAnySpecificBuffers()
-    {
-
-    }
+    public override void ReleaseAnySpecificBuffers(){}
 }

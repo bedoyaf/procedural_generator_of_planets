@@ -22,7 +22,7 @@ public static class BiomeUtils
     }
 
     /// <summary>
-    /// Generates a texture array to be used in the material
+    /// Generates a texture array to be used in the material, chatgpt helped in implementation
     /// </summary>
     /// <param name="biomeCollection">the biomes to be used</param>
     /// <returns>the texture2Darray</returns>
@@ -163,14 +163,26 @@ public static class BiomeUtils
         return arr;
     }
 
-
+    /// <summary>
+    /// calls relevant functions to check if biomes are settup up correctly
+    /// </summary>
+    /// <param name="biomeCollection">list of biomes to be stored</param>
+    /// <param name="biomeClassifier">the classifier to help</param>
+    /// <returns>if the biomes are correctly setted up</returns>
     public static bool AreBiomesValid(BiomeCollectionSO biomeCollectionSO, BiomeClassifierSO biomeClassifier)
     {
+        if(!AreBiomesNullorEmpty(biomeCollectionSO, biomeClassifier)) return false;
         if (!AreBiomeTexturesSet(biomeCollectionSO)) return false;
         if (!AreSupportedBiomeAttributesValid(biomeCollectionSO, biomeClassifier)) return false;
         return true;
     }
 
+    /// <summary>
+    /// checks if BiomeAttribute fits in both BiomeCollection and biomeCLassifier
+    /// </summary>
+    /// <param name="biomeCollection">list of biomes to be stored</param>
+    /// <param name="biomeClassifier">the classifier to help</param>
+    /// <returns>if the biomes are correctly setted up</returns>
     private static bool AreSupportedBiomeAttributesValid(BiomeCollectionSO biomeCollectionSO, BiomeClassifierSO biomeClassifier)
     {
         foreach (var biome in biomeCollectionSO.biomes)
@@ -179,7 +191,7 @@ public static class BiomeUtils
             {
                 if (!biomeClassifier.heights.Contains(att))
                 {
-                    Debug.Log($"Invald height attribute {att} in biome {biome}");
+                    Debug.LogError($"Invald height attribute {att} in biome {biome}");
                     return false;
                 }
             }
@@ -187,7 +199,7 @@ public static class BiomeUtils
             {
                 if (!biomeClassifier.slopes.Contains(att))
                 {
-                    Debug.Log($"Invald slope attribute {att} in biome {biome}");
+                    Debug.LogError($"Invald slope attribute {att} in biome {biome}");
                     return false;
                 }
             }
@@ -195,7 +207,7 @@ public static class BiomeUtils
             {
                 if (!biomeClassifier.temperatures.Contains(att))
                 {
-                    Debug.Log($"Invald temperature attribute {att} in biome {biome}");
+                    Debug.LogError($"Invald temperature attribute {att} in biome {biome}");
                     return false;
                 }
             }
@@ -203,20 +215,52 @@ public static class BiomeUtils
         return true;
     }
 
+    /// <summary>
+    /// checks if BiomeAttribute fits in both BiomeCollection and biomeCLassifier
+    /// </summary>
+    /// <param name="biomeCollection">list of biomes to be stored</param>
+    /// <param name="biomeClassifier">the classifier to help</param>
+    /// <returns>if the biomes are correctly setted up</returns>
     private static bool AreBiomeTexturesSet(BiomeCollectionSO biomeCollection)
     {
         foreach(var biome in biomeCollection.biomes)
         {
             if(biome == null)
             {
-                Debug.Log($"Biom missing in collection");
+                Debug.LogError($"Biome missing in collection");
                 return false;
             }
             if (biome.biomeTexture == null)
             {
-                Debug.Log($"Biome {biome} missing texture" );
+                Debug.LogError($"Biome {biome} missing texture" );
                 return false;
             }
+        }
+        return true;
+    }
+
+    /// <summary>
+    ///  checks if something is empty or null in BiomeClassifier or BiomeCollection
+    /// </summary>
+    /// <param name="biomeCollection">list of biomes to be stored</param>
+    /// <param name="biomeClassifier">the classifier to help</param>
+    /// <returns>if the biomes are correctly setted up</returns>
+    private static bool AreBiomesNullorEmpty(BiomeCollectionSO biomeCollection, BiomeClassifierSO biomeClassifier)
+    {
+        if (biomeClassifier == null || biomeCollection == null)
+        {
+            Debug.LogError("Missing BiomeClassifierSO or BiomeCollection");
+            return false;
+        }
+        if(biomeCollection.biomes.Count<=0)
+        {
+            Debug.LogError("No biomes in BiomeCollection");
+            return false;
+        }
+        if(biomeClassifier.heights.Count <=0 || biomeClassifier.slopes.Count <= 0 || biomeClassifier.temperatures.Count <= 0)
+        {
+            Debug.LogError("No BiomeAttribute in BiomeClassifier");
+            return false;
         }
         return true;
     }

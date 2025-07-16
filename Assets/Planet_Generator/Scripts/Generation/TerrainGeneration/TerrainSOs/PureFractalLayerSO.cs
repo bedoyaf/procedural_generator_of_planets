@@ -1,10 +1,12 @@
 using Unity.Mathematics;
 using UnityEngine;
 
+/// <summary>
+/// Layer from TerrainLayerSO, focused on utilising just fBm
+/// </summary>
 [CreateAssetMenu(fileName = "PureFractalLayer", menuName = "Planet Generation/Pure Fractal Layer", order = 103)]
 public class PureFractalLayerSO : TerrainLayerSO
 {
-
     [Header("Fractal Noise Settings")]
     [SerializeField] Vector3 noiseOffset = Vector3.zero;
     [Range(0.1f, 4)] public float noiseScale = 1.0f;
@@ -14,6 +16,12 @@ public class PureFractalLayerSO : TerrainLayerSO
     [Range(0.1f, 1.0f)] public float persistence = 0.5f;
     [Range(1.0f, 4.0f)] public float lacunarity = 2.0f;
 
+    /// <summary>
+    /// Sets up the shader with the buffers and serialized fields
+    /// </summary>
+    /// <param name="positionBuffer">buffer of the mesh positions</param>
+    /// <param name="heightBuffer">buffer of the heights(start at 0)</param>
+    /// <param name="numVertices">the number of vertices in the mesh</param>
     public override void SetShaderParameters( ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices)
     {
         // Basic validation
@@ -43,8 +51,5 @@ public class PureFractalLayerSO : TerrainLayerSO
         computeShader.SetFloat("lacunarity", lacunarity);
     }
 
-    public override void ReleaseAnySpecificBuffers()
-    {
-
-    }
+    public override void ReleaseAnySpecificBuffers(){}
 }

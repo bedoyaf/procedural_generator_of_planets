@@ -49,7 +49,7 @@ public class SphereMeshGenerator
             return false;
         }
 
-        Debug.Log($"Sphere Data Generated: Vertices={NumVertices}, Triangles={Triangles.Length / 3}");
+      //  Debug.Log($"Sphere Data Generated: Vertices={NumVertices}, Triangles={Triangles.Length / 3}");
         return true;
     }
 }

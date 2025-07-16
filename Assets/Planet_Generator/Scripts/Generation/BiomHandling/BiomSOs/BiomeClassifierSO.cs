@@ -12,9 +12,9 @@ public class BiomeClassifierSO : ScriptableObject
 {
     [Header("Height Types")]
 
-   [SerializeField] public List<BiomeAttributeHeight> heights;
+   [SerializeField] public List<BiomeAttributeHeightSO> heights;
     [SerializeField] public List<BiomeAttributeTemperatures>  temperatures;
-    [SerializeField] public List<BiomeAttributeSlope> slopes;
+    [SerializeField] public List<BiomeAttributeSlopeSO> slopes;
 
     [SerializeField] public List<FloatRange> heightRanges = new();
     [SerializeField] public List<FloatRange> temperaturesRanges = new();
@@ -26,7 +26,7 @@ public class BiomeClassifierSO : ScriptableObject
     /// </summary>
     /// <param name="type">the type to identify the center</param>
     /// <returns>center value of the current attribute</returns>
-    public float GetTypeCenter(BiomeAttributeHeight type)
+    public float GetTypeCenter(BiomeAttributeHeightSO type)
     {
         int index = heights.IndexOf(type);
         if (index == -1)
@@ -56,7 +56,7 @@ public class BiomeClassifierSO : ScriptableObject
     /// </summary>
     /// <param name="type">the type to identify the center</param>
     /// <returns>center value of the current attribute</returns>
-    public float GetTypeCenter(BiomeAttributeSlope type)
+    public float GetTypeCenter(BiomeAttributeSlopeSO type)
     {
         int index = slopes.IndexOf(type);
         if (index == -1)
@@ -71,7 +71,7 @@ public class BiomeClassifierSO : ScriptableObject
     /// </summary>
     /// <param name="type">the type to identify the range</param>
     /// <returns>range value of the current attribute</returns>
-    public float GetTypeRange(BiomeAttributeHeight type)
+    public float GetTypeRange(BiomeAttributeHeightSO type)
     {
         int index = heights.IndexOf(type);
         if (index == -1)
@@ -101,7 +101,7 @@ public class BiomeClassifierSO : ScriptableObject
     /// </summary>
     /// <param name="type">the type to identify the range</param>
     /// <returns>range value of the current attribute</returns>
-    public float GetTypeRange(BiomeAttributeSlope type)
+    public float GetTypeRange(BiomeAttributeSlopeSO type)
     {
         int index = slopes.IndexOf(type);
         if (index == -1)
@@ -116,7 +116,7 @@ public class BiomeClassifierSO : ScriptableObject
     /// </summary>
     /// <param name="height">the value that we check</param>
     /// <returns>the corresponding type</returns>
-    public BiomeAttributeHeight GetHeightType(float height)
+    public BiomeAttributeHeightSO GetHeightType(float height)
     {
         for (int i = 0;i< heightRanges.Count;i++)
         {
@@ -144,7 +144,7 @@ public class BiomeClassifierSO : ScriptableObject
     /// </summary>
     /// <param name="slope">the value that we check</param>
     /// <returns>the corresponding type</returns>
-    public BiomeAttributeSlope GetSlopeType(float slope)
+    public BiomeAttributeSlopeSO GetSlopeType(float slope)
     {
         for (int i = 0; i < slopeRanges.Count;i++)
         {
@@ -153,7 +153,7 @@ public class BiomeClassifierSO : ScriptableObject
         return slopes[0];
     }
 
-    public int GetAttributeIndex(BiomeAttributeHeight attribute)
+    public int GetAttributeIndex(BiomeAttributeHeightSO attribute)
     {
         return heights.IndexOf(attribute);
     }
@@ -163,7 +163,7 @@ public class BiomeClassifierSO : ScriptableObject
         return temperatures.IndexOf(attribute);
     }
 
-    public int GetAttributeIndex(BiomeAttributeSlope attribute)
+    public int GetAttributeIndex(BiomeAttributeSlopeSO attribute)
     {
         return slopes.IndexOf(attribute);
     }

@@ -62,13 +62,10 @@ public class BiomePipeline
         this.biomeCollection = biomeCollection;
     }
 
-
     public void UpdateBiomPipeline( float[] heights)
     {
         this.heights = heights;
     }
-
-
 
     public void UpdateMaterials(
         Material materialDiscreteMax8,
@@ -105,18 +102,12 @@ public class BiomePipeline
     /// <param name="normals">normals of verticies</param>
     /// <param name="triangles">triangles of the planets mesh</param>
     /// <param name="biomeBlendType">enum that determins what algorithm will be used for biomes</param>
+    /// <returns>returns a bool based on the success of the generation</returns>
     public void ApplyTexturesToMesh(Vector3[] vertices, Vector3[] normals, int[] triangles, BiomeBlendType biomeBlendType)
     {
         if(!BiomeUtils.AreBiomesValid(biomeCollection, biomeClassifier))
         {
-            Debug.Log("Biome generation abandoned");
-            return;
-        }
-        if(biomeClassifier == null || biomeCollection==null)
-        {
-            Debug.Log("Missing BiomeClassifierSO or BiomeCollection");
-            Debug.Log("Biome generation abandoned");
-            return;
+            throw new InvalidOperationException("Biome generation failed");
         }
 
         Texture2DArray biomeTextureArray = BiomeUtils.GenerateBiomeTextureArray(biomeCollection);
@@ -165,8 +156,6 @@ public class BiomePipeline
 
         int numVertices = meshFilter.sharedMesh.vertices.Length;
 
-        DateTime before = DateTime.Now;
-
         Vector3[] deformedVerticies = meshFilter.sharedMesh.vertices;
 
         material.SetTexture("_Biomes", biomeTextureArray);
@@ -201,10 +190,6 @@ public class BiomePipeline
         }
 
         material.SetFloat("_Scale", TextureScale);
-
-        DateTime after = DateTime.Now;
-        TimeSpan duration = after.Subtract(before);
-        Debug.Log("Biom creation Duration in milliseconds: " + duration.Milliseconds);
 
         meshRenderer.sharedMaterial = material;
 
@@ -452,7 +437,7 @@ public class BiomePipeline
                 {
                     float heightCenter = biomeClassifier.GetTypeCenter(h);
                     float heightRange = biomeClassifier.GetTypeRange(h);
-                    float heightScoreCur = Mathf.Clamp01(1f - Mathf.Abs(height - heightCenter) / (heightRange * (biome.blenddistance ) + 1e-5f));
+                    float heightScoreCur = Mathf.Clamp01(1f - Mathf.Abs(height - heightCenter) / (heightRange * (biome.blendDistance ) + 1e-5f));
                     if (heightScoreCur > bestHeightScore) bestHeightScore = heightScoreCur;
                 }
                 float heightScore = bestHeightScore;
@@ -463,23 +448,22 @@ public class BiomePipeline
                 {
                     float Center = biomeClassifier.GetTypeCenter(s);
                     float Range = biomeClassifier.GetTypeRange(s);
-                    float slopeScoreCur = Mathf.Clamp01(1f - Mathf.Abs(slope - Center) / (Range * (biome.blenddistance ) + 1e-5f));
+                    float slopeScoreCur = Mathf.Clamp01(1f - Mathf.Abs(slope - Center) / (Range * (biome.blendDistance ) + 1e-5f));
                     if (slopeScoreCur> bestSlopeScore) bestSlopeScore = slopeScoreCur;
                 }
-                // float slopeScore = bestSlopeScore;
-                float slopeScore = Mathf.Pow(bestSlopeScore, 2);
+                 float slopeScore = bestSlopeScore;
 
                 float bestTempScore = 0;
                 foreach (var t in biome.supportedTemperatures)
                 {
                     float Center = biomeClassifier.GetTypeCenter(t);
                     float Range = biomeClassifier.GetTypeRange(t);
-                    float tempScoreCur = Mathf.Clamp01(1f - Mathf.Abs(temperature - Center) / (Range * (biome.blenddistance ) + 1e-5f));
+                    float tempScoreCur = Mathf.Clamp01(1f - Mathf.Abs(temperature - Center) / (Range * (biome.blendDistance ) + 1e-5f));
                     if (tempScoreCur > bestTempScore) bestTempScore = tempScoreCur;
                 }
                 float tempScore = bestTempScore;
 
-                float finalScore = (4*heightScore * biome.heightAffinity + slopeScore * biome.slopeAffinity)*  tempScore;
+                float finalScore = ( heightScore * slopeScore) * tempScore;
 
                 if (finalScore > 0)
                 {

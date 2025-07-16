@@ -29,7 +29,8 @@ MonoBehaviour:
   waterSettings:
     resolution: 100
     radius: 1
-    terrainLayers: []
+    terrainLayers:
+    - {fileID: 11400000, guid: 77831bb0088f6e946bb32453caefedc1, type: 2}
     isWaterSphere: 1
   waterIceLineStart: 0.82
   waterIceLineEnd: 0.87

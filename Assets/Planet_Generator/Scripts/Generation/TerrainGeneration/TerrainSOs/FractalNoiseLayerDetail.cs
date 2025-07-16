@@ -1,6 +1,9 @@
 using NUnit.Framework;
 using UnityEngine;
 
+/// <summary>
+/// Layer from TerrainLayerSO, focused on creating a rough surface
+/// </summary>
 [CreateAssetMenu(fileName = "FractalLayerDetail", menuName = "Planet Generation/Fractal Layer Detail", order = 103)]
 public class FractalLayerDetail : TerrainLayerSO
 {
@@ -12,6 +15,12 @@ public class FractalLayerDetail : TerrainLayerSO
     [SerializeField, UnityEngine.Range(1, 10)] private int detailOctaves = 3;
     [SerializeField, UnityEngine.Range(0, 3)] private float heightMultiplier = 0.01f;
 
+    /// <summary>
+    /// Sets up the shader with the buffers and serialized fields
+    /// </summary>
+    /// <param name="positionBuffer">buffer of the mesh positions</param>
+    /// <param name="heightBuffer">buffer of the heights(start at 0)</param>
+    /// <param name="numVertices">the number of vertices in the mesh</param>
     public override void SetShaderParameters( ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices)
     {
         if (!layerEnabled || computeShader == null || kernelHandle < 0 || positionBuffer == null || heightBuffer == null)
@@ -38,8 +47,5 @@ public class FractalLayerDetail : TerrainLayerSO
         computeShader.SetVector("noiseOffset", (offset+noiseOffset));
     }
 
-    public override void ReleaseAnySpecificBuffers()
-    {
-
-    }
+    public override void ReleaseAnySpecificBuffers(){}
 }

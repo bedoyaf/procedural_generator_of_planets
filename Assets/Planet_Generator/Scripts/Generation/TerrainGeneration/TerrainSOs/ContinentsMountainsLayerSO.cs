@@ -1,6 +1,9 @@
 using Unity.Mathematics;
 using UnityEngine;
 
+/// <summary>
+/// Layer from TerrainLayerSO, focused on creating realisting earthlike terrain
+/// </summary>
 [CreateAssetMenu(fileName = "ContinentsMountainsLayer", menuName = "Planet Generation/Continents Mountains Layer", order = 103)]
 public class ContinentsMountainsLayer : TerrainLayerSO
 {
@@ -15,28 +18,28 @@ public class ContinentsMountainsLayer : TerrainLayerSO
 
     [Header("Base")]
     [Range(0.01f, 10f)][SerializeField] private float baseScale = 1f;
-    [Range(1, 8)][SerializeField] private int baseOctaves = 4;
+    [Range(1, 8)][SerializeField] private int baseOctaves = 8;
     [Range(1f, 4f)][SerializeField] private float baseLacunarity = 2f;
     [Range(0f, 1f)][SerializeField] private float basePersistence = 0.5f;
     [Range(0f, 2f)][SerializeField] private float baseMultiplier = 1f;
 
     [Header("Detail")]
-    [Range(0.01f, 50f)][SerializeField] private float detailScale = 10f;
-    [Range(1, 8)][SerializeField] private int detailOctaves = 6;
-    [Range(1f, 4f)][SerializeField] private float detailLacunarity = 2.2f;
-    [Range(0f, 1f)][SerializeField] private float detailPersistence = 0.55f;
-    [Range(0f, 2f)][SerializeField] private float detailMultiplier = 0.3f;
+    [Range(0.01f, 50f)][SerializeField] private float detailScale = 20f;
+    [Range(1, 8)][SerializeField] private int detailOctaves = 1;
+    [Range(1f, 4f)][SerializeField] private float detailLacunarity = 3.87f;
+    [Range(0f, 1f)][SerializeField] private float detailPersistence = 0.169f;
+    [Range(0f, 2f)][SerializeField] private float detailMultiplier = 0.01f;
 
     [Header("Ridge")]
-    [Range(0.01f, 10f)][SerializeField] private float ridgeScale = 1.5f;
-    [Range(0f, 10f)][SerializeField] private float ridgeMultiplier = 0.6f;
-    [Range(1, 8)][SerializeField] private int ridgeOctaves = 4;
-    [Range(1f, 4f)][SerializeField] private float ridgeLacunarity = 2f;
-    [Range(0f, 1f)][SerializeField] private float ridgePersistence = 0.5f;
+    [Range(0.01f, 10f)][SerializeField] private float ridgeScale = 3.1f;
+    [Range(0f, 10f)][SerializeField] private float ridgeMultiplier = 1.92f;
+    [Range(1, 8)][SerializeField] private int ridgeOctaves = 8;
+    [Range(1f, 4f)][SerializeField] private float ridgeLacunarity = 2.59f;
+    [Range(0f, 1f)][SerializeField] private float ridgePersistence = 0.147f;
     [Header("Ridge Attenuation")]
-    [SerializeField, Range(-10f, 10f)] private float ridgeMinBase = 0.4f; 
+    [SerializeField, Range(-10f, 10f)] private float ridgeMinBase = 6.8f; 
 
-    [SerializeField, Range(0.1f, 5f)] private float ridgeStartPower = 2.5f; 
+    [SerializeField, Range(0.1f, 5f)] private float ridgeStartPower = 0.53f; 
 
     [SerializeField, Range(0f, 10f)]
     private float ridgeAttenuationScale = 1f;
@@ -50,6 +53,13 @@ public class ContinentsMountainsLayer : TerrainLayerSO
     [SerializeField, Range(0f, 1f)]
     private float ridgeAttenuationPersistence = 0.5f;
 
+
+    /// <summary>
+    /// Sets up the shader with the buffers and serialized fields
+    /// </summary>
+    /// <param name="positionBuffer">buffer of the mesh positions</param>
+    /// <param name="heightBuffer">buffer of the heights(start at 0)</param>
+    /// <param name="numVertices">the number of vertices in the mesh</param>
     public override void SetShaderParameters( ComputeBuffer positionBuffer, ComputeBuffer heightBuffer, int numVertices)
     {
         if (!layerEnabled || computeShader == null || kernelHandle < 0 || positionBuffer == null || heightBuffer == null)
@@ -115,8 +125,5 @@ public class ContinentsMountainsLayer : TerrainLayerSO
         computeShader.SetVector("ridgeAttenuationNoiseOffset", randomOffset3+ ridgeAttunationNoiseOffset);
     }
 
-    public override void ReleaseAnySpecificBuffers()
-    {
-
-    }
+    public override void ReleaseAnySpecificBuffers(){}
 }

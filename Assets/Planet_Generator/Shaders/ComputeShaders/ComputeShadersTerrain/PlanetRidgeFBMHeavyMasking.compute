@@ -116,7 +116,7 @@ float snoise(float3 v)
     m = m * m;
     return 105.0 * dot(m * m, float4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
 }
-
+//basic fbm
 float fbm(float3 pos, int octaves, float lacunarity, float persistence)
 {
     float total = 0.0;
@@ -134,15 +134,15 @@ float fbm(float3 pos, int octaves, float lacunarity, float persistence)
 
     return total / maxValue;
 }
-
+// basic ridge noise
 float ridgeNoise(float3 pos, int octaves, float lacunarity, float persistence)
 {
     float total = 0.0, amp = 0.5, freq = 1.0, maxV = 0.0;
     for (int i = 0; i < octaves; i++)
     {
         float n = snoise(pos * freq);
-        n = 1.0 - abs(n); // 
-        n *= n; // 
+        n = 1.0 - abs(n); 
+        n *= n; 
         total += n * amp;
         maxV += amp;
         amp *= persistence;
@@ -167,7 +167,7 @@ void CSMain(uint id : SV_DispatchThreadID)
     float continent = fbm(baseNoisePos * continentScale, continentOctaves, continentLacunarity, continentPersistence);
 
     // Flatten ocean floors
-    float oceanMask = -oceanFloorDepth + continent * 1.0; //bylo 0.15
+    float oceanMask = -oceanFloorDepth + continent * 1.0;
     continent = smoothMax(continent, oceanMask, oceanFloorSmoothing);
     continent *= (continent < 0) ? 1 + oceanDepthMultiplier : 1;
 
@@ -178,19 +178,14 @@ void CSMain(uint id : SV_DispatchThreadID)
                          mountainPersistence);
     // To not generate mountains in water
     float landMask = smoothstep(0.0, 0.3, continent);
-    // 
-    //float ridgeMask = saturate((continent - 6.8) / (1.0 - 6.8));
-  //  float ridgeMask = smoothstep(ridgeMaskThreshold - ridgeMaskFalloff, ridgeMaskThreshold + ridgeMaskFalloff, continent);
-   // ridgeMask = pow(ridgeMask, 0.53); 
 
     float ridgeAtt = fbm(maskNoisePos * ridgeMaskScale,
                      ridgeMaskOctaves,
                      2.0, ridgeMaskPersistence);
    ridgeAtt = saturate(ridgeAtt);
-//    ridgeMask *= ridgeAtt * ridgeMaskMultiplier;
 
     float maskedRidges = ridge * mountainStrength * ridgeAtt* landMask;
-    //
+
     float height = continent * continentStrength + maskedRidges;
     //final calculation
     heights[id] += height * heightMultiplier * 0.1;

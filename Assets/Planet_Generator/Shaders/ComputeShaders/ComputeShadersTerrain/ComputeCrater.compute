@@ -31,6 +31,7 @@ float smoothMax(float a, float b, float k)
     return -smoothMin(-a, -b, k);
 }
 
+//goes through each vertex and calculates the height based on the distance from crater positions
 [numthreads(512, 1, 1)] 
 void CSMain(uint id : SV_DispatchThreadID)
 {

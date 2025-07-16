@@ -93,7 +93,7 @@ float snoise(float3 v)
     m = m * m;
     return 105.0 * dot(m * m, float4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
 }
-
+//basic fbm
 float fractalNoise(float3 pos)
 {
     float total = 0.0;
@@ -113,7 +113,7 @@ float fractalNoise(float3 pos)
     return total / maxValue; // Normalize to [-1, 1] range
 }
 
-
+//just calls the fbm
 [numthreads(512, 1, 1)]
 void CSMain(uint id : SV_DispatchThreadID)
 {

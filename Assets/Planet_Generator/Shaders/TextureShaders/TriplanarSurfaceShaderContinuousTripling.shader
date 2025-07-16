@@ -104,7 +104,8 @@ Shader "Custom/TriplanarContinuousTripling"
                     }
                 }
 
-                                InputData inputData;
+                 //taken from https://youtu.be/1bm0McKAh9E?si=yNkCzr3JfheEN7mk adjusted with chat gpt and personal tweaks
+                InputData inputData;
                 inputData.positionWS = i.worldPos;
                 inputData.normalWS = normal;
                 inputData.viewDirectionWS = normalize(_WorldSpaceCameraPos - i.worldPos);
@@ -120,7 +121,7 @@ Shader "Custom/TriplanarContinuousTripling"
                 surfaceData.alpha = 1.0;
                 surfaceData.normalTS = float3(0, 0, 1);
                 surfaceData.metallic = 0.0;
-                surfaceData.specular = float3(0.2, 0.2, 0.2); // Blinn-Phong expects this
+                surfaceData.specular = float3(0.2, 0.2, 0.2); 
                 surfaceData.smoothness = 0.5;
                 surfaceData.occlusion = 1.0;
                 surfaceData.emission = float3(0, 0, 0);

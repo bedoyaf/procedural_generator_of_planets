@@ -25,13 +25,13 @@ MonoBehaviour:
   baseLacunarity: 2
   basePersistence: 0.5
   baseMultiplier: 1
-  detailScale: 38.9
+  detailScale: 13.5
   detailOctaves: 1
   detailLacunarity: 3.87
   detailPersistence: 0.169
   detailMultiplier: 0.01
   ridgeScale: 3.1
-  ridgeMultiplier: 2.01
+  ridgeMultiplier: 1.92
   ridgeOctaves: 8
   ridgeLacunarity: 2.59
   ridgePersistence: 0.147

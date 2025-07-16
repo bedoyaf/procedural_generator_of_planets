@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f0b04899e373cd41a1b3d1380b91dbf, type: 3}
+  m_Name: ContinentsMountainsLayerAlien
+  m_EditorClassIdentifier: 
+  layerEnabled: 1
+  computeShader: {fileID: 7200000, guid: f01f4b7e81d6dbd4b905742e0c6dcdeb, type: 3}
+  kernelName: CSMain
+  kernelHandle: 0
+  heightMultiplier: 1
+  baseNoiseOffset: {x: 0, y: 0, z: 0}
+  ridgeNoiseOffset: {x: 0, y: 0, z: 0}
+  ridgeAttunationNoiseOffset: {x: 0, y: 0, z: 0}
+  baseScale: 1
+  baseOctaves: 8
+  baseLacunarity: 2
+  basePersistence: 0.5
+  baseMultiplier: 0.733
+  detailScale: 20
+  detailOctaves: 4
+  detailLacunarity: 3.87
+  detailPersistence: 0.169
+  detailMultiplier: 0.054
+  ridgeScale: 3.1
+  ridgeMultiplier: 3.08
+  ridgeOctaves: 8
+  ridgeLacunarity: 2.59
+  ridgePersistence: 0.147
+  ridgeMinBase: 6.8
+  ridgeStartPower: 0.53
+  ridgeAttenuationScale: 1
+  ridgeAttenuationFrequency: 1
+  ridgeAttenuationOctaves: 3
+  ridgeAttenuationPersistence: 0.5

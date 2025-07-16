@@ -7,7 +7,7 @@ using static UnityEditor.Experimental.GraphView.GraphView;
 /// Main script for running terrain generation, goes through compute shaders
 /// </summary>
 /// <remarks>
-/// Runs each stores layer with a compute shader, has IDisposable to release all relevant buffer when necessary
+/// Runs each stores layer with a compute shader, has IDisposable to release all relevant buffer when necessary, some help with buffers came from chat gpt
 /// </remarks>
 public class TerrainPipelineProcessor : IDisposable
 {
@@ -33,6 +33,7 @@ public class TerrainPipelineProcessor : IDisposable
         }
 
         numVertices = vertexCount;
+
       //  Debug.Log($"Initializing Compute Buffers for {numVertices} vertices.");
 
         try
@@ -87,6 +88,11 @@ public class TerrainPipelineProcessor : IDisposable
 
         try
         {
+            foreach (var layer in layers)
+            {
+                if (layer != null) layer.ReleaseAnySpecificBuffers();
+            }
+
             currentHeights = new float[numVertices]; 
 
             positionBuffer.SetData(baseVertices); 
@@ -94,7 +100,12 @@ public class TerrainPipelineProcessor : IDisposable
 
             foreach (TerrainLayerSO layer in layers)
             {
-                if (layer != null && layer.layerEnabled && layer.computeShader != null)
+                if (layer == null) 
+                { 
+                    Debug.LogWarning($"Skipping layer - Layer is null.", layer);
+                    continue;
+                }
+                else if (layer.layerEnabled && layer.computeShader != null)
                 {
                     if (layer.kernelHandle < 0) layer.FindKernel(); 
                     if (layer.kernelHandle < 0)
@@ -104,27 +115,31 @@ public class TerrainPipelineProcessor : IDisposable
                     }
 
                     layer.SetShaderParameters( positionBuffer, heightBuffer, numVertices);
-                    Debug.Log($"Dispatching Layer: {layer.name}");
+             //       Debug.Log($"Dispatching Layer: {layer.name}");
                     layer.Dispatch( numVertices);
                 }
-                else if (layer == null) { Debug.LogWarning($"Skipping layer '{layer.name}' - Compute Shader is null.", layer); }
+                
             }
 
             heightBuffer.GetData(currentHeights);
 
-
             //release data in layers
             foreach (var layer in layers)
             {
-                layer.ReleaseAnySpecificBuffers();
+                if(layer!=null) layer.ReleaseAnySpecificBuffers();
             }
             ReleaseBuffers();
 
-            Debug.Log("Terrain Generation Pipeline Finished.");
+         //   Debug.Log("Terrain Generation Pipeline Finished.");
             return currentHeights; 
         }
         catch (Exception e)
         {
+            foreach (var layer in layers)
+            {
+                if(layer != null) layer.ReleaseAnySpecificBuffers();
+            }
+            ReleaseBuffers();
             Debug.LogError($"Error during terrain pipeline processing: {e.Message}");
             return null; 
         }
@@ -137,7 +152,6 @@ public class TerrainPipelineProcessor : IDisposable
         heightBuffer?.Release();
         heightBuffer = null;
         numVertices = 0;
-      //  currentHeights = null;
     }
 
     public void Dispose()

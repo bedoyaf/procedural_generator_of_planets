@@ -9,14 +9,11 @@ public class BiomeSO : ScriptableObject
 {
     public Texture2D biomeTexture;
 
-    public List<BiomeAttributeHeight> supportedHeights;
+    public List<BiomeAttributeHeightSO> supportedHeights;
     public List<BiomeAttributeTemperatures> supportedTemperatures;
-    public List<BiomeAttributeSlope> supportedSlopes;
+    public List<BiomeAttributeSlopeSO> supportedSlopes;
 
-    [Range(0f, 1f)] public float heightAffinity = 1f;
-    [Range(0f, 1f)] public float slopeAffinity = 1f;
-
-    [Range(1f, 2f)] public float blenddistance = 1f;
+    [Range(1f, 2f)] public float blendDistance = 1.1f;
 
     //represent the Attributes for faster calculations
     [HideInInspector] public ushort heightMask;
