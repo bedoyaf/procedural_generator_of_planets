@@ -42,7 +42,7 @@ public class TerrainPipelineProcessor : IDisposable
             heightBuffer = new ComputeBuffer(numVertices, sizeof(float));     
                                                                              
             currentHeights = new float[numVertices];
-            for (int i = 0; i < numVertices; ++i) currentHeights[i] = 1.0f;
+            for (int i = 0; i < numVertices; ++i) currentHeights[i] = 0.0f;
 
             return true;
         }
@@ -75,10 +75,9 @@ public class TerrainPipelineProcessor : IDisposable
             return null;
         }
 
-        if (layers == null || layers.Count == 0)
+        if (layers == null || layers.Count == 0) //if there are no layers,it just returns zeros
         {
-            Debug.LogWarning("No terrain layers provided. Returning initial heights.");
-
+    //        Debug.LogWarning("No terrain layers provided. Returning initial heights.");
             float[] initialHeightsCopy = new float[numVertices];
             Array.Copy(currentHeights, initialHeightsCopy, numVertices);
             return initialHeightsCopy;

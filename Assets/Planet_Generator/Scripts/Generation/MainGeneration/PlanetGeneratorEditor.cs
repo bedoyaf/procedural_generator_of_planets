@@ -9,7 +9,6 @@ using UnityEngine;
 public class PlanetGeneratorEditor : Editor
 {
     private SerializedProperty planetSOProp;
-    private SerializedProperty waterGameObjectProp;
 
     private bool showPlanetSOSettingsFoldout = false;
 
@@ -18,7 +17,6 @@ public class PlanetGeneratorEditor : Editor
     private void OnEnable()
     {
         planetSOProp = serializedObject.FindProperty("planetSO");
-        waterGameObjectProp = serializedObject.FindProperty("waterGameObject");
 
         PlanetGenerator generator = (PlanetGenerator)target;
         if (generator != null && generator.planetSO != null && generator.planetSO.meshSettings != null)
@@ -88,10 +86,6 @@ public class PlanetGeneratorEditor : Editor
                 EditorGUI.indentLevel--;
             }
         }
-
-        EditorGUILayout.Space(10);
-
-        EditorGUILayout.PropertyField(waterGameObjectProp, true);
 
         EditorGUILayout.Space(10);
 

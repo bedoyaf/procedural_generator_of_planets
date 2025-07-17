@@ -19,8 +19,7 @@ public class PlanetGenerator : MonoBehaviour
 
     private BiomePipeline biomePipeline = new BiomePipeline();
 
-    [Header("References")]
-    [SerializeField] private GameObject waterGameObject;
+    private GameObject waterGameObject;
 
     //Materials
     private Material materialMax8;
@@ -457,8 +456,8 @@ public class PlanetGenerator : MonoBehaviour
 #if UNITY_EDITOR
         foreach (var path in bakedAssetPaths)
         {
-            if (AssetDatabase.DeleteAsset(path))
-                Debug.Log($"Deleted baked asset: {path}");
+            AssetDatabase.DeleteAsset(path);
+           //     Debug.Log($"Deleted baked asset: {path}");
         }
         bakedAssetPaths.Clear();
 

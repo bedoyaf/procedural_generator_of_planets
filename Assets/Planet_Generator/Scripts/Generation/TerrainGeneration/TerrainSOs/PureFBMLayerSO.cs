@@ -4,8 +4,8 @@ using UnityEngine;
 /// <summary>
 /// Layer from TerrainLayerSO, focused on utilising just fBm
 /// </summary>
-[CreateAssetMenu(fileName = "PureFractalLayer", menuName = "Planet Generation/Pure Fractal Layer", order = 103)]
-public class PureFractalLayerSO : TerrainLayerSO
+[CreateAssetMenu(fileName = "PureFBMLayer", menuName = "Planet Generation/Pure FBM Layer", order = 103)]
+public class PureFBMLayerSO : TerrainLayerSO
 {
     [Header("Fractal Noise Settings")]
     [SerializeField] Vector3 noiseOffset = Vector3.zero;

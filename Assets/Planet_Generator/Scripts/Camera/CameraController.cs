@@ -6,7 +6,7 @@ using UnityEngine;
 /// </summary>
 public class OrbitCamera : MonoBehaviour
 {
-    public Transform target; // Planet
+    public Transform target; 
     public float distance = 10f;
     public float minDistance = 2f;
     public float maxDistance = 20f;

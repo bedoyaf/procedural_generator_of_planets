@@ -21,7 +21,7 @@ MonoBehaviour:
     isWaterSphere: 0
   biomeCollection: {fileID: 11400000, guid: 053724142764ef4449f994390ab8655e, type: 2}
   biomeClassifier: {fileID: 11400000, guid: e2fd8182ccba1674e83ce183558dbfbd, type: 2}
-  biomeBlendType: 1
+  biomeBlendType: 0
   TextureScale: 34.82
   temperatureNoiseScale: 1
   temperatureNoiseStrength: 0.2
@@ -29,14 +29,13 @@ MonoBehaviour:
   waterSettings:
     resolution: 300
     radius: 1
-    terrainLayers:
-    - {fileID: 11400000, guid: 77831bb0088f6e946bb32453caefedc1, type: 2}
+    terrainLayers: []
     isWaterSphere: 1
   waterIceLineStart: 0.82
   waterIceLineEnd: 0.87
   waterColor:
     serializedVersion: 2
-    rgba: 2583691008
+    rgba: 2583643392
   IceColor:
     serializedVersion: 2
     rgba: 4294967295

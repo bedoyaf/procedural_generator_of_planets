@@ -4,8 +4,8 @@ using UnityEngine;
 /// <summary>
 /// Layer from TerrainLayerSO, focused on creating a rough surface
 /// </summary>
-[CreateAssetMenu(fileName = "FractalLayerDetail", menuName = "Planet Generation/Fractal Layer Detail", order = 103)]
-public class FractalLayerDetail : TerrainLayerSO
+[CreateAssetMenu(fileName = "RidgeNoiseLayer", menuName = "Planet Generation/Ridge Noise Layer", order = 103)]
+public class RidgeNoiseLayerSO : TerrainLayerSO
 {
     [Header("Small-Scale Ocean Detail Settings")]
     [SerializeField] Vector3 noiseOffset = Vector3.zero;
